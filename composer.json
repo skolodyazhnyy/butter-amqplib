@@ -1,0 +1,28 @@
+{
+    "name": "skolodyazhny/amqplib",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergey Kolodyazhnyy",
+            "email": "skolodyazhny@magento.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "AMQPLib\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AMQPLibTest\\": "tests"
+        }
+    },
+    "require": {
+        "psr/log": "^1.0"
+    },
+    "require-dev": {
+        "monolog/monolog": "^1.21",
+        "phpunit/phpunit": "^5.5",
+        "friendsofphp/php-cs-fixer": "^1.12"
+    }
+}
