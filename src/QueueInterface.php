@@ -10,7 +10,7 @@ interface QueueInterface
      * @param int   $flags
      * @param array $arguments
      *
-     * @return $this
+     * @return QueueInterface
      */
     public function define($flags = 0, array $arguments = []);
 
@@ -19,7 +19,7 @@ interface QueueInterface
      *
      * @param int $flags
      *
-     * @return $this
+     * @return QueueInterface
      */
     public function delete($flags = 0);
 
@@ -31,7 +31,7 @@ interface QueueInterface
      * @param array  $arguments
      * @param int    $flags
      *
-     * @return $this
+     * @return QueueInterface
      */
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0);
 
@@ -42,7 +42,7 @@ interface QueueInterface
      * @param string $routingKey
      * @param array  $arguments
      *
-     * @return $this
+     * @return QueueInterface
      */
     public function unbind($exchange, $routingKey = '', array $arguments = []);
 
@@ -51,7 +51,7 @@ interface QueueInterface
      *
      * @param int $flags
      *
-     * @return $this
+     * @return QueueInterface
      */
     public function purge($flags = 0);
 

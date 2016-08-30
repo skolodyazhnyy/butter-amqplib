@@ -12,7 +12,7 @@ interface WireInterface
      * @param int   $channel
      * @param Frame $frame
      *
-     * @return $this
+     * @return WireInterface
      */
     public function send($channel, Frame $frame);
 

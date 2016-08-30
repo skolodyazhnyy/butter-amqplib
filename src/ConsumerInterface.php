@@ -7,7 +7,7 @@ interface ConsumerInterface
     /**
      * Cancel consuming.
      *
-     * @return $this
+     * @return ConsumerInterface
      */
     public function cancel();
 

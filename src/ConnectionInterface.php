@@ -7,7 +7,7 @@ interface ConnectionInterface
     /**
      * Establish connection with the server.
      *
-     * @return $this
+     * @return ConnectionInterface
      */
     public function open();
 
@@ -26,7 +26,7 @@ interface ConnectionInterface
      * @param bool $blocking
      * @param null $timeout
      *
-     * @return $this
+     * @return ConnectionInterface
      */
     public function serve($blocking = true, $timeout = null);
 
@@ -36,7 +36,7 @@ interface ConnectionInterface
      * @param int    $code
      * @param string $text
      *
-     * @return $this
+     * @return ConnectionInterface
      */
     public function close($code = 0, $text = '');
 }

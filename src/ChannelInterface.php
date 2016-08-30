@@ -7,7 +7,7 @@ interface ChannelInterface
     /**
      * Open channel.
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function open();
 
@@ -16,26 +16,27 @@ interface ChannelInterface
      *
      * @param bool $active
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function flow($active);
 
     /**
      * Close channel.
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function close();
 
     /**
      * Specify quality of service for the channel.
      *
-     * @param int $prefetchSize
-     * @param int $prefetchCount
+     * @param int  $prefetchSize
+     * @param int  $prefetchCount
+     * @param bool $globally
      *
-     * @return $this
+     * @return ChannelInterface
      */
-    public function qos($prefetchSize, $prefetchCount);
+    public function qos($prefetchSize, $prefetchCount, $globally = false);
 
     /**
      * Returns interface to work with an exchange.
@@ -73,7 +74,7 @@ interface ChannelInterface
      *
      * @param $tag
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function cancel($tag);
 
@@ -83,7 +84,7 @@ interface ChannelInterface
      * @param string  $routingKey
      * @param int     $flags
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function publish(Message $message, $exchange = '', $routingKey = '', $flags = 0);
 
@@ -91,7 +92,7 @@ interface ChannelInterface
      * @param string $deliveryTag
      * @param bool   $multiple
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function ack($deliveryTag, $multiple = false);
 
@@ -99,13 +100,13 @@ interface ChannelInterface
      * @param string $deliveryTag
      * @param bool   $requeue
      *
-     * @return $this
+     * @return ChannelInterface
      */
     public function reject($deliveryTag, $requeue = true);
     /*
      * Process incoming messages.
      *
-     * @return $this
+     * @return ChannelInterface
      */
     //public function serve();
 }

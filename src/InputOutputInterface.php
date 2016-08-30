@@ -10,14 +10,14 @@ interface InputOutputInterface
      * @param string $host
      * @param int    $port
      *
-     * @return $this
+     * @return InputOutputInterface
      */
     public function open($host, $port);
 
     /**
      * Close connection.
      *
-     * @return $this
+     * @return InputOutputInterface
      */
     public function close();
 
@@ -36,7 +36,7 @@ interface InputOutputInterface
      * @param string $data
      * @param int    $length
      *
-     * @return $this
+     * @return InputOutputInterface
      */
     public function write($data, $length = null);
 }

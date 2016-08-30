@@ -104,9 +104,9 @@ class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterfac
     /**
      * {@inheritdoc}
      */
-    public function qos($prefetchSize, $prefetchCount)
+    public function qos($prefetchSize, $prefetchCount, $globally = false)
     {
-        $this->send(new BasicQos($prefetchSize, $prefetchCount, false))
+        $this->send(new BasicQos($prefetchSize, $prefetchCount, $globally))
             ->wait(BasicQosOk::class);
 
         return $this;

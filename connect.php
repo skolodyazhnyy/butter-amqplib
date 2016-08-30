@@ -23,7 +23,7 @@ $conn->setLogger(new Logger('connection', [$stream]));
 $conn->open();
 
 $ch = $conn->channel();
-$ch->qos(0, 1);
+$ch->qos(0, 1, true);
 $ch->exchange('rabbit')
     ->define('direct');
 

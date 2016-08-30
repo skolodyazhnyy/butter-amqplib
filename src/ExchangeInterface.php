@@ -11,7 +11,7 @@ interface ExchangeInterface
      * @param int    $flags
      * @param array  $arguments
      *
-     * @return $this
+     * @return ExchangeInterface
      */
     public function define($type, $flags = 0, array $arguments = []);
 
@@ -20,7 +20,7 @@ interface ExchangeInterface
      *
      * @param int $flags
      *
-     * @return $this
+     * @return ExchangeInterface
      */
     public function delete($flags = 0);
 
@@ -31,7 +31,7 @@ interface ExchangeInterface
      * @param string  $routingKey
      * @param int     $flags
      *
-     * @return $this
+     * @return ExchangeInterface
      */
     public function publish(Message $message, $routingKey = '', $flags = 0);
 
@@ -43,7 +43,7 @@ interface ExchangeInterface
      * @param array  $arguments
      * @param int    $flags
      *
-     * @return $this
+     * @return ExchangeInterface
      */
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0);
 
@@ -55,7 +55,7 @@ interface ExchangeInterface
      * @param array  $arguments
      * @param int    $flags
      *
-     * @return $this
+     * @return ExchangeInterface
      */
     public function unbind($exchange, $routingKey = '', array $arguments = [], $flags = 0);
 
