@@ -4,6 +4,7 @@ namespace AMQPLib;
 
 use AMQPLib\Framing\Content;
 use AMQPLib\Framing\Frame;
+use AMQPLib\Framing\Heartbeat;
 use AMQPLib\Framing\Method\ConnectionBlocked;
 use AMQPLib\Framing\Method\ConnectionClose;
 use AMQPLib\Framing\Method\ConnectionCloseOk;
@@ -61,19 +62,29 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
     private $channels = [];
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $frameMax;
+    private $frameMax = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $channelMax;
+    private $channelMax = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $heartbeat;
+    private $heartbeat = 0;
+
+    /**
+     * @var int
+     */
+    private $heartbeatLastReceive = 0;
+
+    /**
+     * @var int
+     */
+    private $heartbeatLastSend = 0;
 
     /**
      * @param Url|string           $url
@@ -191,6 +202,7 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
     public function serve($blocking = true, $timeout = null)
     {
         $this->next($blocking, $timeout);
+        $this->heartbeat();
 
         return $this;
     }
@@ -204,6 +216,8 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
             'channel' => $channel,
             'frame' => get_class($frame),
         ]);
+
+        $this->heartbeatLastSend = time();
 
         foreach ($this->chop($frame) as $piece) {
             $data = $piece->encode();
@@ -297,7 +311,27 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
         $this->getHandlerForChannel($frame->getChannel())
             ->handle($frame);
 
+        $this->heartbeatLastReceive = time();
+
         return $frame;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function heartbeat()
+    {
+        if ($this->heartbeat == 0) {
+            return;
+        }
+
+        if (time() - $this->heartbeatLastReceive > $this->heartbeat * 2) {
+            throw new \Exception(sprintf('Missed heartbeats from server, timeout: %d seconds', $this->heartbeat));
+        }
+
+        if (time() - $this->heartbeatLastSend >= $this->heartbeat) {
+            $this->send(0, new Heartbeat());
+        }
     }
 
     /***
@@ -371,9 +405,13 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
      */
     private function onConnectionTune(ConnectionTune $frame)
     {
-        $this->channelMax = $frame->getChannelMax();
-        $this->frameMax = $frame->getFrameMax();
-        //$this->heartbeat = $frame->getHeartbeat();
+        $negotiate = function ($a, $b) {
+            return ($a * $b == 0) ? max($a, $b) : min($a, $b);
+        };
+
+        $this->channelMax = $negotiate($this->channelMax, $frame->getChannelMax());
+        $this->frameMax = $negotiate($this->frameMax, $frame->getFrameMax());
+        $this->heartbeat = $negotiate($this->heartbeat, $frame->getHeartbeat());
 
         $this->logger->debug(sprintf(
             'Tune connection: up to %d channels, %d frame size, heartbeat every %d seconds',

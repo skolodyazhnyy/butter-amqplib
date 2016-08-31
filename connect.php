@@ -20,7 +20,6 @@ $io->setLogger(new Logger('io', [$stream]));
 
 $conn = new AMQPLib\Connection('//localhost', $io);
 $conn->setLogger(new Logger('connection', [$stream]));
-$conn->setHeartbeat(150);
 $conn->open();
 
 $ch = $conn->channel();
