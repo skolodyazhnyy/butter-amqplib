@@ -12,7 +12,7 @@ require __DIR__.'/vendor/autoload.php';
 $stream = new StreamHandler('php://stderr', LogLevel::DEBUG);
 $stream->setFormatter(new LineFormatter(
     "[%datetime%] \033[32m\033[1m%channel%.%level_name%:\033[22m %message%\033[39m %context%\n",
-    "h:m:i.u"
+    "H:i:s.u"
 ));
 
 $io = new SocketInputOutput();
@@ -20,6 +20,7 @@ $io->setLogger(new Logger('io', [$stream]));
 
 $conn = new AMQPLib\Connection('//localhost', $io);
 $conn->setLogger(new Logger('connection', [$stream]));
+$conn->setHeartbeat(150);
 $conn->open();
 
 $ch = $conn->channel();
@@ -44,6 +45,16 @@ $ch->exchange('rabbit')
         'delivery-mode' => 1,
     ]));
 
-while($conn->serve())
+$loop = true;
+
+pcntl_signal(SIGINT, function() use(&$loop) {
+    echo 'Caught SIGINT, terminating...'.PHP_EOL;
+    $loop = false;
+});
+
+while($loop) {
+    $conn->serve(true, 0.1);
+    pcntl_signal_dispatch();
+}
 
 $conn->close();

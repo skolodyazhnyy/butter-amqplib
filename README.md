@@ -7,7 +7,7 @@
 - [ ] SSL support
 - [x] Split content frames into multiple pieces if frame-max exceeded
 - [x] Collect all data pieces when getting basic.delivery
-- [ ] Implement non-blocking reading and reading timeout
+- [x] Implement non-blocking reading and reading timeout
 - [ ] Implement heartbeat
 
 ### Frames

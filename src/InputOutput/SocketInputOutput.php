@@ -56,8 +56,6 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
             return $this;
         }
 
-        $this->buffer = '';
-
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
         if ($this->socket === false) {
@@ -72,7 +70,7 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
         if (socket_connect($this->socket, $host, $port) === false) {
             throw new \RuntimeException(sprintf(
                 'Unable to connect to %s: %s',
-                $this->address,
+                $host.':'.$port,
                 socket_strerror(socket_last_error())
             ));
         }
@@ -81,6 +79,8 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
             'host' => $host,
             'port' => $port,
         ]);
+
+        $this->buffer = '';
 
         return $this;
     }
@@ -91,7 +91,6 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
     public function close()
     {
         if ($this->socket) {
-            $this->buffer = '';
             socket_close($this->socket);
 
             $this->logger->debug('Connection closed');
@@ -101,35 +100,84 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
     }
 
     /**
-     * @param int $length
-     *
-     * @return string
+     * {@inheritdoc}
      */
-    public function read($length)
+    public function peek($length, $blocking = true, $timeout = null)
     {
         $received = Binary::length($this->buffer);
 
-        while ($length > $received) {
-            $data = socket_read($this->socket, $length - $received, PHP_BINARY_READ);
+        if ($received >= $length) {
+            return $this->buffer;
+        }
 
-            if ($data === false) {
-                throw new \RuntimeException(
-                    'An error occur while reading from the socket: %s'.
-                    socket_strerror(socket_last_error($this->socket))
-                );
-            }
+        $this->buffer .= $this->recv($length - $received, $blocking, $timeout);
 
-            $received += Binary::length($data);
-            $this->buffer .= $data;
+        if (Binary::length($this->buffer) >= $length) {
+            return $this->buffer;
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function read($length, $blocking = true, $timeout = null)
+    {
+        if (!$this->peek($length, $blocking, $timeout)) {
+            return null;
         }
 
         $data = Binary::subset($this->buffer, 0, $length);
 
         $this->buffer = Binary::subset($this->buffer, $length);
 
-        $this->logger->debug('Receive: '.Binary::render($data));
-
         return $data;
+    }
+
+    /**
+     * @param int  $length
+     * @param bool $blocking
+     * @param int  $timeout
+     *
+     * @return string
+     */
+    private function recv($length, $blocking, $timeout = null)
+    {
+        list($sec, $usec) = explode('|', number_format($timeout, 6, '|', ''));
+
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, [
+            'sec' => $sec,
+            'usec' => $usec,
+        ]);
+
+        $buffer = '';
+
+        $received = socket_recv(
+            $this->socket,
+            $buffer,
+            $length,
+            MSG_WAITALL | ($blocking ? 0 : MSG_DONTWAIT)
+        );
+
+        if ($received === false) {
+            $errno = socket_last_error($this->socket);
+
+            if ($errno == SOCKET_EAGAIN || $errno == SOCKET_EWOULDBLOCK) {
+                return '';
+            }
+
+            throw new \RuntimeException(
+                'An error occur while reading from the socket: '.
+                socket_strerror($errno)
+            );
+        }
+
+        if ($buffer) {
+            $this->logger->debug('Receive: '.Binary::render($buffer));
+        }
+
+        return $buffer;
     }
 
     /**

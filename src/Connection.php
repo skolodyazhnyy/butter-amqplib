@@ -89,6 +89,42 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
     }
 
     /**
+     * @param int $frameMax
+     *
+     * @return $this
+     */
+    public function setFrameMax($frameMax)
+    {
+        $this->frameMax = $frameMax;
+
+        return $this;
+    }
+
+    /**
+     * @param int $channelMax
+     *
+     * @return $this
+     */
+    public function setChannelMax($channelMax)
+    {
+        $this->channelMax = $channelMax;
+
+        return $this;
+    }
+
+    /**
+     * @param int $heartbeat
+     *
+     * @return $this
+     */
+    public function setHeartbeat($heartbeat)
+    {
+        $this->heartbeat = $heartbeat;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function open()
@@ -219,7 +255,7 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
 
         do {
             $frame = $this->next(true);
-        } while ($frame && $frame->getChannel() == $channel && !is_a($frame, $type));
+        } while (!$frame || $frame->getChannel() != $channel || !is_a($frame, $type));
 
         return $frame;
     }
@@ -234,15 +270,24 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
      */
     private function next($blocking = true, $timeout = null)
     {
-        $header = unpack('Ctype/nchannel/Nsize', $this->io->read(7));
-        $payload = $this->io->read($header['size'] + 1);
-        $end = $payload[$header['size']];
+        if (($buffer = $this->io->peek(7, $blocking, $timeout)) === null) {
+            return null;
+        }
+
+        $header = unpack('Ctype/nchannel/Nsize', $buffer);
+
+        if (($buffer = $this->io->read($header['size'] + 8, $blocking, $timeout)) === null) {
+            return null;
+        }
+
+        $payload = Binary::subset($buffer, 7, -1);
+        $end = Binary::subset($buffer, -1);
 
         if ($end != self::FRAME_ENDING) {
             throw new \Exception(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
         }
 
-        $frame = Frame::create($header['type'], $header['channel'], Binary::subset($payload, 0, -1));
+        $frame = Frame::create($header['type'], $header['channel'], $payload);
 
         $this->logger->debug(sprintf('Receive "%s" at channel #%d', get_class($frame), $frame->getChannel()), [
             'channel' => $frame->getChannel(),
@@ -328,7 +373,7 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
     {
         $this->channelMax = $frame->getChannelMax();
         $this->frameMax = $frame->getFrameMax();
-        $this->heartbeat = $frame->getHeartbeat();
+        //$this->heartbeat = $frame->getHeartbeat();
 
         $this->logger->debug(sprintf(
             'Tune connection: up to %d channels, %d frame size, heartbeat every %d seconds',
