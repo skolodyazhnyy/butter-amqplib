@@ -1,26 +1,26 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
-use AMQPLib\Framing\Content;
-use AMQPLib\Framing\Frame;
-use AMQPLib\Framing\Header;
-use AMQPLib\Framing\Method\BasicAck;
-use AMQPLib\Framing\Method\BasicCancel;
-use AMQPLib\Framing\Method\BasicCancelOk;
-use AMQPLib\Framing\Method\BasicConsume;
-use AMQPLib\Framing\Method\BasicConsumeOk;
-use AMQPLib\Framing\Method\BasicDeliver;
-use AMQPLib\Framing\Method\BasicPublish;
-use AMQPLib\Framing\Method\BasicQos;
-use AMQPLib\Framing\Method\BasicQosOk;
-use AMQPLib\Framing\Method\BasicReject;
-use AMQPLib\Framing\Method\ChannelClose;
-use AMQPLib\Framing\Method\ChannelCloseOk;
-use AMQPLib\Framing\Method\ChannelFlow;
-use AMQPLib\Framing\Method\ChannelFlowOk;
-use AMQPLib\Framing\Method\ChannelOpen;
-use AMQPLib\Framing\Method\ChannelOpenOk;
+use AMQLib\Framing\Content;
+use AMQLib\Framing\Frame;
+use AMQLib\Framing\Header;
+use AMQLib\Framing\Method\BasicAck;
+use AMQLib\Framing\Method\BasicCancel;
+use AMQLib\Framing\Method\BasicCancelOk;
+use AMQLib\Framing\Method\BasicConsume;
+use AMQLib\Framing\Method\BasicConsumeOk;
+use AMQLib\Framing\Method\BasicDeliver;
+use AMQLib\Framing\Method\BasicPublish;
+use AMQLib\Framing\Method\BasicQos;
+use AMQLib\Framing\Method\BasicQosOk;
+use AMQLib\Framing\Method\BasicReject;
+use AMQLib\Framing\Method\ChannelClose;
+use AMQLib\Framing\Method\ChannelCloseOk;
+use AMQLib\Framing\Method\ChannelFlow;
+use AMQLib\Framing\Method\ChannelFlowOk;
+use AMQLib\Framing\Method\ChannelOpen;
+use AMQLib\Framing\Method\ChannelOpenOk;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;

@@ -1,7 +1,7 @@
 <?php
 
-use AMQPLib\Connection;
-use AMQPLib\InputOutput\SocketInputOutput;
+use AMQLib\Connection;
+use AMQLib\InputOutput\SocketInputOutput;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -16,33 +16,16 @@ $stream->setFormatter(new LineFormatter(
 ));
 
 $io = new SocketInputOutput();
-$io->setLogger(new Logger('io', [$stream]));
+//$io->setLogger(new Logger('io', [$stream]));
 
-$conn = new AMQPLib\Connection('//localhost', $io);
-$conn->setLogger(new Logger('connection', [$stream]));
+$conn = new AMQLib\Connection('//localhost', $io);
+//$conn->setLogger(new Logger('connection', [$stream]));
 $conn->open();
 
 $ch = $conn->channel();
 $ch->qos(0, 1, true);
 $ch->exchange('rabbit')
     ->define('direct');
-
-$ch->queue('rabbit')
-    ->define(\AMQPLib\Queue::FLAG_AUTO_DELETE)
-    ->bind('rabbit');
-
-$ch->queue('rabbit')
-    ->consume(function(\AMQPLib\Delivery $delivery) {
-        echo $delivery->getBody() . PHP_EOL;
-        $delivery->ack();
-    });
-
-$ch->exchange('rabbit')
-    ->publish(new \AMQPLib\Message(str_repeat('x', 10), [
-        'content-type' => 'plain/text',
-        'content-encoding' => 'UTF-8',
-        'delivery-mode' => 1,
-    ]));
 
 $loop = true;
 
@@ -52,7 +35,12 @@ pcntl_signal(SIGINT, function() use(&$loop) {
 });
 
 while($loop) {
-    $conn->serve(true, 0.1);
+    $ch->exchange('rabbit')
+        ->publish(new \AMQLib\Message(
+            uniqid('', true),
+            ['delivery-mode' => 1]
+        ));
+
     pcntl_signal_dispatch();
 }
 

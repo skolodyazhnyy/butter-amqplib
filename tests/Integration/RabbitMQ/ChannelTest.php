@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQPLibTest\Integration\RabbitMQ;
+namespace AMQLibTest\Integration\RabbitMQ;
 
 class ChannelTest extends TestCase
 {

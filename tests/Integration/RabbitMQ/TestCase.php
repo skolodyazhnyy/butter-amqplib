@@ -1,11 +1,11 @@
 <?php
 
-namespace AMQPLibTest\Integration\RabbitMQ;
+namespace AMQLibTest\Integration\RabbitMQ;
 
-use AMQPLib\Connection;
-use AMQPLib\ConnectionInterface;
-use AMQPLib\InputOutput\SocketInputOutput;
-use AMQPLibTest\Integration\RecorderDecoratedInputOutput;
+use AMQLib\Connection;
+use AMQLib\ConnectionInterface;
+use AMQLib\InputOutput\SocketInputOutput;
+use AMQLibTest\Integration\RecorderDecoratedInputOutput;
 use PHPUnit_Framework_TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase

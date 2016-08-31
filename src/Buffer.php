@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
 class Buffer
 {

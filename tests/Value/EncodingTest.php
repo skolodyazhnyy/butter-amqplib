@@ -1,10 +1,10 @@
 <?php
 
-namespace AMQPLibTest\Value;
+namespace AMQLibTest\Value;
 
-use AMQPLib\Buffer;
-use AMQPLib\Value;
-use AMQPLib\ValueInterface;
+use AMQLib\Buffer;
+use AMQLib\Value;
+use AMQLib\ValueInterface;
 
 class EncodingTest extends \PHPUnit_Framework_TestCase
 {

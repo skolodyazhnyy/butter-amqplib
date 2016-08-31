@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQPLib\Value;
+namespace AMQLib\Value;
 
-use AMQPLib\Buffer;
-use AMQPLib\Value;
+use AMQLib\Buffer;
+use AMQLib\Value;
 
 class TypifiedValue extends AbstractValue
 {

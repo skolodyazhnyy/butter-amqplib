@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQPLib\Framing;
+namespace AMQLib\Framing;
 
-use AMQPLib\Buffer;
+use AMQLib\Buffer;
 
 class Content extends Frame
 {

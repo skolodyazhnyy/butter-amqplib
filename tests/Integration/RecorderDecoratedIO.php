@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQPLibTest\Integration;
+namespace AMQLibTest\Integration;
 
-use AMQPLib\InputOutputInterface;
+use AMQLib\InputOutputInterface;
 
 class RecorderDecoratedIO implements InputOutputInterface
 {

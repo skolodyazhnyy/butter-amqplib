@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
-use AMQPLib\Framing\Frame;
+use AMQLib\Framing\Frame;
 
 interface HandlerInterface
 {

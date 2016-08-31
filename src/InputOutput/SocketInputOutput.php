@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQPLib\InputOutput;
+namespace AMQLib\InputOutput;
 
-use AMQPLib\Binary;
-use AMQPLib\InputOutputInterface;
+use AMQLib\Binary;
+use AMQLib\InputOutputInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;

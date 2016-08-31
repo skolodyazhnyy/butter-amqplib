@@ -1,15 +1,15 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
-use AMQPLib\Framing\Method\ExchangeBind;
-use AMQPLib\Framing\Method\ExchangeBindOk;
-use AMQPLib\Framing\Method\ExchangeDeclare;
-use AMQPLib\Framing\Method\ExchangeDeclareOk;
-use AMQPLib\Framing\Method\ExchangeDelete;
-use AMQPLib\Framing\Method\ExchangeDeleteOk;
-use AMQPLib\Framing\Method\ExchangeUnbind;
-use AMQPLib\Framing\Method\ExchangeUnbindOk;
+use AMQLib\Framing\Method\ExchangeBind;
+use AMQLib\Framing\Method\ExchangeBindOk;
+use AMQLib\Framing\Method\ExchangeDeclare;
+use AMQLib\Framing\Method\ExchangeDeclareOk;
+use AMQLib\Framing\Method\ExchangeDelete;
+use AMQLib\Framing\Method\ExchangeDeleteOk;
+use AMQLib\Framing\Method\ExchangeUnbind;
+use AMQLib\Framing\Method\ExchangeUnbindOk;
 
 class Exchange implements ExchangeInterface
 {

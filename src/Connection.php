@@ -1,23 +1,23 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
-use AMQPLib\Framing\Content;
-use AMQPLib\Framing\Frame;
-use AMQPLib\Framing\Heartbeat;
-use AMQPLib\Framing\Method\ConnectionBlocked;
-use AMQPLib\Framing\Method\ConnectionClose;
-use AMQPLib\Framing\Method\ConnectionCloseOk;
-use AMQPLib\Framing\Method\ConnectionOpen;
-use AMQPLib\Framing\Method\ConnectionOpenOk;
-use AMQPLib\Framing\Method\ConnectionStart;
-use AMQPLib\Framing\Method\ConnectionStartOk;
-use AMQPLib\Framing\Method\ConnectionTune;
-use AMQPLib\Framing\Method\ConnectionTuneOk;
-use AMQPLib\Framing\Method\ConnectionUnblocked;
-use AMQPLib\Security\Authenticator;
-use AMQPLib\Value\LongValue;
-use AMQPLib\Value\ShortValue;
+use AMQLib\Framing\Content;
+use AMQLib\Framing\Frame;
+use AMQLib\Framing\Heartbeat;
+use AMQLib\Framing\Method\ConnectionBlocked;
+use AMQLib\Framing\Method\ConnectionClose;
+use AMQLib\Framing\Method\ConnectionCloseOk;
+use AMQLib\Framing\Method\ConnectionOpen;
+use AMQLib\Framing\Method\ConnectionOpenOk;
+use AMQLib\Framing\Method\ConnectionStart;
+use AMQLib\Framing\Method\ConnectionStartOk;
+use AMQLib\Framing\Method\ConnectionTune;
+use AMQLib\Framing\Method\ConnectionTuneOk;
+use AMQLib\Framing\Method\ConnectionUnblocked;
+use AMQLib\Security\Authenticator;
+use AMQLib\Value\LongValue;
+use AMQLib\Value\ShortValue;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;

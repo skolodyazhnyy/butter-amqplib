@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQPLib\Security;
+namespace AMQLib\Security;
 
-use AMQPLib\Security\Mechanism\AMQPlainMechanism;
-use AMQPLib\Security\Mechanism\PlainMechanism;
+use AMQLib\Security\Mechanism\AMQPlainMechanism;
+use AMQLib\Security\Mechanism\PlainMechanism;
 
 class Authenticator
 {

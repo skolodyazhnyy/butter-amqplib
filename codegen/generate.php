@@ -140,11 +140,11 @@ function generate_method_classes_header($class, $method)
     $phpdoc = $label ? "\n/**\n * {$label}.\n */" : "";
 
     return <<<HEADER
-namespace AMQPLib\Framing\Method;
+namespace AMQLib\Framing\Method;
 
-use AMQPLib\Buffer;
-use AMQPLib\Framing\Method;
-use AMQPLib\Value;
+use AMQLib\Buffer;
+use AMQLib\Framing\Method;
+use AMQLib\Value;
 {$phpdoc}
 class {$phpClassName} extends Method
 {
@@ -312,10 +312,10 @@ function generate_method_meta_class($schema) {
 function generate_method_meta_class_header($schema)
 {
     return <<<HEADER
-namespace AMQPLib\Framing;
+namespace AMQLib\Framing;
 
-use AMQPLib\Buffer;
-use AMQPLib\Binary;
+use AMQLib\Buffer;
+use AMQLib\Binary;
 
 abstract class Method extends Frame
 {
@@ -395,11 +395,11 @@ function generate_content_header_class($properties)
 function generate_content_header_class_header($properties)
 {
     return <<<HEADER
-namespace AMQPLib\Framing;
+namespace AMQLib\Framing;
 
-use AMQPLib\Buffer;
-use AMQPLib\Binary;
-use AMQPLib\Value;
+use AMQLib\Buffer;
+use AMQLib\Binary;
+use AMQLib\Value;
 
 class Header extends Frame
 {

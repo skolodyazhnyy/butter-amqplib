@@ -1,17 +1,17 @@
 <?php
 
-namespace AMQPLib;
+namespace AMQLib;
 
-use AMQPLib\Framing\Method\QueueBind;
-use AMQPLib\Framing\Method\QueueBindOk;
-use AMQPLib\Framing\Method\QueueDeclare;
-use AMQPLib\Framing\Method\QueueDeclareOk;
-use AMQPLib\Framing\Method\QueueDelete;
-use AMQPLib\Framing\Method\QueueDeleteOk;
-use AMQPLib\Framing\Method\QueuePurge;
-use AMQPLib\Framing\Method\QueuePurgeOk;
-use AMQPLib\Framing\Method\QueueUnbind;
-use AMQPLib\Framing\Method\QueueUnbindOk;
+use AMQLib\Framing\Method\QueueBind;
+use AMQLib\Framing\Method\QueueBindOk;
+use AMQLib\Framing\Method\QueueDeclare;
+use AMQLib\Framing\Method\QueueDeclareOk;
+use AMQLib\Framing\Method\QueueDelete;
+use AMQLib\Framing\Method\QueueDeleteOk;
+use AMQLib\Framing\Method\QueuePurge;
+use AMQLib\Framing\Method\QueuePurgeOk;
+use AMQLib\Framing\Method\QueueUnbind;
+use AMQLib\Framing\Method\QueueUnbindOk;
 
 class Queue implements QueueInterface
 {

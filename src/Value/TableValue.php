@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQPLib\Value;
+namespace AMQLib\Value;
 
-use AMQPLib\Binary;
-use AMQPLib\Buffer;
+use AMQLib\Binary;
+use AMQLib\Buffer;
 
 class TableValue extends AbstractValue
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQPLib\Value;
+namespace AMQLib\Value;
 
-use AMQPLib\Buffer;
+use AMQLib\Buffer;
 
 class BooleanValue extends AbstractValue
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQPLib\Security;
+namespace AMQLib\Security;
 
 interface MechanismInterface
 {

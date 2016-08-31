@@ -1,5 +1,5 @@
 {
-    "name": "skolodyazhny/amqplib",
+    "name": "skolodyazhny/amqlib",
     "license": "MIT",
     "authors": [
         {
@@ -9,12 +9,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "AMQPLib\\": "src"
+            "AMQLib\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "AMQPLibTest\\": "tests"
+            "AMQLibTest\\": "tests"
         }
     },
     "require": {
