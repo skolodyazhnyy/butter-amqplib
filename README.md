@@ -17,7 +17,7 @@
 - [x] Basic Consume
 - [x] Basic Deliver
 - [ ] Basic Get
-- [ ] Basic NACK
+- [x] Basic NACK
 - [x] Basic Publish
 - [x] Basic QOS
 - [ ] Basic Recover

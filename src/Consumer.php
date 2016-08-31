@@ -10,7 +10,7 @@ class Consumer implements ConsumerInterface
     const FLAG_NO_ACK = 0b1000000000;
 
     /**
-     * @var Channel
+     * @var ChannelInterface
      */
     private $channel;
 
@@ -20,10 +20,10 @@ class Consumer implements ConsumerInterface
     private $tag;
 
     /**
-     * @param Channel $channel
-     * @param string  $tag
+     * @param ChannelInterface $channel
+     * @param string           $tag
      */
-    public function __construct(Channel $channel, $tag)
+    public function __construct(ChannelInterface $channel, $tag)
     {
         $this->channel = $channel;
         $this->tag = $tag;

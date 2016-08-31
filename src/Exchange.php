@@ -26,7 +26,7 @@ class Exchange implements ExchangeInterface
     const TYPE_HEADERS = 'headers';
 
     /**
-     * @var Channel
+     * @var FrameChannelInterface
      */
     private $channel;
 
@@ -36,10 +36,10 @@ class Exchange implements ExchangeInterface
     private $name;
 
     /**
-     * @param Channel $channel
-     * @param string  $name
+     * @param FrameChannelInterface $channel
+     * @param string                $name
      */
-    public function __construct(Channel $channel, $name)
+    public function __construct(FrameChannelInterface $channel, $name)
     {
         $this->channel = $channel;
         $this->name = $name;
@@ -86,14 +86,6 @@ class Exchange implements ExchangeInterface
         }
 
         return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function publish(Message $message, $routingKey = '', $flags = 0)
-    {
-        return $this->channel->publish($message, $this->name, $routingKey, $flags);
     }
 
     /**

@@ -11,6 +11,7 @@ use AMQLib\Framing\Method\BasicCancelOk;
 use AMQLib\Framing\Method\BasicConsume;
 use AMQLib\Framing\Method\BasicConsumeOk;
 use AMQLib\Framing\Method\BasicDeliver;
+use AMQLib\Framing\Method\BasicNack;
 use AMQLib\Framing\Method\BasicPublish;
 use AMQLib\Framing\Method\BasicQos;
 use AMQLib\Framing\Method\BasicQosOk;
@@ -25,7 +26,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
-class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterface
+class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -39,7 +40,7 @@ class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterfac
     private $id;
 
     /**
-     * @var WireInterface
+     * @var FrameConnectionInterface
      */
     private $wire;
 
@@ -54,10 +55,10 @@ class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterfac
     private $consumers = [];
 
     /**
-     * @param int           $id
-     * @param WireInterface $wire
+     * @param int                      $id
+     * @param FrameConnectionInterface $wire
      */
-    public function __construct($id, WireInterface $wire)
+    public function __construct($id, FrameConnectionInterface $wire)
     {
         $this->id = $id;
         $this->wire = $wire;
@@ -195,8 +196,10 @@ class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterfac
             $flags & Message::FLAG_IMMEDIATE
         ));
 
-        $this->send(new Header(60, 0, $message->getSize(), $message->getProperties()));
-        $this->send(new Content($message->getBody()));
+        $body = $message->getBody();
+
+        $this->send(new Header(60, 0, Binary::length($body), $message->getProperties()));
+        $this->send(new Content($body));
 
         return $this;
     }
@@ -217,12 +220,14 @@ class Channel implements ChannelInterface, HandlerInterface, LoggerAwareInterfac
     /**
      * @param string $deliveryTag
      * @param bool   $requeue
+     * @param bool   $multiple
      *
      * @return $this
      */
-    public function reject($deliveryTag, $requeue = true)
+    public function reject($deliveryTag, $requeue = true, $multiple = false)
     {
-        $this->send(new BasicReject($deliveryTag, $requeue));
+        $multiple ? $this->send(new BasicNack($deliveryTag, $multiple, $requeue)) :
+            $this->send(new BasicReject($deliveryTag, $requeue));
 
         return $this;
     }

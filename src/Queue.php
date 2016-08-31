@@ -24,7 +24,7 @@ class Queue implements QueueInterface
     const FLAG_IF_UNUSED = 0b01000000;
     const FLAG_IF_EMPTY = 0b10000000;
     /**
-     * @var Channel
+     * @var FrameChannelInterface
      */
     private $channel;
 
@@ -44,10 +44,10 @@ class Queue implements QueueInterface
     private $consumerCount;
 
     /**
-     * @param Channel $channel
-     * @param string  $name
+     * @param FrameChannelInterface $channel
+     * @param string                $name
      */
-    public function __construct(Channel $channel, $name)
+    public function __construct(FrameChannelInterface $channel, $name)
     {
         $this->channel = $channel;
         $this->name = $name;
@@ -164,14 +164,6 @@ class Queue implements QueueInterface
         $this->messageCount = $frame->getMessageCount();
 
         return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function consume(callable $callback, $flags = 0, $tag = '', array $arguments = [])
-    {
-        return $this->channel->consume($this->name, $callback, $flags, $tag, $arguments);
     }
 
     /**

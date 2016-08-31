@@ -56,16 +56,6 @@ interface QueueInterface
     public function purge($flags = 0);
 
     /**
-     * @param callable $callback
-     * @param int      $flags
-     * @param string   $tag
-     * @param array    $arguments
-     *
-     * @return ConsumerInterface
-     */
-    public function consume(callable $callback, $flags = 0, $tag = '', array $arguments = []);
-
-    /**
      * Returns queue name. Can be used after declaring an anonymous queue.
      * Normally gets populated after declaring the queue.
      * This method may return null if information is not yet fetched or not provided by the server.

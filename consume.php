@@ -45,7 +45,7 @@ pcntl_signal(SIGINT, function() use(&$loop) {
 });
 
 while($loop) {
-    $conn->serve(true, 10);
+    $conn->serve(true, 0.5);
     pcntl_signal_dispatch();
 }
 

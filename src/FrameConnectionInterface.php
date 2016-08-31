@@ -4,7 +4,7 @@ namespace AMQLib;
 
 use AMQLib\Framing\Frame;
 
-interface WireInterface
+interface FrameConnectionInterface
 {
     /**
      * Send a frame to the connection.
@@ -12,7 +12,7 @@ interface WireInterface
      * @param int   $channel
      * @param Frame $frame
      *
-     * @return WireInterface
+     * @return FrameConnectionInterface
      */
     public function send($channel, Frame $frame);
 

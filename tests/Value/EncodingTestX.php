@@ -6,7 +6,7 @@ use AMQLib\Buffer;
 use AMQLib\Value;
 use AMQLib\ValueInterface;
 
-class EncodingTest extends \PHPUnit_Framework_TestCase
+class EncodingTestX extends \PHPUnit_Framework_TestCase
 {
     /**
      * @param ValueInterface $value

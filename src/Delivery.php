@@ -5,7 +5,7 @@ namespace AMQLib;
 class Delivery extends Message
 {
     /**
-     * @var Channel
+     * @var ChannelInterface
      */
     private $channel;
 
@@ -35,17 +35,17 @@ class Delivery extends Message
     private $routingKey;
 
     /**
-     * @param Channel $channel
-     * @param string  $consumerTag
-     * @param string  $deliveryTag
-     * @param bool    $redeliver
-     * @param string  $exchange
-     * @param string  $routingKey
-     * @param string  $body
-     * @param array   $properties
+     * @param ChannelInterface $channel
+     * @param string           $consumerTag
+     * @param string           $deliveryTag
+     * @param bool             $redeliver
+     * @param string           $exchange
+     * @param string           $routingKey
+     * @param string           $body
+     * @param array            $properties
      */
     public function __construct(
-        Channel $channel,
+        ChannelInterface $channel,
         $consumerTag,
         $deliveryTag,
         $redeliver,
@@ -65,28 +65,37 @@ class Delivery extends Message
     }
 
     /**
-     * @return $this
-     */
-    public function ack()
-    {
-        $this->channel->ack($this->deliveryTag);
-
-        return $this;
-    }
-
-    /**
-     * @param bool $requeue
+     * Acknowledge message, marking it as one successfully processed by consumer.
+     *
+     * @param bool $multiple
      *
      * @return $this
      */
-    public function reject($requeue = true)
+    public function ack($multiple = false)
     {
-        $this->channel->reject($this->deliveryTag, $requeue);
+        $this->channel->ack($this->deliveryTag, $multiple);
 
         return $this;
     }
 
     /**
+     * Reject message(s) marking it as one which consumer fail to process.
+     *
+     * @param bool $requeue  makes AMQP server put messages back to the queue
+     * @param bool $multiple reject all delivered and not acknowledged messages including current one
+     *
+     * @return $this
+     */
+    public function reject($requeue = true, $multiple = false)
+    {
+        $this->channel->reject($this->deliveryTag, $requeue, $multiple);
+
+        return $this;
+    }
+
+    /**
+     * Cancel message consuming.
+     *
      * @return $this
      */
     public function cancel()
@@ -97,6 +106,9 @@ class Delivery extends Message
     }
 
     /**
+     * Consume tag - unique identifier of the consumer within a channel.
+     * Used to identify consumer in frames related to it, like basic.cancel.
+     *
      * @return string
      */
     public function getConsumerTag()
@@ -105,6 +117,9 @@ class Delivery extends Message
     }
 
     /**
+     * Delivery tag - unique identifier of the delivery within a channel.
+     * Used to identify delivery in frames related to it, like basic.ack or basic.reject.
+     *
      * @return string
      */
     public function getDeliveryTag()
@@ -113,6 +128,8 @@ class Delivery extends Message
     }
 
     /**
+     * Redeliver is true if message was rejected before with re-enqueue set to true.
+     *
      * @return bool
      */
     public function isRedeliver()

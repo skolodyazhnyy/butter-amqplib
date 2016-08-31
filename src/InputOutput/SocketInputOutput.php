@@ -4,6 +4,7 @@ namespace AMQLib\InputOutput;
 
 use AMQLib\Binary;
 use AMQLib\InputOutputInterface;
+use AMQLib\Binary\ReadableBinaryData;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -174,7 +175,7 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
         }
 
         if ($buffer) {
-            $this->logger->debug('Receive: '.Binary::render($buffer));
+            $this->logger->debug(new ReadableBinaryData('Receive', $buffer));
         }
 
         return $buffer;
@@ -192,7 +193,7 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
             $length = Binary::length($data);
         }
 
-        $this->logger->debug('Sending: '.Binary::render($data));
+        $this->logger->debug(new ReadableBinaryData('Sending', $data));
 
         while ($length > 0) {
             $written = socket_write($this->socket, $data, $length);

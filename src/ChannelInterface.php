@@ -99,14 +99,9 @@ interface ChannelInterface
     /**
      * @param string $deliveryTag
      * @param bool   $requeue
+     * @param bool   $multiple
      *
      * @return ChannelInterface
      */
-    public function reject($deliveryTag, $requeue = true);
-    /*
-     * Process incoming messages.
-     *
-     * @return ChannelInterface
-     */
-    //public function serve();
+    public function reject($deliveryTag, $requeue = true, $multiple = false);
 }

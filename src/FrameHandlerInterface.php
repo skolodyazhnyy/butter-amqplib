@@ -4,7 +4,7 @@ namespace AMQLib;
 
 use AMQLib\Framing\Frame;
 
-interface HandlerInterface
+interface FrameHandlerInterface
 {
     /**
      * @param Frame $frame

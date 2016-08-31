@@ -25,17 +25,6 @@ interface ExchangeInterface
     public function delete($flags = 0);
 
     /**
-     * Publish a message.
-     *
-     * @param Message $message
-     * @param string  $routingKey
-     * @param int     $flags
-     *
-     * @return ExchangeInterface
-     */
-    public function publish(Message $message, $routingKey = '', $flags = 0);
-
-    /**
      * Creates exchange to exchange binding.
      *
      * @param string $exchange   destination

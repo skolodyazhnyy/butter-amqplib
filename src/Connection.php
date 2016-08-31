@@ -22,7 +22,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
-class Connection implements ConnectionInterface, WireInterface, HandlerInterface, LoggerAwareInterface
+class Connection implements ConnectionInterface, FrameConnectionInterface, FrameHandlerInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -337,7 +337,7 @@ class Connection implements ConnectionInterface, WireInterface, HandlerInterface
     /***
      * @param int $channel
      *
-     * @return HandlerInterface
+     * @return FrameHandlerInterface
      */
     private function getHandlerForChannel($channel)
     {

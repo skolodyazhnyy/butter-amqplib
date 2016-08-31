@@ -82,30 +82,6 @@ class Binary
     }
 
     /**
-     * Renders binary data into a string.
-     *
-     * @param string   $data
-     * @param int|null $length
-     *
-     * @return string
-     */
-    public static function render($data, $length = null)
-    {
-        if ($length === null) {
-            $length = mb_strlen($data, 'ASCII');
-        }
-
-        $hex = [];
-
-        for ($p = 0; $p < $length; ++$p) {
-            $char = $data[$p];
-            $hex[] = ord($char).(self::isPrintable($char) ? "[$char]" : '');
-        }
-
-        return implode(' ', $hex);
-    }
-
-    /**
      * @param string $data
      *
      * @return int
@@ -126,15 +102,5 @@ class Binary
     {
         return self::$isMultibyteAvailable ? mb_substr($data, $offset, $length, 'ASCII') :
             substr($data, $offset, $length);
-    }
-
-    /**
-     * @param string $char
-     *
-     * @return bool
-     */
-    private static function isPrintable($char)
-    {
-        return strpos(' !"#$%&\'()*+,-./0123456789:;<=>?@[]^_`abcdefghijklmnopqrstuvwxyz{|}~', strtolower($char)) !== false;
     }
 }

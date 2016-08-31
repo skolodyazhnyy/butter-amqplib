@@ -4,7 +4,7 @@ namespace AMQLibTest\Integration;
 
 use AMQLib\InputOutputInterface;
 
-class RecorderDecoratedIO implements InputOutputInterface
+class RecorderDecoratedInputOutput implements InputOutputInterface
 {
     /**
      * @var InputOutputInterface
@@ -52,13 +52,21 @@ class RecorderDecoratedIO implements InputOutputInterface
     /**
      * {@inheritdoc}
      */
-    public function read($length)
+    public function read($length, $blocking = true, $timeout = null)
     {
-        $data = $this->io->read($length);
+        $data = $this->io->read($length, $blocking, $timeout);
 
         $this->received .= $data;
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function peek($length, $blocking = true, $timeout = null)
+    {
+        return $this->io->peek($length, $blocking, $timeout);
     }
 
     /**

@@ -30,32 +30,6 @@ class Buffer
     }
 
     /**
-     * @param Buffer $buffer
-     *
-     * @return $this
-     */
-    public function append(Buffer $buffer)
-    {
-        $this->write($buffer->fetch(), $buffer->size());
-
-        return $this;
-    }
-
-    /**
-     * @param string   $data
-     * @param int|null $length
-     *
-     * @return $this
-     */
-    public function write($data, $length = null)
-    {
-        $this->data .= $data;
-        $this->length += $length === null ? Binary::length($data) : $length;
-
-        return $this;
-    }
-
-    /**
      * @param int $length
      *
      * @return string
@@ -71,25 +45,9 @@ class Buffer
     /**
      * @return int
      */
-    public function tell()
-    {
-        return $this->offset;
-    }
-
-    /**
-     * @return int
-     */
     public function size()
     {
         return $this->length;
-    }
-
-    /**
-     * @return string
-     */
-    public function fetch()
-    {
-        return $this->data;
     }
 
     /**
