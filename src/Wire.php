@@ -1,14 +1,14 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
-use AMQLib\Exception\InvalidFrameEndingException;
-use AMQLib\Framing\Content;
-use AMQLib\Framing\Frame;
-use AMQLib\Framing\Heartbeat;
-use AMQLib\Heartbeat\NullHeartbeat;
-use AMQLib\Value\LongValue;
-use AMQLib\Value\ShortValue;
+use ButterAMQP\Exception\InvalidFrameEndingException;
+use ButterAMQP\Framing\Content;
+use ButterAMQP\Framing\Frame;
+use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\Heartbeat\NullHeartbeat;
+use ButterAMQP\Value\LongValue;
+use ButterAMQP\Value\ShortValue;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;

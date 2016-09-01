@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib\Security\Mechanism;
+namespace ButterAMQP\Security\Mechanism;
 
-use AMQLib\Security\MechanismInterface;
+use ButterAMQP\Security\MechanismInterface;
 
 class PlainMechanism implements MechanismInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib\Heartbeat;
+namespace ButterAMQP\Heartbeat;
 
-use AMQLib\HeartbeatInterface;
+use ButterAMQP\HeartbeatInterface;
 
 class NullHeartbeat implements HeartbeatInterface
 {

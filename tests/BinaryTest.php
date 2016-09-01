@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\Binary;
+use ButterAMQP\Binary;
 use PHPUnit\Framework\TestCase;
 
 class BinaryTest extends TestCase

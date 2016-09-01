@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\DoubleValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\DoubleValue;
 use PHPUnit\Framework\TestCase;
 
 class DoubleValueTest extends TestCase

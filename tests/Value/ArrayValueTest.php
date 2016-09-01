@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\ArrayValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\ArrayValue;
 use PHPUnit\Framework\TestCase;
 
 class ArrayValueTest extends TestCase

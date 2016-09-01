@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
 interface ChannelInterface
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\ShortValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\ShortValue;
 use PHPUnit\Framework\TestCase;
 
 class ShortValueTest extends TestCase

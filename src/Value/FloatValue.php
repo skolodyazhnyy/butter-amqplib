@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLib\Value;
+namespace ButterAMQP\Value;
 
-use AMQLib\Binary;
-use AMQLib\Buffer;
+use ButterAMQP\Binary;
+use ButterAMQP\Buffer;
 
 class FloatValue extends AbstractValue
 {

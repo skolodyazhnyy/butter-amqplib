@@ -1,10 +1,10 @@
 <?php
 
-namespace AMQLib\InputOutput;
+namespace ButterAMQP\InputOutput;
 
-use AMQLib\Binary;
-use AMQLib\InputOutputInterface;
-use AMQLib\Binary\ReadableBinaryData;
+use ButterAMQP\Binary;
+use ButterAMQP\InputOutputInterface;
+use ButterAMQP\Binary\ReadableBinaryData;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;

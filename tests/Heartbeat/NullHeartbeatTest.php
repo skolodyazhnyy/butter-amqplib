@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest\Heartbeat;
+namespace ButterAMQPTest\Heartbeat;
 
-use AMQLib\Heartbeat\NullHeartbeat;
+use ButterAMQP\Heartbeat\NullHeartbeat;
 use PHPUnit\Framework\TestCase;
 
 class NullHeartbeatTest extends TestCase

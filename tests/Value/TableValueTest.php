@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\TableValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\TableValue;
 use PHPUnit\Framework\TestCase;
 
 class TableValueTest extends TestCase

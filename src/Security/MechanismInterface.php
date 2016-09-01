@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib\Security;
+namespace ButterAMQP\Security;
 
 interface MechanismInterface
 {

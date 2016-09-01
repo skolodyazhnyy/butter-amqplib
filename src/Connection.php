@@ -1,21 +1,21 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
-use AMQLib\Framing\Frame;
-use AMQLib\Framing\Heartbeat;
-use AMQLib\Framing\Method\ConnectionBlocked;
-use AMQLib\Framing\Method\ConnectionClose;
-use AMQLib\Framing\Method\ConnectionCloseOk;
-use AMQLib\Framing\Method\ConnectionOpen;
-use AMQLib\Framing\Method\ConnectionOpenOk;
-use AMQLib\Framing\Method\ConnectionStart;
-use AMQLib\Framing\Method\ConnectionStartOk;
-use AMQLib\Framing\Method\ConnectionTune;
-use AMQLib\Framing\Method\ConnectionTuneOk;
-use AMQLib\Framing\Method\ConnectionUnblocked;
-use AMQLib\Heartbeat\TimeHeartbeat;
-use AMQLib\Security\Authenticator;
+use ButterAMQP\Framing\Frame;
+use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\Framing\Method\ConnectionBlocked;
+use ButterAMQP\Framing\Method\ConnectionClose;
+use ButterAMQP\Framing\Method\ConnectionCloseOk;
+use ButterAMQP\Framing\Method\ConnectionOpen;
+use ButterAMQP\Framing\Method\ConnectionOpenOk;
+use ButterAMQP\Framing\Method\ConnectionStart;
+use ButterAMQP\Framing\Method\ConnectionStartOk;
+use ButterAMQP\Framing\Method\ConnectionTune;
+use ButterAMQP\Framing\Method\ConnectionTuneOk;
+use ButterAMQP\Framing\Method\ConnectionUnblocked;
+use ButterAMQP\Heartbeat\TimeHeartbeat;
+use ButterAMQP\Security\Authenticator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -254,7 +254,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         list($locale) = explode(' ', $frame->getLocales());
 
         $this->send(new ConnectionStartOk(
-            ['product' => 'PHP AMQLib', 'version' => '0.1.0'],
+            ['product' => 'PHP ButterAMQP', 'version' => '0.1.0'],
             $mechanism->getName(),
             $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
             $locale

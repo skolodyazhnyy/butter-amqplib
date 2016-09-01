@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Heartbeat;
+namespace ButterAMQPTest\Heartbeat;
 
-use AMQLib\Framing\Heartbeat;
-use AMQLib\Heartbeat\TimeHeartbeat;
+use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\Heartbeat\TimeHeartbeat;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 

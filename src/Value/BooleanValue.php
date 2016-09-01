@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib\Value;
+namespace ButterAMQP\Value;
 
-use AMQLib\Buffer;
+use ButterAMQP\Buffer;
 
 class BooleanValue extends AbstractValue
 {

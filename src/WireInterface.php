@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
-use AMQLib\Framing\Frame;
+use ButterAMQP\Framing\Frame;
 
 /**
  * Wire represents a framing level connection to the server.

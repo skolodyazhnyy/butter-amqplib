@@ -1,18 +1,18 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
-use AMQLib\Framing\Frame;
-use AMQLib\Framing\Method\QueueBind;
-use AMQLib\Framing\Method\QueueBindOk;
-use AMQLib\Framing\Method\QueueDeclare;
-use AMQLib\Framing\Method\QueueDeclareOk;
-use AMQLib\Framing\Method\QueueDelete;
-use AMQLib\Framing\Method\QueueDeleteOk;
-use AMQLib\Framing\Method\QueuePurge;
-use AMQLib\Framing\Method\QueuePurgeOk;
-use AMQLib\Framing\Method\QueueUnbind;
-use AMQLib\Framing\Method\QueueUnbindOk;
+use ButterAMQP\Framing\Frame;
+use ButterAMQP\Framing\Method\QueueBind;
+use ButterAMQP\Framing\Method\QueueBindOk;
+use ButterAMQP\Framing\Method\QueueDeclare;
+use ButterAMQP\Framing\Method\QueueDeclareOk;
+use ButterAMQP\Framing\Method\QueueDelete;
+use ButterAMQP\Framing\Method\QueueDeleteOk;
+use ButterAMQP\Framing\Method\QueuePurge;
+use ButterAMQP\Framing\Method\QueuePurgeOk;
+use ButterAMQP\Framing\Method\QueueUnbind;
+use ButterAMQP\Framing\Method\QueueUnbindOk;
 
 class Queue implements QueueInterface
 {

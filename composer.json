@@ -1,20 +1,23 @@
 {
-    "name": "skolodyazhny/amqlib",
+    "name": "skolodyazhnyy/butter-amqplib",
+    "description": "Butter AMQP library for PHP, written purely in PHP",
+    "homepage": "https://github.com/skolodyazhnyy/butter-amqp",
+    "keywords": ["amqp", "amqplib"],
     "license": "MIT",
     "authors": [
         {
             "name": "Sergey Kolodyazhnyy",
-            "email": "skolodyazhny@magento.com"
+            "email": "sergey.kolodyazhnyy@gmail.com"
         }
     ],
     "autoload": {
         "psr-4": {
-            "AMQLib\\": "src"
+            "ButterAMQP\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "AMQLibTest\\": "tests"
+            "ButterAMQPTest\\": "tests"
         }
     },
     "require": {

@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\Buffer;
+use ButterAMQP\Buffer;
 use PHPUnit\Framework\TestCase;
 
 class BufferTest extends TestCase

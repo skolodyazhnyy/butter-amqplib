@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLib\Framing;
+namespace ButterAMQP\Framing;
 
-use AMQLib\Buffer;
-use AMQLib\Exception\InvalidFrameTypeException;
+use ButterAMQP\Buffer;
+use ButterAMQP\Exception\InvalidFrameTypeException;
 
 /**
  * @codeCoverageIgnore

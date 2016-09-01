@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib\Exception;
+namespace ButterAMQP\Exception;
 
 class InvalidFrameEndingException extends InvalidFrameException
 {

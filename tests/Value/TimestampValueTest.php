@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\TimestampValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\TimestampValue;
 use PHPUnit\Framework\TestCase;
 
 class TimestampValueTest extends TestCase

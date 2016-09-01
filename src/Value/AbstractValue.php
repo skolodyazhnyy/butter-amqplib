@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib\Value;
+namespace ButterAMQP\Value;
 
 abstract class AbstractValue
 {

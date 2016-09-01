@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLib\Value;
+namespace ButterAMQP\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value;
 
 class TypifiedValue extends AbstractValue
 {

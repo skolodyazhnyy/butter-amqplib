@@ -1,10 +1,10 @@
 <?php
 
-namespace AMQLibTest\Integration\RabbitMQ;
+namespace ButterAMQPTest\Integration\RabbitMQ;
 
-use AMQLib\Delivery;
-use AMQLib\Message;
-use AMQLib\Queue;
+use ButterAMQP\Delivery;
+use ButterAMQP\Message;
+use ButterAMQP\Queue;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 class DirectPublishTest extends TestCase
@@ -39,9 +39,6 @@ class DirectPublishTest extends TestCase
         $this->connection->close();
     }
 
-    /**
-     * @group slow
-     */
     public function testDirectPublish10MbMessage()
     {
         $token = uniqid('token-').str_repeat('1234567890', 1048576);

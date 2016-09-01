@@ -1,16 +1,16 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
-use AMQLib\Framing\Frame;
-use AMQLib\Framing\Method\ExchangeBind;
-use AMQLib\Framing\Method\ExchangeBindOk;
-use AMQLib\Framing\Method\ExchangeDeclare;
-use AMQLib\Framing\Method\ExchangeDeclareOk;
-use AMQLib\Framing\Method\ExchangeDelete;
-use AMQLib\Framing\Method\ExchangeDeleteOk;
-use AMQLib\Framing\Method\ExchangeUnbind;
-use AMQLib\Framing\Method\ExchangeUnbindOk;
+use ButterAMQP\Framing\Frame;
+use ButterAMQP\Framing\Method\ExchangeBind;
+use ButterAMQP\Framing\Method\ExchangeBindOk;
+use ButterAMQP\Framing\Method\ExchangeDeclare;
+use ButterAMQP\Framing\Method\ExchangeDeclareOk;
+use ButterAMQP\Framing\Method\ExchangeDelete;
+use ButterAMQP\Framing\Method\ExchangeDeleteOk;
+use ButterAMQP\Framing\Method\ExchangeUnbind;
+use ButterAMQP\Framing\Method\ExchangeUnbindOk;
 
 class Exchange implements ExchangeInterface
 {

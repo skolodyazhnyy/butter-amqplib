@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib\Binary;
+namespace ButterAMQP\Binary;
 
 class ReadableBinaryData
 {

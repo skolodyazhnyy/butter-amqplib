@@ -1,17 +1,17 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\Exchange;
-use AMQLib\Framing\Method\ExchangeBind;
-use AMQLib\Framing\Method\ExchangeBindOk;
-use AMQLib\Framing\Method\ExchangeDeclare;
-use AMQLib\Framing\Method\ExchangeDeclareOk;
-use AMQLib\Framing\Method\ExchangeDelete;
-use AMQLib\Framing\Method\ExchangeDeleteOk;
-use AMQLib\Framing\Method\ExchangeUnbind;
-use AMQLib\Framing\Method\ExchangeUnbindOk;
-use AMQLib\WireInterface;
+use ButterAMQP\Exchange;
+use ButterAMQP\Framing\Method\ExchangeBind;
+use ButterAMQP\Framing\Method\ExchangeBindOk;
+use ButterAMQP\Framing\Method\ExchangeDeclare;
+use ButterAMQP\Framing\Method\ExchangeDeclareOk;
+use ButterAMQP\Framing\Method\ExchangeDelete;
+use ButterAMQP\Framing\Method\ExchangeDeleteOk;
+use ButterAMQP\Framing\Method\ExchangeUnbind;
+use ButterAMQP\Framing\Method\ExchangeUnbindOk;
+use ButterAMQP\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 

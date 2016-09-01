@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest\Binary;
+namespace ButterAMQPTest\Binary;
 
-use AMQLib\Binary\ReadableBinaryData;
+use ButterAMQP\Binary\ReadableBinaryData;
 use PHPUnit\Framework\TestCase;
 
 class ReadableBinaryDataTest extends TestCase

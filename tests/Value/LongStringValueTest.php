@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\LongStringValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\LongStringValue;
 use PHPUnit\Framework\TestCase;
 
 class LongStringValueTest extends TestCase

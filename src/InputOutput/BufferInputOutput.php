@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLib\InputOutput;
+namespace ButterAMQP\InputOutput;
 
-use AMQLib\Binary;
-use AMQLib\InputOutputInterface;
+use ButterAMQP\Binary;
+use ButterAMQP\InputOutputInterface;
 
 class BufferInputOutput implements InputOutputInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest\Security\Mechanism;
+namespace ButterAMQPTest\Security\Mechanism;
 
-use AMQLib\Security\Mechanism\AMQPlainMechanism;
+use ButterAMQP\Security\Mechanism\AMQPlainMechanism;
 
 class AMQPlainMechanismTest extends \PHPUnit_Framework_TestCase
 {

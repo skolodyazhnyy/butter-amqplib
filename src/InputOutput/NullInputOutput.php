@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib\InputOutput;
+namespace ButterAMQP\InputOutput;
 
-use AMQLib\InputOutputInterface;
+use ButterAMQP\InputOutputInterface;
 
 class NullInputOutput implements InputOutputInterface
 {

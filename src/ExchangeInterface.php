@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLib;
+namespace ButterAMQP;
 
 /**
  * Exchange interface represents functional API for exchanges.

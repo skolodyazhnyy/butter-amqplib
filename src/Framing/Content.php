@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLib\Framing;
+namespace ButterAMQP\Framing;
 
-use AMQLib\Buffer;
+use ButterAMQP\Buffer;
 
 /**
  * @codeCoverageIgnore

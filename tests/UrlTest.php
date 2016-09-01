@@ -1,8 +1,8 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\Url;
+use ButterAMQP\Url;
 use PHPUnit\Framework\TestCase;
 
 class UrlTest extends TestCase

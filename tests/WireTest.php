@@ -1,15 +1,15 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\Exception\InvalidFrameEndingException;
-use AMQLib\Framing\Content;
-use AMQLib\Framing\Heartbeat;
-use AMQLib\HeartbeatInterface;
-use AMQLib\InputOutput\BufferInputOutput;
-use AMQLib\InputOutputInterface;
-use AMQLib\Wire;
-use AMQLib\WireSubscriberInterface;
+use ButterAMQP\Exception\InvalidFrameEndingException;
+use ButterAMQP\Framing\Content;
+use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\HeartbeatInterface;
+use ButterAMQP\InputOutput\BufferInputOutput;
+use ButterAMQP\InputOutputInterface;
+use ButterAMQP\Wire;
+use ButterAMQP\WireSubscriberInterface;
 use PHPUnit\Framework\TestCase;
 
 class WireTest extends TestCase

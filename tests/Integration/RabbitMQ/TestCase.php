@@ -1,13 +1,13 @@
 <?php
 
-namespace AMQLibTest\Integration\RabbitMQ;
+namespace ButterAMQPTest\Integration\RabbitMQ;
 
-use AMQLib\Connection;
-use AMQLib\ConnectionInterface;
-use AMQLib\InputOutput\SocketInputOutput;
-use AMQLib\InputOutputInterface;
-use AMQLib\Wire;
-use AMQLib\WireInterface;
+use ButterAMQP\Connection;
+use ButterAMQP\ConnectionInterface;
+use ButterAMQP\InputOutput\SocketInputOutput;
+use ButterAMQP\InputOutputInterface;
+use ButterAMQP\Wire;
+use ButterAMQP\WireInterface;
 use PHPUnit_Framework_TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase

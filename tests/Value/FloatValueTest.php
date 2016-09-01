@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\FloatValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\FloatValue;
 use PHPUnit\Framework\TestCase;
 
 class FloatValueTest extends TestCase

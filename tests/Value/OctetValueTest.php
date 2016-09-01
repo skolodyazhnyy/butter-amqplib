@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\OctetValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\OctetValue;
 use PHPUnit\Framework\TestCase;
 
 class OctetValueTest extends TestCase

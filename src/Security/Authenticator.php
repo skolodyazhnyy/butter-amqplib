@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLib\Security;
+namespace ButterAMQP\Security;
 
-use AMQLib\Security\Mechanism\AMQPlainMechanism;
-use AMQLib\Security\Mechanism\PlainMechanism;
+use ButterAMQP\Security\Mechanism\AMQPlainMechanism;
+use ButterAMQP\Security\Mechanism\PlainMechanism;
 
 class Authenticator
 {

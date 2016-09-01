@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest;
+namespace ButterAMQPTest;
 
-use AMQLib\ChannelInterface;
-use AMQLib\Consumer;
+use ButterAMQP\ChannelInterface;
+use ButterAMQP\Consumer;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 

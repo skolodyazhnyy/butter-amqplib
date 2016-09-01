@@ -1,9 +1,9 @@
 <?php
 
-namespace AMQLibTest\Value;
+namespace ButterAMQPTest\Value;
 
-use AMQLib\Buffer;
-use AMQLib\Value\BooleanValue;
+use ButterAMQP\Buffer;
+use ButterAMQP\Value\BooleanValue;
 use PHPUnit\Framework\TestCase;
 
 class BooleanValueTest extends TestCase
