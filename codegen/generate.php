@@ -140,11 +140,11 @@ function generate_method_classes_header($class, $method)
     $phpdoc = $label ? "\n * {$label}.\n *" : "";
 
     return <<<HEADER
-namespace AMQLib\Framing\Method;
+namespace ButterAMQP\Framing\Method;
 
-use AMQLib\Buffer;
-use AMQLib\Framing\Method;
-use AMQLib\Value;
+use ButterAMQP\Buffer;
+use ButterAMQP\Framing\Method;
+use ButterAMQP\Value;
 
 /**{$phpdoc}
  * @codeCoverageIgnore
@@ -315,10 +315,10 @@ function generate_method_meta_class($schema) {
 function generate_method_meta_class_header($schema)
 {
     return <<<HEADER
-namespace AMQLib\Framing;
+namespace ButterAMQP\Framing;
 
-use AMQLib\Buffer;
-use AMQLib\Binary;
+use ButterAMQP\Buffer;
+use ButterAMQP\Binary;
 
 /**
  * @codeCoverageIgnore
@@ -401,11 +401,11 @@ function generate_content_header_class($properties)
 function generate_content_header_class_header($properties)
 {
     return <<<HEADER
-namespace AMQLib\Framing;
+namespace ButterAMQP\Framing;
 
-use AMQLib\Buffer;
-use AMQLib\Binary;
-use AMQLib\Value;
+use ButterAMQP\Buffer;
+use ButterAMQP\Binary;
+use ButterAMQP\Value;
 
 /**
  * @codeCoverageIgnore
