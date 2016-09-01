@@ -1,4 +1,12 @@
-### To do
+# Butter AMQP
+
+_This is really work in progress AMQP library written purely in PHP, supporting only AMQP 0.9.1 (at least for the moment)._
+ 
+This library provides functional level interfaces for interacting with AMQP server.
+
+More documentation and complete support for AMQP 0.9.1 coming soon, but feel free to leave any suggestion or give feedback.
+
+## To do
 
 ### Features
 
