@@ -131,17 +131,19 @@ class Url
     }
 
     /**
+     * @param bool $maskPassword
+     *
      * @return string
      */
-    public function compose()
+    public function compose($maskPassword = false)
     {
         return sprintf(
-            '%s://%s:%s@%s:%s/%s',
+            '%s://%s:%s@%s:%d/%s',
             urlencode($this->schema),
             urlencode($this->user),
-            urlencode($this->pass),
+            $maskPassword ? '******' : urlencode($this->pass),
             urlencode($this->host),
-            urlencode($this->port),
+            $this->port,
             urlencode($this->vhost)
         );
     }

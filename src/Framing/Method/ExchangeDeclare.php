@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Verify exchange exists, create if needed.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeDeclare extends Method
 {

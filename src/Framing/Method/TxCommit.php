@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Commit the current transaction.
+ *
+ * @codeCoverageIgnore
  */
 class TxCommit extends Method
 {

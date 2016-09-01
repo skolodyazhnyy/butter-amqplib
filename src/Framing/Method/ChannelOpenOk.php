@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Signal that the channel is ready.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelOpenOk extends Method
 {

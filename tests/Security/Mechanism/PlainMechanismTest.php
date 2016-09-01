@@ -1,6 +1,6 @@
 <?php
 
-namespace AMQLibTest\Authenticator\Mechanism;
+namespace AMQLibTest\Security\Mechanism;
 
 use AMQLib\Security\Mechanism\PlainMechanism;
 

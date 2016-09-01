@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Specify quality of service.
+ *
+ * @codeCoverageIgnore
  */
 class BasicQos extends Method
 {

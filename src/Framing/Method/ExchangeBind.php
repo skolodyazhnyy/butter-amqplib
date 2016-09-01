@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Bind exchange to an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeBind extends Method
 {

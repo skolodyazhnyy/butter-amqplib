@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm bind successful.
+ *
+ * @codeCoverageIgnore
  */
 class QueueBindOk extends Method
 {

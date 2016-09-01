@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * End a queue consumer.
+ *
+ * @codeCoverageIgnore
  */
 class BasicCancel extends Method
 {

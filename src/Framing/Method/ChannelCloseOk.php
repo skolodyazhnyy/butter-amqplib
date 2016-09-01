@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm a channel close.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelCloseOk extends Method
 {

@@ -136,4 +136,24 @@ class Delivery extends Message
     {
         return $this->redeliver;
     }
+
+    /**
+     * Exchange where message was sent initially.
+     *
+     * @return string
+     */
+    public function getExchange()
+    {
+        return $this->exchange;
+    }
+
+    /**
+     * Routing key.
+     *
+     * @return string
+     */
+    public function getRoutingKey()
+    {
+        return $this->routingKey;
+    }
 }

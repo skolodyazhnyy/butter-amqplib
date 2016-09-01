@@ -8,6 +8,9 @@ namespace AMQLib\Framing;
 use AMQLib\Buffer;
 use AMQLib\Binary;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class Method extends Frame
 {
     /**

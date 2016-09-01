@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Propose connection tuning parameters.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionTune extends Method
 {

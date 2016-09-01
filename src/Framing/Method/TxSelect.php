@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Select standard transaction mode.
+ *
+ * @codeCoverageIgnore
  */
 class TxSelect extends Method
 {

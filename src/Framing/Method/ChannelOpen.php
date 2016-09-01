@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Open a channel for use.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelOpen extends Method
 {

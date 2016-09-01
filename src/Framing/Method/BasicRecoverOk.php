@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm recovery.
+ *
+ * @codeCoverageIgnore
  */
 class BasicRecoverOk extends Method
 {

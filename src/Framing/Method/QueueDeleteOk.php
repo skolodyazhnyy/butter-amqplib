@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Confirm deletion of a queue.
+ *
+ * @codeCoverageIgnore
  */
 class QueueDeleteOk extends Method
 {

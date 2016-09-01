@@ -9,6 +9,9 @@ use AMQLib\Buffer;
 use AMQLib\Framing\Method;
 use AMQLib\Value;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ConnectionBlocked extends Method
 {
     /**

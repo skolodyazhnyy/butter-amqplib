@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Acknowledge one or more messages.
+ *
+ * @codeCoverageIgnore
  */
 class BasicAck extends Method
 {

@@ -137,7 +137,7 @@ function generate_method_classes_header($class, $method)
 {
     $phpClassName = $class['class-name'].$method['method-name'];
     $label = ucfirst($method['method-label']);
-    $phpdoc = $label ? "\n/**\n * {$label}.\n */" : "";
+    $phpdoc = $label ? "\n * {$label}.\n *" : "";
 
     return <<<HEADER
 namespace AMQLib\Framing\Method;
@@ -145,7 +145,10 @@ namespace AMQLib\Framing\Method;
 use AMQLib\Buffer;
 use AMQLib\Framing\Method;
 use AMQLib\Value;
-{$phpdoc}
+
+/**{$phpdoc}
+ * @codeCoverageIgnore
+ */
 class {$phpClassName} extends Method
 {
 HEADER;
@@ -317,6 +320,9 @@ namespace AMQLib\Framing;
 use AMQLib\Buffer;
 use AMQLib\Binary;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class Method extends Frame
 {
 HEADER;
@@ -401,6 +407,9 @@ use AMQLib\Buffer;
 use AMQLib\Binary;
 use AMQLib\Value;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Header extends Frame
 {
     /**

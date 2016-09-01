@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Purge a queue.
+ *
+ * @codeCoverageIgnore
  */
 class QueuePurge extends Method
 {

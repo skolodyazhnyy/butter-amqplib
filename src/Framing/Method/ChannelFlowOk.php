@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Confirm a flow method.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelFlowOk extends Method
 {

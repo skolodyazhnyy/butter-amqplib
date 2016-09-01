@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Abandon the current transaction.
+ *
+ * @codeCoverageIgnore
  */
 class TxRollback extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Confirm a new consumer.
+ *
+ * @codeCoverageIgnore
  */
 class BasicConsumeOk extends Method
 {

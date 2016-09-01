@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm successful rollback.
+ *
+ * @codeCoverageIgnore
  */
 class TxRollbackOk extends Method
 {

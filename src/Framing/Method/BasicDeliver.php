@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Notify the client of a consumer message.
+ *
+ * @codeCoverageIgnore
  */
 class BasicDeliver extends Method
 {

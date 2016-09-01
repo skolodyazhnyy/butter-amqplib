@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm deletion of an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeDeleteOk extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Select security mechanism and locale.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionStartOk extends Method
 {

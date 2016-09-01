@@ -8,6 +8,9 @@ namespace AMQLib\Framing\Method;
 use AMQLib\Buffer;
 use AMQLib\Framing\Method;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ConfirmSelectOk extends Method
 {
     /**

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Security mechanism challenge.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionSecure extends Method
 {

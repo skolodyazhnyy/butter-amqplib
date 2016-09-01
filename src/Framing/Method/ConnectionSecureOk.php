@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Security mechanism response.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionSecureOk extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Start a queue consumer.
+ *
+ * @codeCoverageIgnore
  */
 class BasicConsume extends Method
 {

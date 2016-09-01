@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Confirm a cancelled consumer.
+ *
+ * @codeCoverageIgnore
  */
 class BasicCancelOk extends Method
 {

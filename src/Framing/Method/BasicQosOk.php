@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm the requested qos.
+ *
+ * @codeCoverageIgnore
  */
 class BasicQosOk extends Method
 {

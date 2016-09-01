@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Provide client with a message.
+ *
+ * @codeCoverageIgnore
  */
 class BasicGetOk extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Unbind a queue from an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class QueueUnbind extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Declare queue, create if needed.
+ *
+ * @codeCoverageIgnore
  */
 class QueueDeclare extends Method
 {

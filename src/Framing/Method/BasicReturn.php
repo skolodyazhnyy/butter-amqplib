@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Return a failed message.
+ *
+ * @codeCoverageIgnore
  */
 class BasicReturn extends Method
 {

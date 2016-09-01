@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Delete an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeDelete extends Method
 {

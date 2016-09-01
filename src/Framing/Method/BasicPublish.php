@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Publish a message.
+ *
+ * @codeCoverageIgnore
  */
 class BasicPublish extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Request a connection close.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionClose extends Method
 {

@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Reject one or more incoming messages.
+ *
+ * @codeCoverageIgnore
  */
 class BasicNack extends Method
 {

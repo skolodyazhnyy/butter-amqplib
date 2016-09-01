@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Request a channel close.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelClose extends Method
 {

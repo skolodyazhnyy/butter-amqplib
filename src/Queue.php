@@ -23,6 +23,7 @@ class Queue implements QueueInterface
     const FLAG_INTERNAL = 0b00100000;
     const FLAG_IF_UNUSED = 0b01000000;
     const FLAG_IF_EMPTY = 0b10000000;
+
     /**
      * @var FrameChannelInterface
      */
@@ -152,7 +153,7 @@ class Queue implements QueueInterface
      */
     public function purge($flags = 0)
     {
-        $this->channel->send(new QueuePurge(0, $this->name, $flags & self::FLAG_NO_WAIT));
+        $this->channel->send(new QueuePurge(0, $this->name, (bool) ($flags & self::FLAG_NO_WAIT)));
 
         if ($flags & self::FLAG_NO_WAIT) {
             return $this;

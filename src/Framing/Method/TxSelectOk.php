@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm transaction mode.
+ *
+ * @codeCoverageIgnore
  */
 class TxSelectOk extends Method
 {

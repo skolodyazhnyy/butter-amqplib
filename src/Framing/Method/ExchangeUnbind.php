@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Unbind an exchange from an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeUnbind extends Method
 {

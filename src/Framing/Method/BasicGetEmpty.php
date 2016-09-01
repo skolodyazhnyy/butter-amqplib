@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Indicate no messages available.
+ *
+ * @codeCoverageIgnore
  */
 class BasicGetEmpty extends Method
 {

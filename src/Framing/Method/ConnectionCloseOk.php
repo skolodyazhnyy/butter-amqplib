@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm a connection close.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionCloseOk extends Method
 {

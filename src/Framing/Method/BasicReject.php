@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Reject an incoming message.
+ *
+ * @codeCoverageIgnore
  */
 class BasicReject extends Method
 {

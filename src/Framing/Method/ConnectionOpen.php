@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Open connection to virtual host.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionOpen extends Method
 {

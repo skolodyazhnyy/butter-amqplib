@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Enable/disable flow from peer.
+ *
+ * @codeCoverageIgnore
  */
 class ChannelFlow extends Method
 {

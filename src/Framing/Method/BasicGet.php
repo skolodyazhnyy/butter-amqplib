@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Direct access to a queue.
+ *
+ * @codeCoverageIgnore
  */
 class BasicGet extends Method
 {

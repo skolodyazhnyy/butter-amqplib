@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Bind queue to an exchange.
+ *
+ * @codeCoverageIgnore
  */
 class QueueBind extends Method
 {

@@ -54,11 +54,11 @@ class Exchange implements ExchangeInterface
             0,
             $this->name,
             $type,
-            $flags & self::FLAG_PASSIVE,
-            $flags & self::FLAG_DURABLE,
-            $flags & self::FLAG_AUTO_DELETE,
-            $flags & self::FLAG_INTERNAL,
-            $flags & self::FLAG_NO_WAIT,
+            (bool) ($flags & self::FLAG_PASSIVE),
+            (bool) ($flags & self::FLAG_DURABLE),
+            (bool) ($flags & self::FLAG_AUTO_DELETE),
+            (bool) ($flags & self::FLAG_INTERNAL),
+            (bool) ($flags & self::FLAG_NO_WAIT),
             $arguments
         ));
 
@@ -77,8 +77,8 @@ class Exchange implements ExchangeInterface
         $this->channel->send(new ExchangeDelete(
             0,
             $this->name,
-            $flags & self::FLAG_IF_UNUSED,
-            $flags & self::FLAG_NO_WAIT
+            (bool) ($flags & self::FLAG_IF_UNUSED),
+            (bool) ($flags & self::FLAG_NO_WAIT)
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
@@ -98,7 +98,7 @@ class Exchange implements ExchangeInterface
             $exchange,
             $this->name,
             $routingKey,
-            $flags & self::FLAG_NO_WAIT,
+            (bool) ($flags & self::FLAG_NO_WAIT),
             $arguments
         ));
 
@@ -119,7 +119,7 @@ class Exchange implements ExchangeInterface
             $exchange,
             $this->name,
             $routingKey,
-            $flags & self::FLAG_NO_WAIT,
+            (bool) ($flags & self::FLAG_NO_WAIT),
             $arguments
         ));
 

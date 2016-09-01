@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm exchange declaration.
+ *
+ * @codeCoverageIgnore
  */
 class ExchangeDeclareOk extends Method
 {

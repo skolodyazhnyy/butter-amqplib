@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Signal that connection is ready.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionOpenOk extends Method
 {

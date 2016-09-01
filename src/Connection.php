@@ -166,7 +166,7 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
             $id = count($this->channels) == 0 ? 1 : max(array_keys($this->channels)) + 1;
         }
 
-        if (!is_integer($id) && $id <= 0) {
+        if (!is_integer($id) || $id <= 0) {
             throw new \Exception('Channel ID should be positive integer');
         }
 

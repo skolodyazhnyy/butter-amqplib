@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Redeliver unacknowledged messages.
+ *
+ * @codeCoverageIgnore
  */
 class BasicRecoverAsync extends Method
 {

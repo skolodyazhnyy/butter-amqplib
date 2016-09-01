@@ -8,6 +8,9 @@ namespace AMQLib\Framing;
 use AMQLib\Buffer;
 use AMQLib\Value;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Header extends Frame
 {
     /**

@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm unbind successful.
+ *
+ * @codeCoverageIgnore
  */
 class QueueUnbindOk extends Method
 {

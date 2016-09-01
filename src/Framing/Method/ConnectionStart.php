@@ -11,6 +11,8 @@ use AMQLib\Value;
 
 /**
  * Start connection negotiation.
+ *
+ * @codeCoverageIgnore
  */
 class ConnectionStart extends Method
 {

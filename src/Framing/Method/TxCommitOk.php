@@ -10,6 +10,8 @@ use AMQLib\Framing\Method;
 
 /**
  * Confirm a successful commit.
+ *
+ * @codeCoverageIgnore
  */
 class TxCommitOk extends Method
 {
