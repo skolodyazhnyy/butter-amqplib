@@ -26,7 +26,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
-class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerInterface, LoggerAwareInterface
+class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -40,7 +40,7 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
     private $id;
 
     /**
-     * @var FrameConnectionInterface
+     * @var WireInterface
      */
     private $wire;
 
@@ -55,10 +55,10 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
     private $consumers = [];
 
     /**
-     * @param int                      $id
-     * @param FrameConnectionInterface $wire
+     * @param int           $id
+     * @param WireInterface $wire
      */
-    public function __construct($id, FrameConnectionInterface $wire)
+    public function __construct($id, WireInterface $wire)
     {
         $this->id = $id;
         $this->wire = $wire;
@@ -74,6 +74,8 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
             return $this;
         }
 
+        $this->wire->subscribe($this->id, $this);
+
         $this->send(new ChannelOpen(''))
             ->wait(ChannelOpenOk::class);
 
@@ -85,8 +87,12 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
      */
     public function flow($active)
     {
-        $this->send(new ChannelFlow($active))
+        /** @var ChannelFlowOk $frame */
+        $frame = $this->send(new ChannelFlow($active))
             ->wait(ChannelFlowOk::class);
+
+        $this->status = $frame->isActive() ? self::STATUS_READY :
+            self::STATUS_INACTIVE;
 
         return $this;
     }
@@ -98,6 +104,8 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
     {
         $this->send(new ChannelClose(0, '', 0, 0))
             ->wait(ChannelCloseOk::class);
+
+        $this->status = self::STATUS_CLOSED;
 
         return $this;
     }
@@ -118,7 +126,7 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
      */
     public function exchange($name)
     {
-        return new Exchange($this, $name);
+        return new Exchange($this->wire, $this->id, $name);
     }
 
     /**
@@ -126,7 +134,7 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
      */
     public function queue($name = '')
     {
-        return new Queue($this, $name);
+        return new Queue($this->wire, $this->id, $name);
     }
 
     /**
@@ -233,13 +241,28 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
     }
 
     /**
+     * @param string $tag
+     *
+     * @return bool
+     */
+    public function hasConsumer($tag)
+    {
+        return isset($this->consumers[$tag]);
+    }
+
+    public function getConsumerTags()
+    {
+        // TODO: Implement getConsumerTags() method.
+    }
+
+    /**
      * Sends frame to the server.
      *
      * @param Frame $frame
      *
      * @return $this
      */
-    public function send(Frame $frame)
+    private function send(Frame $frame)
     {
         $this->wire->send($this->id, $frame);
 
@@ -251,7 +274,7 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
      *
      * @return Frame
      */
-    public function wait($type)
+    private function wait($type)
     {
         return $this->wire->wait($this->id, $type);
     }
@@ -259,18 +282,10 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
     /**
      * @param Frame $frame
      */
-    public function handle(Frame $frame)
+    public function dispatch(Frame $frame)
     {
         if ($frame instanceof ChannelFlow) {
-            $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
-        }
-
-        if ($frame instanceof ChannelFlowOk) {
-            $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
-        }
-
-        if ($frame instanceof ChannelCloseOk) {
-            $this->status = self::STATUS_CLOSED;
+            $this->onChannelFlow($frame);
         }
 
         if ($frame instanceof BasicDeliver) {
@@ -309,5 +324,13 @@ class Channel implements ChannelInterface, FrameChannelInterface, FrameHandlerIn
         );
 
         call_user_func($this->consumers[$frame->getConsumerTag()], $delivery);
+    }
+
+    /**
+     * @param ChannelFlow $frame
+     */
+    private function onChannelFlow(ChannelFlow $frame)
+    {
+        $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
     }
 }

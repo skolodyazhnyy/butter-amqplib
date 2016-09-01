@@ -3,7 +3,11 @@
 namespace AMQLib\Framing;
 
 use AMQLib\Buffer;
+use AMQLib\Exception\InvalidFrameTypeException;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class Frame
 {
     /**
@@ -63,6 +67,6 @@ abstract class Frame
             case 8: return Heartbeat::decode($buffer)->setChannel($channel);
         }
 
-        throw new \Exception(sprintf('Invalid frame type (%d)', $type));
+        throw new InvalidFrameTypeException(sprintf('Invalid frame type (%d)', $type));
     }
 }

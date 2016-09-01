@@ -3,7 +3,6 @@
 namespace AMQLibTest;
 
 use AMQLib\Exchange;
-use AMQLib\FrameChannelInterface;
 use AMQLib\Framing\Method\ExchangeBind;
 use AMQLib\Framing\Method\ExchangeBindOk;
 use AMQLib\Framing\Method\ExchangeDeclare;
@@ -12,13 +11,19 @@ use AMQLib\Framing\Method\ExchangeDelete;
 use AMQLib\Framing\Method\ExchangeDeleteOk;
 use AMQLib\Framing\Method\ExchangeUnbind;
 use AMQLib\Framing\Method\ExchangeUnbindOk;
+use AMQLib\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 class ExchangeTest extends TestCase
 {
     /**
-     * @var FrameChannelInterface|Mock
+     * @var WireInterface|Mock
+     */
+    private $wire;
+
+    /**
+     * @var int
      */
     private $channel;
 
@@ -32,8 +37,9 @@ class ExchangeTest extends TestCase
      */
     protected function setUp()
     {
-        $this->channel = $this->createMock(FrameChannelInterface::class);
-        $this->exchange = new Exchange($this->channel, 'foo');
+        $this->wire = $this->createMock(WireInterface::class);
+        $this->channel = 51;
+        $this->exchange = new Exchange($this->wire, $this->channel, 'foo');
     }
 
     /**
@@ -41,11 +47,11 @@ class ExchangeTest extends TestCase
      */
     public function testDeclare()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, true, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, true, ['foo' => 'bar']));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $flags = Exchange::FLAG_DURABLE | Exchange::FLAG_PASSIVE | Exchange::FLAG_NO_WAIT;
@@ -58,13 +64,13 @@ class ExchangeTest extends TestCase
      */
     public function testDeclareBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, false, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, false, ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(ExchangeDeclareOk::class);
+            ->with($this->channel, ExchangeDeclareOk::class);
 
         $flags = Exchange::FLAG_DURABLE | Exchange::FLAG_PASSIVE;
 
@@ -76,11 +82,11 @@ class ExchangeTest extends TestCase
      */
     public function testDelete()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeDelete(0, 'foo', true, true));
+            ->with($this->channel, new ExchangeDelete(0, 'foo', true, true));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->exchange->delete(Exchange::FLAG_IF_UNUSED | Exchange::FLAG_NO_WAIT);
@@ -91,13 +97,13 @@ class ExchangeTest extends TestCase
      */
     public function testDeleteBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeDelete(0, 'foo', true, false));
+            ->with($this->channel, new ExchangeDelete(0, 'foo', true, false));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(ExchangeDeleteOk::class);
+            ->with($this->channel, ExchangeDeleteOk::class);
 
         $this->exchange->delete(Exchange::FLAG_IF_UNUSED);
     }
@@ -107,11 +113,11 @@ class ExchangeTest extends TestCase
      */
     public function testBind()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->exchange->bind('bar', 'baz', ['foo' => 'bar'], Exchange::FLAG_NO_WAIT);
@@ -122,13 +128,13 @@ class ExchangeTest extends TestCase
      */
     public function testBindBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeBind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(ExchangeBindOk::class);
+            ->with($this->channel, ExchangeBindOk::class);
 
         $this->exchange->bind('bar', 'baz', ['foo' => 'bar']);
     }
@@ -138,11 +144,11 @@ class ExchangeTest extends TestCase
      */
     public function testUnbind()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->exchange->bind('bar', 'baz', ['foo' => 'bar'], Exchange::FLAG_NO_WAIT);
@@ -153,13 +159,13 @@ class ExchangeTest extends TestCase
      */
     public function testUnbindBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new ExchangeUnbind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
+            ->with($this->channel, new ExchangeUnbind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(ExchangeUnbindOk::class);
+            ->with($this->channel, ExchangeUnbindOk::class);
 
         $this->exchange->unbind('bar', 'baz', ['foo' => 'bar']);
     }

@@ -104,4 +104,16 @@ interface ChannelInterface
      * @return ChannelInterface
      */
     public function reject($deliveryTag, $requeue = true, $multiple = false);
+
+    /**
+     * @param string $tag
+     *
+     * @return bool
+     */
+    public function hasConsumer($tag);
+
+    /**
+     * @return array
+     */
+    public function getConsumerTags();
 }

@@ -17,4 +17,9 @@ interface ConsumerInterface
      * @return string
      */
     public function tag();
+
+    /**
+     * @return bool
+     */
+    public function isActive();
 }

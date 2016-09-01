@@ -2,6 +2,7 @@
 
 namespace AMQLib;
 
+use AMQLib\Framing\Frame;
 use AMQLib\Framing\Method\ExchangeBind;
 use AMQLib\Framing\Method\ExchangeBindOk;
 use AMQLib\Framing\Method\ExchangeDeclare;
@@ -26,7 +27,12 @@ class Exchange implements ExchangeInterface
     const TYPE_HEADERS = 'headers';
 
     /**
-     * @var FrameChannelInterface
+     * @var WireInterface
+     */
+    private $wire;
+
+    /**
+     * @var int
      */
     private $channel;
 
@@ -36,11 +42,13 @@ class Exchange implements ExchangeInterface
     private $name;
 
     /**
-     * @param FrameChannelInterface $channel
-     * @param string                $name
+     * @param WireInterface $wire
+     * @param int           $channel
+     * @param string        $name
      */
-    public function __construct(FrameChannelInterface $channel, $name)
+    public function __construct(WireInterface $wire, $channel, $name)
     {
+        $this->wire = $wire;
         $this->channel = $channel;
         $this->name = $name;
     }
@@ -50,7 +58,7 @@ class Exchange implements ExchangeInterface
      */
     public function define($type, $flags = 0, array $arguments = [])
     {
-        $this->channel->send(new ExchangeDeclare(
+        $this->send(new ExchangeDeclare(
             0,
             $this->name,
             $type,
@@ -63,7 +71,7 @@ class Exchange implements ExchangeInterface
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
-            $this->channel->wait(ExchangeDeclareOk::class);
+            $this->wait(ExchangeDeclareOk::class);
         }
 
         return $this;
@@ -74,7 +82,7 @@ class Exchange implements ExchangeInterface
      */
     public function delete($flags = 0)
     {
-        $this->channel->send(new ExchangeDelete(
+        $this->send(new ExchangeDelete(
             0,
             $this->name,
             (bool) ($flags & self::FLAG_IF_UNUSED),
@@ -82,7 +90,7 @@ class Exchange implements ExchangeInterface
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
-            $this->channel->wait(ExchangeDeleteOk::class);
+            $this->wait(ExchangeDeleteOk::class);
         }
 
         return $this;
@@ -93,7 +101,7 @@ class Exchange implements ExchangeInterface
      */
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
-        $this->channel->send(new ExchangeBind(
+        $this->send(new ExchangeBind(
             0,
             $exchange,
             $this->name,
@@ -103,7 +111,7 @@ class Exchange implements ExchangeInterface
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
-            $this->channel->wait(ExchangeBindOk::class);
+            $this->wait(ExchangeBindOk::class);
         }
 
         return $this;
@@ -114,7 +122,7 @@ class Exchange implements ExchangeInterface
      */
     public function unbind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
-        $this->channel->send(new ExchangeUnbind(
+        $this->send(new ExchangeUnbind(
             0,
             $exchange,
             $this->name,
@@ -124,7 +132,7 @@ class Exchange implements ExchangeInterface
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
-            $this->channel->wait(ExchangeUnbindOk::class);
+            $this->wait(ExchangeUnbindOk::class);
         }
 
         return $this;
@@ -144,5 +152,27 @@ class Exchange implements ExchangeInterface
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @param Frame $frame
+     *
+     * @return $this
+     */
+    private function send(Frame $frame)
+    {
+        $this->wire->send($this->channel, $frame);
+
+        return $this;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return Frame
+     */
+    private function wait($type)
+    {
+        return $this->wire->wait($this->channel, $type);
     }
 }

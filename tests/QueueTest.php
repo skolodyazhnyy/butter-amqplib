@@ -5,7 +5,6 @@ namespace AMQLibTest;
 use AMQLib\Framing\Method\QueuePurge;
 use AMQLib\Framing\Method\QueuePurgeOk;
 use AMQLib\Queue;
-use AMQLib\FrameChannelInterface;
 use AMQLib\Framing\Method\QueueBind;
 use AMQLib\Framing\Method\QueueBindOk;
 use AMQLib\Framing\Method\QueueDeclare;
@@ -14,13 +13,19 @@ use AMQLib\Framing\Method\QueueDelete;
 use AMQLib\Framing\Method\QueueDeleteOk;
 use AMQLib\Framing\Method\QueueUnbind;
 use AMQLib\Framing\Method\QueueUnbindOk;
+use AMQLib\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 class QueueTest extends TestCase
 {
     /**
-     * @var FrameChannelInterface|Mock
+     * @var WireInterface|Mock
+     */
+    private $wire;
+
+    /**
+     * @var int
      */
     private $channel;
 
@@ -34,8 +39,9 @@ class QueueTest extends TestCase
      */
     protected function setUp()
     {
-        $this->channel = $this->createMock(FrameChannelInterface::class);
-        $this->queue = new Queue($this->channel, 'foo');
+        $this->wire = $this->createMock(WireInterface::class);
+        $this->channel = 51;
+        $this->queue = new Queue($this->wire, $this->channel, 'foo');
     }
 
     /**
@@ -43,11 +49,11 @@ class QueueTest extends TestCase
      */
     public function testDeclare()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueDeclare(0, 'foo', true, true, false, false, true, ['foo' => 'bar']));
+            ->with($this->channel, new QueueDeclare(0, 'foo', true, true, false, false, true, ['foo' => 'bar']));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $flags = Queue::FLAG_DURABLE | Queue::FLAG_PASSIVE | Queue::FLAG_NO_WAIT;
@@ -60,13 +66,13 @@ class QueueTest extends TestCase
      */
     public function testDeclareBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueDeclare(0, 'foo', true, true, false, false, false, ['foo' => 'bar']));
+            ->with($this->channel, new QueueDeclare(0, 'foo', true, true, false, false, false, ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(QueueDeclareOk::class)
+            ->with($this->channel, QueueDeclareOk::class)
             ->willReturn(new QueueDeclareOk('zoo', 59, 41));
 
         $flags = Queue::FLAG_DURABLE | Queue::FLAG_PASSIVE;
@@ -83,11 +89,11 @@ class QueueTest extends TestCase
      */
     public function testDelete()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueDelete(0, 'foo', true, false, true));
+            ->with($this->channel, new QueueDelete(0, 'foo', true, false, true));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->queue->delete(Queue::FLAG_IF_UNUSED | Queue::FLAG_NO_WAIT);
@@ -98,13 +104,13 @@ class QueueTest extends TestCase
      */
     public function testDeleteBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueDelete(0, 'foo', true, false, false));
+            ->with($this->channel, new QueueDelete(0, 'foo', true, false, false));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(QueueDeleteOk::class)
+            ->with($this->channel, QueueDeleteOk::class)
             ->willReturn(new QueueDeleteOk(59));
 
         $this->queue->delete(Queue::FLAG_IF_UNUSED);
@@ -117,11 +123,11 @@ class QueueTest extends TestCase
      */
     public function testPurge()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueuePurge(0, 'foo', true));
+            ->with($this->channel, new QueuePurge(0, 'foo', true));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->queue->purge(Queue::FLAG_NO_WAIT);
@@ -132,13 +138,13 @@ class QueueTest extends TestCase
      */
     public function testPurgeBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueuePurge(0, 'foo', false));
+            ->with($this->channel, new QueuePurge(0, 'foo', false));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(QueuePurgeOk::class)
+            ->with($this->channel, QueuePurgeOk::class)
             ->willReturn(new QueuePurgeOk(41));
 
         $this->queue->purge();
@@ -151,11 +157,11 @@ class QueueTest extends TestCase
      */
     public function testBind()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueBind(0, 'foo', 'bar', 'baz', true, ['foo' => 'bar']));
+            ->with($this->channel, new QueueBind(0, 'foo', 'bar', 'baz', true, ['foo' => 'bar']));
 
-        $this->channel->expects(self::never())
+        $this->wire->expects(self::never())
             ->method('wait');
 
         $this->queue->bind('bar', 'baz', ['foo' => 'bar'], Queue::FLAG_NO_WAIT);
@@ -166,13 +172,13 @@ class QueueTest extends TestCase
      */
     public function testBindBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueBind(0, 'foo', 'bar', 'baz', false, ['foo' => 'bar']));
+            ->with($this->channel, new QueueBind(0, 'foo', 'bar', 'baz', false, ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(QueueBindOk::class);
+            ->with($this->channel, QueueBindOk::class);
 
         $this->queue->bind('bar', 'baz', ['foo' => 'bar']);
     }
@@ -182,13 +188,13 @@ class QueueTest extends TestCase
      */
     public function testUnbindBlocking()
     {
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('send')
-            ->with(new QueueUnbind(0, 'foo', 'bar', 'baz', ['foo' => 'bar']));
+            ->with($this->channel, new QueueUnbind(0, 'foo', 'bar', 'baz', ['foo' => 'bar']));
 
-        $this->channel->expects(self::once())
+        $this->wire->expects(self::once())
             ->method('wait')
-            ->with(QueueUnbindOk::class);
+            ->with($this->channel, QueueUnbindOk::class);
 
         $this->queue->unbind('bar', 'baz', ['foo' => 'bar']);
     }

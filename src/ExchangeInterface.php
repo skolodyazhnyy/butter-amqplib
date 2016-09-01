@@ -2,6 +2,9 @@
 
 namespace AMQLib;
 
+/**
+ * Exchange interface represents functional API for exchanges.
+ */
 interface ExchangeInterface
 {
     /**

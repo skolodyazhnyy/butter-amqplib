@@ -4,6 +4,9 @@ namespace AMQLib\Framing;
 
 use AMQLib\Buffer;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Content extends Frame
 {
     /**

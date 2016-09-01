@@ -130,8 +130,7 @@ class TypifiedValue extends AbstractValue
                 case Value\ArrayValue::class: return 'A';
                 case Value\TimestampValue::class: return 'T';
                 case Value\TableValue::class: return 'F';
-                case 'decimal': return 'D';
-                case 'void': return 'V';
+                // @todo: implement "decimal"
             }
 
             throw new \InvalidArgumentException(sprintf('Invalid object type "%s"', get_class($value)));

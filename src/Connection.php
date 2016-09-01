@@ -2,7 +2,6 @@
 
 namespace AMQLib;
 
-use AMQLib\Framing\Content;
 use AMQLib\Framing\Frame;
 use AMQLib\Framing\Heartbeat;
 use AMQLib\Framing\Method\ConnectionBlocked;
@@ -15,25 +14,19 @@ use AMQLib\Framing\Method\ConnectionStartOk;
 use AMQLib\Framing\Method\ConnectionTune;
 use AMQLib\Framing\Method\ConnectionTuneOk;
 use AMQLib\Framing\Method\ConnectionUnblocked;
+use AMQLib\Heartbeat\TimeHeartbeat;
 use AMQLib\Security\Authenticator;
-use AMQLib\Value\LongValue;
-use AMQLib\Value\ShortValue;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
-class Connection implements ConnectionInterface, FrameConnectionInterface, FrameHandlerInterface, LoggerAwareInterface
+class Connection implements ConnectionInterface, WireSubscriberInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
-
-    const PROTOCOL_HEADER = "AMQP\x00\x00\x09\x01";
-    const FRAME_ENDING = "\xCE";
-    const FRAME_MAX = 32767;
 
     const STATUS_CLOSED = 0;
     const STATUS_READY = 1;
     const STATUS_OPEN = 2;
-
     const STATUS_BLOCKED = 3;
 
     /**
@@ -42,9 +35,9 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
     private $url;
 
     /**
-     * @var InputOutputInterface
+     * @var WireInterface
      */
-    private $io;
+    private $wire;
 
     /**
      * @var Authenticator
@@ -77,24 +70,14 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
     private $heartbeat = 0;
 
     /**
-     * @var int
+     * @param Url|string    $url
+     * @param WireInterface $wire
+     * @param Authenticator $authenticator
      */
-    private $heartbeatLastReceive = 0;
-
-    /**
-     * @var int
-     */
-    private $heartbeatLastSend = 0;
-
-    /**
-     * @param Url|string           $url
-     * @param InputOutputInterface $io
-     * @param Authenticator        $authenticator
-     */
-    public function __construct($url, InputOutputInterface $io, Authenticator $authenticator = null)
+    public function __construct($url, WireInterface $wire, Authenticator $authenticator = null)
     {
         $this->url = $url instanceof Url ? $url : Url::parse($url);
-        $this->io = $io;
+        $this->wire = $wire;
         $this->authenticator = $authenticator ?: Authenticator::build();
         $this->logger = new NullLogger();
     }
@@ -141,18 +124,19 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
     public function open()
     {
         $this->channels = [];
-
         $this->status = self::STATUS_OPEN;
 
-        $this->io->open($this->url->getHost(), $this->url->getPort());
-        $this->io->write(self::PROTOCOL_HEADER);
+        $this->wire->open($this->url->getHost(), $this->url->getPort())
+            ->subscribe(0, $this);
 
-        $this->wait(0, ConnectionTune::class);
+        $this->wait(ConnectionTune::class);
 
         $this->logger->debug(sprintf('Opening virtual host "%s"', $this->url->getVhost()));
 
-        $this->send(0, new ConnectionOpen($this->url->getVhost(), '', false))
-            ->wait(0, ConnectionOpenOk::class);
+        $this->send(new ConnectionOpen($this->url->getVhost(), '', false))
+            ->wait(ConnectionOpenOk::class);
+
+        $this->status = self::STATUS_READY;
 
         return $this;
     }
@@ -171,7 +155,7 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
         }
 
         if (!isset($this->channels[$id])) {
-            $channel = new Channel($id, $this);
+            $channel = new Channel($id, $this->wire);
 
             if ($channel instanceof LoggerAwareInterface) {
                 $channel->setLogger($this->logger);
@@ -190,8 +174,11 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
      */
     public function close($code = 0, $reason = '')
     {
-        $this->send(0, new ConnectionClose($code, $reason, 0, 0))
-            ->wait(0, ConnectionCloseOk::class);
+        $this->send(new ConnectionClose($code, $reason, 0, 0))
+            ->wait(ConnectionCloseOk::class);
+
+        $this->status = self::STATUS_CLOSED;
+        $this->wire->close();
 
         return $this;
     }
@@ -201,157 +188,39 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
      */
     public function serve($blocking = true, $timeout = null)
     {
-        $this->next($blocking, $timeout);
-        $this->heartbeat();
+        $this->wire->next($blocking, $timeout);
 
         return $this;
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function send($channel, Frame $frame)
-    {
-        $this->logger->debug(sprintf('Sending "%s" to channel #%d', get_class($frame), $channel), [
-            'channel' => $channel,
-            'frame' => get_class($frame),
-        ]);
-
-        $this->heartbeatLastSend = time();
-
-        foreach ($this->chop($frame) as $piece) {
-            $data = $piece->encode();
-
-            $this->io->write(
-                $piece->getFrameType().
-                ShortValue::encode($channel).
-                LongValue::encode(Binary::length($data)).
-                $data.
-                self::FRAME_ENDING
-            );
-        }
-
-        return $this;
-    }
-
-    /**
+     * Sends frame to the server.
+     *
      * @param Frame $frame
      *
-     * @return array
+     * @return $this
      */
-    private function chop(Frame $frame)
+    private function send(Frame $frame)
     {
-        if (!$this->frameMax || !$frame instanceof Content) {
-            return [$frame];
-        }
+        $this->wire->send(0, $frame);
 
-        $frames = [];
-        $data = $frame->getData();
-        $size = $this->frameMax - 8;
-        $chunks = ceil(Binary::length($data) / $size);
+        return $this;
+    }
 
-        for ($c = 0; $c < $chunks; ++$c) {
-            $frames[] = new Content(Binary::subset($data, $c * $size, $size));
-        }
-
-        return $frames;
+    /**
+     * @param string $type
+     *
+     * @return Frame
+     */
+    private function wait($type)
+    {
+        return $this->wire->wait(0, $type);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function wait($channel, $type)
-    {
-        $this->logger->debug(sprintf('Waiting "%s" at channel #%d', $type, $channel), [
-            'channel' => $channel,
-            'frame' => $type,
-        ]);
-
-        do {
-            $frame = $this->next(true);
-        } while (!$frame || $frame->getChannel() != $channel || !is_a($frame, $type));
-
-        return $frame;
-    }
-
-    /**
-     * @param bool       $blocking
-     * @param float|null $timeout
-     *
-     * @return Frame|null
-     *
-     * @throws \Exception
-     */
-    private function next($blocking = true, $timeout = null)
-    {
-        if (($buffer = $this->io->peek(7, $blocking, $timeout)) === null) {
-            return null;
-        }
-
-        $header = unpack('Ctype/nchannel/Nsize', $buffer);
-
-        if (($buffer = $this->io->read($header['size'] + 8, $blocking, $timeout)) === null) {
-            return null;
-        }
-
-        $payload = Binary::subset($buffer, 7, -1);
-        $end = Binary::subset($buffer, -1);
-
-        if ($end != self::FRAME_ENDING) {
-            throw new \Exception(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
-        }
-
-        $frame = Frame::create($header['type'], $header['channel'], $payload);
-
-        $this->logger->debug(sprintf('Receive "%s" at channel #%d', get_class($frame), $frame->getChannel()), [
-            'channel' => $frame->getChannel(),
-            'frame' => get_class($frame),
-        ]);
-
-        $this->getHandlerForChannel($frame->getChannel())
-            ->handle($frame);
-
-        $this->heartbeatLastReceive = time();
-
-        return $frame;
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function heartbeat()
-    {
-        if ($this->heartbeat == 0) {
-            return;
-        }
-
-        if (time() - $this->heartbeatLastReceive > $this->heartbeat * 2) {
-            throw new \Exception(sprintf('Missed heartbeats from server, timeout: %d seconds', $this->heartbeat));
-        }
-
-        if (time() - $this->heartbeatLastSend >= $this->heartbeat) {
-            $this->send(0, new Heartbeat());
-        }
-    }
-
-    /***
-     * @param int $channel
-     *
-     * @return FrameHandlerInterface
-     */
-    private function getHandlerForChannel($channel)
-    {
-        if ($channel === 0) {
-            return $this;
-        }
-
-        return $this->channel($channel);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(Frame $frame)
+    public function dispatch(Frame $frame)
     {
         if ($frame instanceof ConnectionStart) {
             $this->onConnectionStart($frame);
@@ -372,14 +241,6 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
         if ($frame instanceof ConnectionUnblocked) {
             $this->onConnectionUnblocked($frame);
         }
-
-        if ($frame instanceof ConnectionOpenOk) {
-            $this->status = self::STATUS_READY;
-        }
-
-        if ($frame instanceof ConnectionCloseOk) {
-            $this->status = self::STATUS_CLOSED;
-        }
     }
 
     /**
@@ -392,7 +253,7 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
 
         list($locale) = explode(' ', $frame->getLocales());
 
-        $this->send(0, new ConnectionStartOk(
+        $this->send(new ConnectionStartOk(
             ['product' => 'PHP AMQLib', 'version' => '0.1.0'],
             $mechanism->getName(),
             $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
@@ -420,7 +281,10 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
             $this->heartbeat
         ));
 
-        $this->send(0, new ConnectionTuneOk($this->channelMax, $this->frameMax, $this->heartbeat));
+        $this->send(new ConnectionTuneOk($this->channelMax, $this->frameMax, $this->heartbeat));
+
+        $this->wire->setHeartbeat(new TimeHeartbeat($this->heartbeat))
+            ->setFrameMax($this->frameMax);
     }
 
     /**
@@ -430,7 +294,10 @@ class Connection implements ConnectionInterface, FrameConnectionInterface, Frame
      */
     private function onConnectionClose(ConnectionClose $frame)
     {
-        $this->send(0, new ConnectionCloseOk());
+        $this->send(new ConnectionCloseOk());
+        $this->wire->close();
+
+        $this->status = self::STATUS_CLOSED;
 
         throw new \Exception($frame->getReplyText());
     }

@@ -37,18 +37,6 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
     }
 
     /**
-     * @param int|null $timeout in microseconds
-     *
-     * @return $this
-     */
-    public function setTimeout($timeout)
-    {
-        $this->timeout = $timeout;
-
-        return $this;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function open($host, $port)
@@ -158,7 +146,7 @@ class SocketInputOutput implements InputOutputInterface, LoggerAwareInterface
             $this->socket,
             $buffer,
             $length,
-            MSG_WAITALL | ($blocking ? 0 : MSG_DONTWAIT)
+            ($blocking ? 0 : MSG_DONTWAIT)
         );
 
         if ($received === false) {

@@ -15,13 +15,13 @@ class Message
     /**
      * @var array
      */
-    private $properties;
+    private $properties = [];
 
     /**
      * @param string $body
      * @param array  $properties
      */
-    public function __construct($body, array $properties)
+    public function __construct($body, array $properties = [])
     {
         $this->body = $body;
         $this->properties = $properties;

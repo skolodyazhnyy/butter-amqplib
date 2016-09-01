@@ -2,6 +2,7 @@
 
 namespace AMQLib;
 
+use AMQLib\Framing\Frame;
 use AMQLib\Framing\Method\QueueBind;
 use AMQLib\Framing\Method\QueueBindOk;
 use AMQLib\Framing\Method\QueueDeclare;
@@ -25,7 +26,12 @@ class Queue implements QueueInterface
     const FLAG_IF_EMPTY = 0b10000000;
 
     /**
-     * @var FrameChannelInterface
+     * @var WireInterface
+     */
+    private $wire;
+
+    /**
+     * @var int
      */
     private $channel;
 
@@ -45,11 +51,13 @@ class Queue implements QueueInterface
     private $consumerCount;
 
     /**
-     * @param FrameChannelInterface $channel
-     * @param string                $name
+     * @param WireInterface $wire
+     * @param int           $channel
+     * @param string        $name
      */
-    public function __construct(FrameChannelInterface $channel, $name)
+    public function __construct(WireInterface $wire, $channel, $name)
     {
+        $this->wire = $wire;
         $this->channel = $channel;
         $this->name = $name;
     }
@@ -59,7 +67,7 @@ class Queue implements QueueInterface
      */
     public function define($flags = 0, array $arguments = [])
     {
-        $this->channel->send(new QueueDeclare(
+        $this->send(new QueueDeclare(
             0,
             $this->name,
             $flags & self::FLAG_PASSIVE,
@@ -75,7 +83,7 @@ class Queue implements QueueInterface
         }
 
         /** @var QueueDeclareOk $frame */
-        $frame = $this->channel->wait(QueueDeclareOk::class);
+        $frame = $this->wait(QueueDeclareOk::class);
 
         $this->name = $frame->getQueue();
         $this->messageCount = $frame->getMessageCount();
@@ -89,7 +97,7 @@ class Queue implements QueueInterface
      */
     public function delete($flags = 0)
     {
-        $this->channel->send(new QueueDelete(
+        $this->send(new QueueDelete(
             0,
             $this->name,
             $flags & self::FLAG_IF_UNUSED,
@@ -102,7 +110,7 @@ class Queue implements QueueInterface
         }
 
         /** @var QueueDeleteOk $frame */
-        $frame = $this->channel->wait(QueueDeleteOk::class);
+        $frame = $this->wait(QueueDeleteOk::class);
 
         $this->messageCount = $frame->getMessageCount();
 
@@ -114,7 +122,7 @@ class Queue implements QueueInterface
      */
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
-        $this->channel->send(new QueueBind(
+        $this->send(new QueueBind(
             0,
             $this->name,
             (string) $exchange,
@@ -124,7 +132,7 @@ class Queue implements QueueInterface
         ));
 
         if (!($flags & self::FLAG_NO_WAIT)) {
-            $this->channel->wait(QueueBindOk::class);
+            $this->wait(QueueBindOk::class);
         }
 
         return $this;
@@ -135,7 +143,7 @@ class Queue implements QueueInterface
      */
     public function unbind($exchange, $routingKey = '', array $arguments = [])
     {
-        $this->channel->send(new QueueUnbind(
+        $this->send(new QueueUnbind(
             0,
             $this->name,
             $exchange,
@@ -143,7 +151,7 @@ class Queue implements QueueInterface
             $arguments
         ));
 
-        $this->channel->wait(QueueUnbindOk::class);
+        $this->wait(QueueUnbindOk::class);
 
         return $this;
     }
@@ -153,14 +161,14 @@ class Queue implements QueueInterface
      */
     public function purge($flags = 0)
     {
-        $this->channel->send(new QueuePurge(0, $this->name, (bool) ($flags & self::FLAG_NO_WAIT)));
+        $this->send(new QueuePurge(0, $this->name, (bool) ($flags & self::FLAG_NO_WAIT)));
 
         if ($flags & self::FLAG_NO_WAIT) {
             return $this;
         }
 
         /** @var QueuePurgeOk $frame */
-        $frame = $this->channel->wait(QueuePurgeOk::class);
+        $frame = $this->wait(QueuePurgeOk::class);
 
         $this->messageCount = $frame->getMessageCount();
 
@@ -197,5 +205,27 @@ class Queue implements QueueInterface
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @param Frame $frame
+     *
+     * @return $this
+     */
+    private function send(Frame $frame)
+    {
+        $this->wire->send($this->channel, $frame);
+
+        return $this;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return Frame
+     */
+    private function wait($type)
+    {
+        return $this->wire->wait($this->channel, $type);
     }
 }

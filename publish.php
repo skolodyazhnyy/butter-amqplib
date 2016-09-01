@@ -16,10 +16,13 @@ $stream->setFormatter(new LineFormatter(
 ));
 
 $io = new SocketInputOutput();
-//$io->setLogger(new Logger('io', [$stream]));
+$io->setLogger(new Logger('io', [$stream]));
 
-$conn = new AMQLib\Connection('//localhost', $io);
-//$conn->setLogger(new Logger('connection', [$stream]));
+$wire = new \AMQLib\Wire($io);
+$wire->setLogger(new Logger('wire', [$stream]));
+
+$conn = new AMQLib\Connection('//localhost', $wire);
+$conn->setLogger(new Logger('connection', [$stream]));
 $conn->open();
 
 $ch = $conn->channel();
@@ -35,11 +38,12 @@ pcntl_signal(SIGINT, function() use(&$loop) {
 });
 
 while($loop) {
-    $ch->exchange('rabbit')
-        ->publish(new \AMQLib\Message(
-            uniqid('', true),
-            ['delivery-mode' => 1]
-        ));
+    $message = new \AMQLib\Message(
+        uniqid('', true),
+        ['delivery-mode' => 1]
+    );
+
+    $ch->publish($message, 'rabbit');
 
     pcntl_signal_dispatch();
 }

@@ -9,6 +9,7 @@
 - [x] Collect all data pieces when getting basic.delivery
 - [x] Implement non-blocking reading and reading timeout
 - [x] Implement heartbeat
+- [ ] Send Client Capabilities
 
 ### Frames
 

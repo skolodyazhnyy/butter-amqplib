@@ -16,10 +16,13 @@ $stream->setFormatter(new LineFormatter(
 ));
 
 $io = new SocketInputOutput();
-//$io->setLogger(new Logger('io', [$stream]));
+$io->setLogger(new Logger('io', [$stream]));
 
-$conn = new AMQLib\Connection('//localhost', $io);
-//$conn->setLogger(new Logger('connection', [$stream]));
+$wire = new \AMQLib\Wire($io);
+$wire->setLogger(new Logger('wire', [$stream]));
+
+$conn = new AMQLib\Connection('//localhost', $wire);
+$conn->setLogger(new Logger('connection', [$stream]));
 $conn->open();
 
 $ch = $conn->channel();
@@ -31,11 +34,12 @@ $ch->queue('rabbit')
     ->define(\AMQLib\Queue::FLAG_AUTO_DELETE)
     ->bind('rabbit');
 
-$ch->queue('rabbit')
-    ->consume(function(\AMQLib\Delivery $delivery) {
-        echo $delivery->getBody() . PHP_EOL;
-        $delivery->ack();
-    });
+$ch->queue('rabbit');
+
+$ch->consume('rabbit', function(\AMQLib\Delivery $delivery) {
+    echo $delivery->getBody() . PHP_EOL;
+    $delivery->ack();
+});
 
 $loop = true;
 

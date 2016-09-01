@@ -4,10 +4,10 @@ namespace AMQLib;
 
 use AMQLib\Framing\Frame;
 
-interface FrameHandlerInterface
+interface WireSubscriberInterface
 {
     /**
      * @param Frame $frame
      */
-    public function handle(Frame $frame);
+    public function dispatch(Frame $frame);
 }

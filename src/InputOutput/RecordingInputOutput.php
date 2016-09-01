@@ -1,10 +1,10 @@
 <?php
 
-namespace AMQLibTest\Integration;
+namespace AMQLib\InputOutput;
 
 use AMQLib\InputOutputInterface;
 
-class RecorderDecoratedInputOutput implements InputOutputInterface
+class RecordingInputOutput implements InputOutputInterface
 {
     /**
      * @var InputOutputInterface

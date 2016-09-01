@@ -54,4 +54,12 @@ class Consumer implements ConsumerInterface
     {
         return $this->tag;
     }
+
+    /**
+     * @return bool
+     */
+    public function isActive()
+    {
+        return $this->channel->hasConsumer($this->tag);
+    }
 }

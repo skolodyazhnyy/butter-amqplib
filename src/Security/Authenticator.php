@@ -50,12 +50,4 @@ class Authenticator
 
         throw new \Exception(sprintf('Non of the mechanisms "%s" is supported', implode('", "', $mechanisms)));
     }
-
-    /**
-     * @return array
-     */
-    public function types()
-    {
-        return array_keys($this->mechanisms);
-    }
 }

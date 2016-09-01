@@ -2,6 +2,9 @@
 
 namespace AMQLib;
 
+/**
+ * Queue interface represents functional API for queues.
+ */
 interface QueueInterface
 {
     /**

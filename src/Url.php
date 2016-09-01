@@ -14,7 +14,7 @@ class Url
     /**
      * @var string
      */
-    private $schema;
+    private $scheme;
 
     /**
      * @var string
@@ -42,16 +42,16 @@ class Url
     private $vhost;
 
     /**
-     * @param string $schema
+     * @param string $scheme
      * @param string $host
      * @param string $port
      * @param string $user
      * @param string $pass
      * @param string $vhost
      */
-    public function __construct($schema = null, $host = null, $port = null, $user = null, $pass = null, $vhost = null)
+    public function __construct($scheme = null, $host = null, $port = null, $user = null, $pass = null, $vhost = null)
     {
-        $this->schema = empty($schema) ? self::DEFAULT_SCHEMA : $schema;
+        $this->scheme = empty($scheme) ? self::DEFAULT_SCHEMA : $scheme;
         $this->host = empty($host) ? self::DEFAULT_HOST : $host;
         $this->port = empty($port) ? self::DEFAULT_PORT : $port;
         $this->user = empty($user) ? self::DEFAULT_USER : $user;
@@ -62,9 +62,9 @@ class Url
     /**
      * @return string
      */
-    public function getSchema()
+    public function getScheme()
     {
-        return $this->schema;
+        return $this->scheme;
     }
 
     /**
@@ -121,7 +121,7 @@ class Url
         }
 
         return new self(
-            isset($parts['schema']) ? $parts['schema'] : null,
+            isset($parts['scheme']) ? $parts['scheme'] : null,
             isset($parts['host']) ? $parts['host'] : null,
             isset($parts['port']) ? $parts['port'] : null,
             isset($parts['user']) ? $parts['user'] : null,
@@ -139,7 +139,7 @@ class Url
     {
         return sprintf(
             '%s://%s:%s@%s:%d/%s',
-            urlencode($this->schema),
+            urlencode($this->scheme),
             urlencode($this->user),
             $maskPassword ? '******' : urlencode($this->pass),
             urlencode($this->host),
