@@ -33,6 +33,7 @@ class TypifiedValue extends AbstractValue
             case 'A': return Value\ArrayValue::decode($data);
             case 'T': return Value\TimestampValue::decode($data);
             case 'F': return Value\TableValue::decode($data);
+            case 'V': return null;
             // todo: implement decimals 'D'
         }
 
@@ -132,10 +133,11 @@ class TypifiedValue extends AbstractValue
                 case Value\TableValue::class: return 'F';
                 // @todo: implement "decimal"
             }
-
-            throw new \InvalidArgumentException(sprintf('Invalid object type "%s"', get_class($value)));
         }
 
-        throw new \InvalidArgumentException(sprintf('Invalid value type "%s"', gettype($value)));
+        throw new \InvalidArgumentException(sprintf(
+            'Invalid value type "%s"',
+            is_object($value) ? get_class($value) : gettype($value)
+        ));
     }
 }

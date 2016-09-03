@@ -41,6 +41,19 @@ class ConsumerTest extends TestCase
     }
 
     /**
+     * Consumer should call channel to cancel consuming.
+     */
+    public function testIsActive()
+    {
+        $this->channel->expects(self::once())
+            ->method('hasConsumer')
+            ->with('foo')
+            ->willReturn(true);
+
+        self::assertTrue($this->consumer->isActive());
+    }
+
+    /**
      * Consumer should cast to string as tag name.
      */
     public function testToString()

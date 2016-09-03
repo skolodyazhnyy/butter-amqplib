@@ -1,11 +1,11 @@
 <?php
 
-namespace ButterAMQP\InputOutput;
+namespace ButterAMQP\IO;
 
 use ButterAMQP\Binary;
-use ButterAMQP\InputOutputInterface;
+use ButterAMQP\IOInterface;
 
-class BufferInputOutput implements InputOutputInterface
+class BufferIO implements IOInterface
 {
     /**
      * @var string
@@ -90,22 +90,6 @@ class BufferInputOutput implements InputOutputInterface
         $this->writeBuffer .= $data;
 
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getWriteBuffer()
-    {
-        return $this->writeBuffer;
-    }
-
-    /**
-     * @return string
-     */
-    public function getReadBuffer()
-    {
-        return $this->readBuffer;
     }
 
     /**

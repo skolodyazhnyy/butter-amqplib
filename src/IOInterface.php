@@ -2,7 +2,7 @@
 
 namespace ButterAMQP;
 
-interface InputOutputInterface
+interface IOInterface
 {
     /**
      * Open connection.
@@ -10,14 +10,14 @@ interface InputOutputInterface
      * @param string $host
      * @param int    $port
      *
-     * @return InputOutputInterface
+     * @return IOInterface
      */
     public function open($host, $port);
 
     /**
      * Close connection.
      *
-     * @return InputOutputInterface
+     * @return IOInterface
      */
     public function close();
 
@@ -51,7 +51,7 @@ interface InputOutputInterface
      * @param string $data
      * @param int    $length
      *
-     * @return InputOutputInterface
+     * @return IOInterface
      */
     public function write($data, $length = null);
 }

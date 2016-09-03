@@ -1,10 +1,10 @@
 <?php
 
-namespace ButterAMQP\InputOutput;
+namespace ButterAMQP\IO;
 
-use ButterAMQP\InputOutputInterface;
+use ButterAMQP\IOInterface;
 
-class NullInputOutput implements InputOutputInterface
+class NullIO implements IOInterface
 {
     /**
      * {@inheritdoc}

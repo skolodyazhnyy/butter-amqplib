@@ -2,10 +2,11 @@
 
 namespace ButterAMQP\Security;
 
+use ButterAMQP\Exception\UnsupportedSecurityMechanismException;
 use ButterAMQP\Security\Mechanism\AMQPlainMechanism;
 use ButterAMQP\Security\Mechanism\PlainMechanism;
 
-class Authenticator
+class Authenticator implements AuthenticatorInterface
 {
     /**
      * @var MechanismInterface[]
@@ -48,6 +49,9 @@ class Authenticator
             }
         }
 
-        throw new \Exception(sprintf('Non of the mechanisms "%s" is supported', implode('", "', $mechanisms)));
+        throw new UnsupportedSecurityMechanismException(sprintf(
+            'Non of the mechanisms "%s" is supported',
+            implode('", "', $mechanisms)
+        ));
     }
 }

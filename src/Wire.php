@@ -21,7 +21,7 @@ class Wire implements WireInterface, LoggerAwareInterface
     use LoggerAwareTrait;
 
     /**
-     * @var InputOutputInterface
+     * @var IOInterface
      */
     private $io;
 
@@ -41,9 +41,9 @@ class Wire implements WireInterface, LoggerAwareInterface
     private $frameMax;
 
     /**
-     * @param InputOutputInterface $io
+     * @param IOInterface $io
      */
-    public function __construct(InputOutputInterface $io)
+    public function __construct(IOInterface $io)
     {
         $this->io = $io;
         $this->logger = new NullLogger();

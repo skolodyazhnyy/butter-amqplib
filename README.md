@@ -18,6 +18,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Implement non-blocking reading and reading timeout
 - [x] Implement heartbeat
 - [ ] Send Client Capabilities
+- [ ] Decimal type support
 
 ### Frames
 

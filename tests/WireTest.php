@@ -6,8 +6,8 @@ use ButterAMQP\Exception\InvalidFrameEndingException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Heartbeat;
 use ButterAMQP\HeartbeatInterface;
-use ButterAMQP\InputOutput\BufferInputOutput;
-use ButterAMQP\InputOutputInterface;
+use ButterAMQP\IO\BufferIO;
+use ButterAMQP\IOInterface;
 use ButterAMQP\Wire;
 use ButterAMQP\WireSubscriberInterface;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 class WireTest extends TestCase
 {
     /**
-     * @var BufferInputOutput
+     * @var BufferIO
      */
     private $io;
 
@@ -26,7 +26,7 @@ class WireTest extends TestCase
 
     protected function setUp()
     {
-        $this->io = new BufferInputOutput();
+        $this->io = new BufferIO();
         $this->wire = new Wire($this->io);
     }
 
@@ -35,7 +35,7 @@ class WireTest extends TestCase
      */
     public function testConnect()
     {
-        $io = $this->createMock(InputOutputInterface::class);
+        $io = $this->createMock(IOInterface::class);
         $wire = new Wire($io);
 
         $io->expects(self::once())
@@ -55,7 +55,7 @@ class WireTest extends TestCase
      */
     public function testClose()
     {
-        $io = $this->createMock(InputOutputInterface::class);
+        $io = $this->createMock(IOInterface::class);
         $wire = new Wire($io);
 
         $io->expects(self::once())

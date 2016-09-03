@@ -2,6 +2,8 @@
 
 namespace ButterAMQP;
 
+use ButterAMQP\Exception\InvalidChannelNumberException;
+use ButterAMQP\Exception\ServerException;
 use ButterAMQP\Framing\Frame;
 use ButterAMQP\Framing\Heartbeat;
 use ButterAMQP\Framing\Method\ConnectionBlocked;
@@ -16,6 +18,7 @@ use ButterAMQP\Framing\Method\ConnectionTuneOk;
 use ButterAMQP\Framing\Method\ConnectionUnblocked;
 use ButterAMQP\Heartbeat\TimeHeartbeat;
 use ButterAMQP\Security\Authenticator;
+use ButterAMQP\Security\AuthenticatorInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -26,8 +29,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
 
     const STATUS_CLOSED = 0;
     const STATUS_READY = 1;
-    const STATUS_OPEN = 2;
-    const STATUS_BLOCKED = 3;
+    const STATUS_BLOCKED = 2;
 
     /**
      * @var Url
@@ -40,7 +42,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     private $wire;
 
     /**
-     * @var Authenticator
+     * @var AuthenticatorInterface
      */
     private $authenticator;
 
@@ -70,11 +72,11 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     private $heartbeat = 0;
 
     /**
-     * @param Url|string    $url
-     * @param WireInterface $wire
-     * @param Authenticator $authenticator
+     * @param Url|string             $url
+     * @param WireInterface          $wire
+     * @param AuthenticatorInterface $authenticator
      */
-    public function __construct($url, WireInterface $wire, Authenticator $authenticator = null)
+    public function __construct($url, WireInterface $wire, AuthenticatorInterface $authenticator = null)
     {
         $this->url = $url instanceof Url ? $url : Url::parse($url);
         $this->wire = $wire;
@@ -119,12 +121,19 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * @return string
+     */
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function open()
     {
         $this->channels = [];
-        $this->status = self::STATUS_OPEN;
 
         $this->wire->open($this->url->getHost(), $this->url->getPort())
             ->subscribe(0, $this);
@@ -151,11 +160,11 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         }
 
         if (!is_integer($id) || $id <= 0) {
-            throw new \Exception('Channel ID should be positive integer');
+            throw new InvalidChannelNumberException('Channel ID should be positive integer');
         }
 
         if (!isset($this->channels[$id])) {
-            $channel = new Channel($id, $this->wire);
+            $channel = new Channel($this->wire, $id);
 
             if ($channel instanceof LoggerAwareInterface) {
                 $channel->setLogger($this->logger);
@@ -178,6 +187,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
             ->wait(ConnectionCloseOk::class);
 
         $this->status = self::STATUS_CLOSED;
+
         $this->wire->close();
 
         return $this;
@@ -254,7 +264,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         list($locale) = explode(' ', $frame->getLocales());
 
         $this->send(new ConnectionStartOk(
-            ['product' => 'PHP ButterAMQP', 'version' => '0.1.0'],
+            ['product' => 'ButterAMQP', 'version' => '0.1.0', 'platform' => 'PHP '.PHP_VERSION],
             $mechanism->getName(),
             $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
             $locale
@@ -299,7 +309,9 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
 
         $this->status = self::STATUS_CLOSED;
 
-        throw new \Exception($frame->getReplyText());
+        if ($frame->getReplyCode()) {
+            throw new ServerException($frame->getReplyText());
+        }
     }
 
     /**

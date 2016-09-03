@@ -2,6 +2,7 @@
 
 namespace ButterAMQP;
 
+use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Frame;
 use ButterAMQP\Framing\Header;
@@ -55,10 +56,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     private $consumers = [];
 
     /**
-     * @param int           $id
      * @param WireInterface $wire
+     * @param int           $id
      */
-    public function __construct($id, WireInterface $wire)
+    public function __construct(WireInterface $wire, $id)
     {
         $this->id = $id;
         $this->wire = $wire;
@@ -78,6 +79,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         $this->send(new ChannelOpen(''))
             ->wait(ChannelOpenOk::class);
+
+        $this->status = self::STATUS_READY;
 
         return $this;
     }
@@ -138,13 +141,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     }
 
     /**
-     * @param string   $queue
-     * @param callable $callback
-     * @param int      $flags
-     * @param string   $tag
-     * @param array    $arguments
-     *
-     * @return ConsumerInterface
+     * {@inheritdoc}
      */
     public function consume($queue, callable $callback, $flags = 0, $tag = '', array $arguments = [])
     {
@@ -200,8 +197,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
             0,
             $exchange,
             $routingKey,
-            $flags & Message::FLAG_MANDATORY,
-            $flags & Message::FLAG_IMMEDIATE
+            (bool) ($flags & Message::FLAG_MANDATORY),
+            (bool) ($flags & Message::FLAG_IMMEDIATE)
         ));
 
         $body = $message->getBody();
@@ -213,10 +210,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     }
 
     /**
-     * @param string $deliveryTag
-     * @param bool   $multiple
-     *
-     * @return $this
+     * {@inheritdoc}
      */
     public function ack($deliveryTag, $multiple = false)
     {
@@ -226,11 +220,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     }
 
     /**
-     * @param string $deliveryTag
-     * @param bool   $requeue
-     * @param bool   $multiple
-     *
-     * @return $this
+     * {@inheritdoc}
      */
     public function reject($deliveryTag, $requeue = true, $multiple = false)
     {
@@ -241,18 +231,27 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     }
 
     /**
-     * @param string $tag
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function hasConsumer($tag)
     {
         return isset($this->consumers[$tag]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getConsumerTags()
     {
-        // TODO: Implement getConsumerTags() method.
+        return array_keys($this->consumers);
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 
     /**
@@ -284,6 +283,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function dispatch(Frame $frame)
     {
+        if ($frame instanceof ChannelClose) {
+            $this->onChannelClose($frame);
+        }
+
         if ($frame instanceof ChannelFlow) {
             $this->onChannelFlow($frame);
         }
@@ -295,6 +298,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
     /**
      * @param BasicDeliver $frame
+     *
+     * @throws \Exception
      */
     private function onBasicDeliver(BasicDeliver $frame)
     {
@@ -307,9 +312,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         }
 
         if (!isset($this->consumers[$frame->getConsumerTag()])) {
-            // @todo: reject?! fail!?
-            // @todo: can we skip reading and buffering content and header if there is no consumer?
-            return;
+            throw new UnknownConsumerTagException(sprintf(
+                'Consumer with tag "%s" does not exist',
+                $frame->getConsumerTag()
+            ));
         }
 
         $delivery = new Delivery(
@@ -331,6 +337,18 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     private function onChannelFlow(ChannelFlow $frame)
     {
+        $this->send(new ChannelFlowOk($frame->isActive()));
+
         $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
+    }
+
+    /**
+     * @param ChannelClose $frame
+     */
+    private function onChannelClose(ChannelClose $frame)
+    {
+        $this->send(new ChannelCloseOk());
+
+        $this->status = self::STATUS_CLOSED;
     }
 }
