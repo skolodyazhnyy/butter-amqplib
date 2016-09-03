@@ -11,17 +11,17 @@ class TestCase extends BaseTestCase
     /**
      * @var Process
      */
-    protected $echoServer;
+    protected $serverProcess;
 
     /**
      * @var string
      */
-    protected $host;
+    protected $serverHost;
 
     /**
      * @var int
      */
-    protected $port;
+    protected $serverPort;
 
     /**
      * @var resource
@@ -33,19 +33,27 @@ class TestCase extends BaseTestCase
      */
     protected function setUp()
     {
-        $this->port = rand(23000, 24000);
-        $this->host = '127.0.0.1';
+        $this->serverHost = '127.0.0.1';
+        $this->serverPort = rand(23000, 24000);
 
-        $this->echoServer = new Process(implode(' ', [
+        $this->serverProcess = new Process(implode(' ', [
             escapeshellcmd('php'),
             escapeshellarg(__DIR__.DIRECTORY_SEPARATOR.'echo-server.php'),
-            escapeshellarg($this->host.':'.$this->port),
+            escapeshellarg($this->serverHost.':'.$this->serverPort),
         ]));
 
-        $this->echoServer->start();
+        $this->serverProcess->start();
 
+        $this->setUpControlConnection();
+    }
+
+    /**
+     * Establish control connection.
+     */
+    protected function setUpControlConnection()
+    {
         for ($i = 0; $i < 5; ++$i) {
-            $this->control = @fsockopen($this->host, $this->port, $errno, $errstr, 5);
+            $this->control = @fsockopen($this->serverHost, $this->serverPort, $errno, $errstr, 5);
 
             if (is_resource($this->control)) {
                 break;
@@ -59,26 +67,6 @@ class TestCase extends BaseTestCase
         }
 
         stream_set_timeout($this->control, 1);
-    }
-
-    /**
-     * Kill echo server.
-     */
-    protected function tearDown()
-    {
-        if ($this->echoServer->isRunning()) {
-            $this->echoServer->stop(2, 2);
-        }
-
-        $exitCode = $this->echoServer->getExitCode();
-
-        if ($exitCode && $exitCode != 143) {
-            self::markTestSkipped(sprintf(
-                "Echo server exited with code %d:\n%s",
-                $this->echoServer->getExitCode(),
-                $this->echoServer->getErrorOutput()
-            ));
-        }
     }
 
     /**
@@ -117,5 +105,25 @@ class TestCase extends BaseTestCase
         fflush($this->control);
 
         return $write;
+    }
+
+    /**
+     * Kill echo server.
+     */
+    protected function tearDown()
+    {
+        if ($this->serverProcess->isRunning()) {
+            $this->serverProcess->stop(2, 2);
+        }
+
+        $exitCode = $this->serverProcess->getExitCode();
+
+        if ($exitCode && $exitCode != 143) {
+            self::markTestSkipped(sprintf(
+                "Echo server exited with code %d:\n%s",
+                $this->serverProcess->getExitCode(),
+                $this->serverProcess->getErrorOutput()
+            ));
+        }
     }
 }

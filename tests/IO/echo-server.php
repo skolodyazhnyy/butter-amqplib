@@ -1,4 +1,13 @@
 <?php
+/*
+ * echo-server.php setup a simple server which accepts exactly two client connections and tunnels
+ * all traffic from one to another. It used for to perform integration test for classes which implement
+ * network communication. One connection is established as control and another one as client. Control
+ * connection established by test to setup test environment. Client connection is established by subject
+ * of test.
+ *
+ * See TestCast.php for more details.
+ */
 
 if (!isset($argv[1])) {
     echo 'Usage: php echo-server.php <host>:<port>'.PHP_EOL.PHP_EOL;
@@ -24,9 +33,6 @@ $client = stream_socket_accept($server, 2);
 if ($client === false) {
     throw new \Exception('Client connection time expired');
 }
-
-$input = STDIN;
-$output = STDOUT;
 
 stream_set_blocking($control,  false);
 stream_set_blocking($client, false);
