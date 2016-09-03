@@ -1,0 +1,17 @@
+sudo: false
+language: php
+php:
+  - 5.6
+  - 7.0
+
+env:
+  - RABBITMQ_URL=amqp://127.0.0.1
+
+before_script:
+  - composer install --no-interaction --prefer-dist
+
+script:
+  - vendor/bin/phpunit
+
+services:
+  - rabbitmq
