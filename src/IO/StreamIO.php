@@ -9,7 +9,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
 
-class StreamSocketIO implements IOInterface, LoggerAwareInterface
+class StreamIO implements IOInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 

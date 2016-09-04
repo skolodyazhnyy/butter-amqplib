@@ -2,6 +2,7 @@
 
 namespace ButterAMQP;
 
+use ButterAMQP\Exception\AMQPFailure;
 use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Frame;
@@ -344,11 +345,15 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
     /**
      * @param ChannelClose $frame
+     *
+     * @throws AMQPFailure
      */
     private function onChannelClose(ChannelClose $frame)
     {
         $this->send(new ChannelCloseOk());
 
         $this->status = self::STATUS_CLOSED;
+
+        throw AMQPFailure::make($frame->getReplyText(), $frame->getReplyCode());
     }
 }

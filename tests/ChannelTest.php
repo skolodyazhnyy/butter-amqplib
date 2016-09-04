@@ -5,6 +5,7 @@ namespace ButterAMQPTest;
 use ButterAMQP\Channel;
 use ButterAMQP\Consumer;
 use ButterAMQP\Delivery;
+use ButterAMQP\Exception\ChannelException;
 use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Exchange;
 use ButterAMQP\Framing\Content;
@@ -322,11 +323,13 @@ class ChannelTest extends TestCase
 
     public function testDispatchChannelClose()
     {
+        $this->expectException(ChannelException::class);
+
         $this->wire->expects(self::once())
             ->method('send')
             ->with(51, new ChannelCloseOk());
 
-        $this->channel->dispatch(new ChannelClose(0, '', 0, 0));
+        $this->channel->dispatch(new ChannelClose(404, 'Not found', 0, 0));
 
         self::assertEquals(Channel::STATUS_CLOSED, $this->channel->getStatus());
     }

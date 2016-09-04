@@ -6,10 +6,14 @@ $dom->load('https://www.rabbitmq.com/resources/specs/amqp0-9-1.extended.xml');
 $domains = iterator_to_array(parse_domains($dom->getElementsByTagName('amqp')[0]));
 $schema = iterator_to_array(parse_classes($dom->getElementsByTagName('amqp')[0], $domains));
 $properties = iterator_to_array(parse_basic_properties($dom->getElementsByTagName('amqp')[0], $domains));
+$constants = iterator_to_array(parse_constants($dom->getElementsByTagName('amqp')[0]));
+$path = dirname(__DIR__).'/src';
 
-export_files(generate_method_classes($schema), __DIR__.'/../src/Framing');
-export_files(generate_method_meta_class($schema), __DIR__.'/../src/Framing');
-export_files(generate_content_header_class($properties), __DIR__.'/../src/Framing');
+export_files(generate_method_classes($schema), $path.'/Framing');
+export_files(generate_method_meta_class($schema), $path.'/Framing');
+export_files(generate_content_header_class($properties), $path.'/Framing');
+export_files(generate_exceptions($constants), $path.'/Exception');
+export_files(generate_exceptions_factory_class($constants), $path.'/Exception');
 
 function parse_domains(DOMElement $dom) {
     foreach ($dom->getElementsByTagName('domain') as $domain) {
@@ -114,6 +118,19 @@ function parse_basic_properties(DOMElement $dom, $domains)
             'type' => $type,
             'php-type' => php_type($type),
             'amqp-type' => amqp_type($type),
+        ];
+    }
+}
+
+function parse_constants(DOMElement $dom) {
+    foreach ($dom->getElementsByTagName('constant') as $constant) {
+        $name = $constant->attributes->getNamedItem('name')->nodeValue;
+
+        yield $name => [
+            'name' => $name,
+            'value' => $constant->attributes->getNamedItem('value')->nodeValue,
+            'class' => $constant->attributes->getNamedItem('class') ?
+                $constant->attributes->getNamedItem('class')->nodeValue : null
         ];
     }
 }
@@ -569,6 +586,84 @@ function generate_content_header_class_footer($properties)
     }
 }
 HEADER;
+}
+
+function generate_exceptions($constants)
+{
+    foreach ($constants as $constant) {
+        if (!in_array($constant['class'], ['hard-error', 'soft-error'])) {
+            continue;
+        }
+
+        $className = ucfirst(camel_case($constant['name'])).'Exception';
+        $parentClass = $constant['class'] == 'soft-error' ? 'ChannelException' : 'ConnectionException';
+
+        yield 'AMQP/'.$className.'.php' => <<<CODE
+
+namespace ButterAMQP\Exception\AMQP;
+
+use ButterAMQP\Exception\ConnectionException;
+use ButterAMQP\Exception\ChannelException;
+
+/**
+ * @codeCoverageIgnore
+ */
+class {$className} extends {$parentClass}
+{
+}
+
+CODE;
+    }
+}
+
+function generate_exceptions_factory_class($constants)
+{
+    yield 'AMQPFailure.php' => implode('', [
+        generate_exceptions_factory_class_header(),
+        generate_exceptions_factory_class_body($constants),
+        generate_exceptions_factory_class_footer(),
+    ]);
+}
+
+function generate_exceptions_factory_class_header()
+{
+    return <<<HEADER
+namespace ButterAMQP\Exception;
+
+class AMQPFailure extends \Exception
+{
+HEADER;
+}
+
+function generate_exceptions_factory_class_body($constants)
+{
+    $lines = [];
+    $lines[] = 'public static function make($message, $code)';
+    $lines[] = '{';
+    $lines[] = '    switch($code) {';
+
+    foreach ($constants as $constant) {
+        if (!in_array($constant['class'], ['hard-error', 'soft-error'])) {
+            continue;
+        }
+
+        $className = ucfirst(camel_case($constant['name'])).'Exception';
+        $lines[] = '        case ' . $constant['value'] . ': return new AMQP\\' . $className . '($message, $code);';
+    }
+
+    $lines[] = '    }';
+    $lines[] = '';
+    $lines[] = '    return new self($message, $code);';
+    $lines[] = '}';
+    return "\n    ".implode("\n    ", $lines);
+}
+
+function generate_exceptions_factory_class_footer()
+{
+    return <<<FOOTER
+}
+
+FOOTER;
 }
 
 function print_files($files)

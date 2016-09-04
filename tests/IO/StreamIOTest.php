@@ -2,16 +2,16 @@
 
 namespace ButterAMQPTest\IO;
 
-use ButterAMQP\IO\StreamSocketIO;
+use ButterAMQP\IO\StreamIO;
 
-class StreamSocketIOTest extends TestCase
+class StreamIOTest extends TestCase
 {
     /**
      * Connect to the server and read/write few bytes.
      */
     public function testConnecting()
     {
-        $io = new StreamSocketIO();
+        $io = new StreamIO();
         $io->open($this->serverHost, $this->serverPort);
 
         $io->write('ping');
@@ -30,7 +30,7 @@ class StreamSocketIOTest extends TestCase
      */
     public function testWriting()
     {
-        $io = new StreamSocketIO();
+        $io = new StreamIO();
         $io->open($this->serverHost, $this->serverPort);
         $io->write('ping');
         $io->close();
@@ -43,7 +43,7 @@ class StreamSocketIOTest extends TestCase
      */
     public function testPeeking()
     {
-        $io = new StreamSocketIO();
+        $io = new StreamIO();
         $io->open($this->serverHost, $this->serverPort);
 
         $this->serverWrite('ping');
@@ -64,7 +64,7 @@ class StreamSocketIOTest extends TestCase
      */
     public function testReading()
     {
-        $io = new StreamSocketIO();
+        $io = new StreamIO();
         $io->open($this->serverHost, $this->serverPort);
 
         $this->serverWrite('pingpo');

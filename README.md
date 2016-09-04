@@ -10,7 +10,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 
 ### Features
 
-- [ ] Error response handling, proper Exception types
+- [x] Error response handling, proper Exception types
 - [ ] Handle connection errors (connecting, reading, writing)
 - [ ] SSL support
 - [x] Split content frames into multiple pieces if frame-max exceeded
@@ -19,6 +19,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Implement heartbeat
 - [ ] Send Client Capabilities
 - [ ] Decimal type support
+- [ ] Verify and fix long long and unsigned long long type
 
 ### Frames
 

@@ -2,6 +2,6 @@
 
 namespace ButterAMQP\Exception;
 
-class ServerException extends \Exception
+class ChannelException extends AMQPFailure
 {
 }

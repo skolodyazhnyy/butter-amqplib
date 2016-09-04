@@ -4,7 +4,7 @@ namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Connection;
 use ButterAMQP\ConnectionInterface;
-use ButterAMQP\IO\StreamSocketIO;
+use ButterAMQP\IO\StreamIO;
 use ButterAMQP\IOInterface;
 use ButterAMQP\Wire;
 use ButterAMQP\WireInterface;
@@ -36,7 +36,7 @@ class TestCase extends BaseTestCase
             self::markTestSkipped('Environment variable RABBITMQ_URL is not set.');
         }
 
-        $this->io = new StreamSocketIO();
+        $this->io = new StreamIO();
         $this->wire = new Wire($this->io);
         $this->connection = new Connection($_SERVER['RABBITMQ_URL'], $this->wire);
     }

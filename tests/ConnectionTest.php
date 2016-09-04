@@ -4,8 +4,8 @@ namespace ButterAMQPTest;
 
 use ButterAMQP\Channel;
 use ButterAMQP\Connection;
+use ButterAMQP\Exception\ConnectionException;
 use ButterAMQP\Exception\InvalidChannelNumberException;
-use ButterAMQP\Exception\ServerException;
 use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
 use ButterAMQP\Framing\Method\ConnectionBlocked;
@@ -249,7 +249,7 @@ class ConnectionTest extends TestCase
      */
     public function testDispatchConnectionCloseWithException()
     {
-        $this->expectException(ServerException::class);
+        $this->expectException(ConnectionException::class);
 
         $this->wire->expects(self::once())
             ->method('send')
@@ -258,7 +258,7 @@ class ConnectionTest extends TestCase
         $this->wire->expects(self::once())
             ->method('close');
 
-        $this->connection->dispatch(new ConnectionClose(100, 'Failed', 0, 0));
+        $this->connection->dispatch(new ConnectionClose(320, 'Failed', 0, 0));
     }
 
     /**

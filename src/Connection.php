@@ -2,8 +2,8 @@
 
 namespace ButterAMQP;
 
+use ButterAMQP\Exception\AMQPFailure;
 use ButterAMQP\Exception\InvalidChannelNumberException;
-use ButterAMQP\Exception\ServerException;
 use ButterAMQP\Framing\Frame;
 use ButterAMQP\Framing\Heartbeat;
 use ButterAMQP\Framing\Method\ConnectionBlocked;
@@ -300,7 +300,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     /**
      * @param ConnectionClose $frame
      *
-     * @throws \Exception
+     * @throws AMQPFailure
      */
     private function onConnectionClose(ConnectionClose $frame)
     {
@@ -310,7 +310,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         $this->status = self::STATUS_CLOSED;
 
         if ($frame->getReplyCode()) {
-            throw new ServerException($frame->getReplyText());
+            throw AMQPFailure::make($frame->getReplyText(), $frame->getReplyCode());
         }
     }
 
