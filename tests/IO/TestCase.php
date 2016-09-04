@@ -37,11 +37,17 @@ class TestCase extends BaseTestCase
         $this->serverPort = rand(23000, 24000);
 
         $this->serverProcess = new Process(implode(' ', [
-            escapeshellcmd('php'),
+            escapeshellcmd(PHP_BINARY),
             escapeshellarg(__DIR__.DIRECTORY_SEPARATOR.'echo-server.php'),
             escapeshellarg($this->serverHost.':'.$this->serverPort),
         ]));
+    }
 
+    /**
+     * Starts the server and establish control connection.
+     */
+    protected function serverStart()
+    {
         $this->serverProcess->start();
 
         $this->setUpControlConnection();
@@ -70,12 +76,67 @@ class TestCase extends BaseTestCase
     }
 
     /**
-     * @param string $data
-     * @param string $message
+     * Sends a signal to the server to close connection when all pending data is read.
      */
-    protected function assertServerReceive($data, $message = '')
+    protected function serverStop()
     {
-        self::assertEquals($data, $this->serverRead(Binary::length($data)), $message);
+        $this->serverWriteStopSymbol();
+    }
+
+    /**
+     * Stops the server if running.
+     */
+    protected function serverForceStop()
+    {
+        $this->serverWriteStopSymbol();
+
+        if ($this->serverProcess->isRunning()) {
+            $this->serverProcess->stop(2);
+        }
+
+        return $this->serverProcess->getExitCode();
+    }
+
+    /**
+     * @param string $data
+     * @param int    $length
+     *
+     * @return int
+     */
+    protected function serverWrite($data, $length = null)
+    {
+        if (strpos($data, "\xCE") !== false) {
+            throw new \LogicException('Symbol "\xCE" is used to close connection, you should not use it in test');
+        }
+
+        $write = fwrite(
+            $this->control,
+            $data,
+            $length === null ? Binary::length($data) : $length
+        );
+
+        fflush($this->control);
+
+        return $write;
+    }
+
+    /**
+     * Send server a command to stop.
+     */
+    protected function serverWriteStopSymbol()
+    {
+        if (!$this->serverProcess->isRunning()) {
+            return null;
+        }
+
+        for ($retry = 0; $retry < 10 && !feof($this->control); ++$retry) {
+            if (!@fwrite($this->control, str_repeat("\xCE", 100), 100)) {
+                break;
+            }
+
+            @fflush($this->control);
+            usleep(100000);
+        }
     }
 
     /**
@@ -90,21 +151,11 @@ class TestCase extends BaseTestCase
 
     /**
      * @param string $data
-     * @param int    $length
-     *
-     * @return int
+     * @param string $message
      */
-    protected function serverWrite($data, $length = null)
+    protected function assertServerReceive($data, $message = '')
     {
-        $write = fwrite(
-            $this->control,
-            $data,
-            $length === null ? Binary::length($data) : $length
-        );
-
-        fflush($this->control);
-
-        return $write;
+        self::assertEquals($data, $this->serverRead(Binary::length($data)), $message);
     }
 
     /**
@@ -112,11 +163,7 @@ class TestCase extends BaseTestCase
      */
     protected function tearDown()
     {
-        if ($this->serverProcess->isRunning()) {
-            $this->serverProcess->stop(2, 2);
-        }
-
-        $exitCode = $this->serverProcess->getExitCode();
+        $exitCode = $this->serverForceStop();
 
         if ($exitCode && $exitCode != 143) {
             self::markTestSkipped(sprintf(

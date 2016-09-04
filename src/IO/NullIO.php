@@ -25,7 +25,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function peek($length, $blocking = true, $timeout = null)
+    public function peek($length, $blocking = true)
     {
         return null;
     }
@@ -33,7 +33,7 @@ class NullIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function read($length, $blocking = true, $timeout = null)
+    public function read($length, $blocking = true)
     {
         return null;
     }

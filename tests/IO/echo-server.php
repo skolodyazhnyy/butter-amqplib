@@ -14,12 +14,9 @@ if (!isset($argv[1])) {
     die(-1);
 }
 
-$run = true;
 $socket = 'tcp://'.$argv[1];
 
-pcntl_signal(SIGINT, function () use (&$run) {
-    $run = false;
-});
+echo sprintf('Starting echo-server at "%s"', $socket).PHP_EOL;
 
 $server = stream_socket_server($socket);
 $control = stream_socket_accept($server, 2);
@@ -28,11 +25,15 @@ if ($control === false) {
     throw new \Exception('Control connection time expired');
 }
 
+echo 'Control connection established'.PHP_EOL;
+
 $client = stream_socket_accept($server, 2);
 
 if ($client === false) {
     throw new \Exception('Client connection time expired');
 }
+
+echo 'Client connection established'.PHP_EOL;
 
 stream_set_blocking($control,  false);
 stream_set_blocking($client, false);
@@ -41,19 +42,44 @@ $readers = [$client, $control];
 $writers = [$client, $control];
 $except = null;
 
-while ($run) {
-    $select = stream_select($readers, $writers, $except, 0, 5000000);
+while (true) {
+    $select = stream_select($readers, $writers, $except, 0, 500000);
 
     if ($select === false) {
         throw new \Exception('An error occur during stream select');
     }
 
-    stream_copy_to_stream($control, $client);
-    stream_copy_to_stream($client, $control);
+    $input = stream_get_contents($control);
+    $output = stream_get_contents($client);
 
-    pcntl_signal_dispatch();
+    if (($p = strpos($input, "\xCE")) !== false) {
+        if ($p) {
+            fwrite($client, substr($input, 0, $p));
+            fflush($client);
+        }
+
+        break;
+    }
+
+    fwrite($control, $output);
+    fflush($control);
+
+    fwrite($client, $input);
+    fflush($client);
+
+    if (strlen($input)) {
+        echo strlen($input).' bytes send to the client'.PHP_EOL;
+    }
+
+    if (strlen($output)) {
+        echo strlen($output).' bytes received from the client'.PHP_EOL;
+    }
 }
+
+echo 'Out of main loop, closing descriptors and terminating...'.PHP_EOL;
 
 fclose($control);
 fclose($client);
 fclose($server);
+
+echo 'Complete'.PHP_EOL;

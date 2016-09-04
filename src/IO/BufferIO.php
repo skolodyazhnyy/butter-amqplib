@@ -44,7 +44,7 @@ class BufferIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function read($length, $blocking = true, $timeout = null)
+    public function read($length, $blocking = true)
     {
         if (Binary::length($this->readBuffer) >= $length) {
             $data = Binary::subset($this->readBuffer, 0, $length);
@@ -53,32 +53,18 @@ class BufferIO implements IOInterface
             return $data;
         }
 
-        if ($blocking && $timeout == 0) {
-            throw new \RuntimeException(sprintf(
-                'There is not enough data in the reading buffer. Requested blocking reading with 0 timeout will never get resolved.'
-            ));
-        }
-
-        // Not enough data, so pretend timeout or non-blocking reading
         return null;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function peek($length, $blocking = true, $timeout = null)
+    public function peek($length, $blocking = true)
     {
         if (Binary::length($this->readBuffer) >= $length) {
             return Binary::subset($this->readBuffer, 0, $length);
         }
 
-        if ($blocking && $timeout == 0) {
-            throw new \RuntimeException(sprintf(
-                'There is not enough data in the reading buffer. Requested blocking reading with 0 timeout will never get resolved.'
-            ));
-        }
-
-        // Not enough data, so pretend timeout or non-blocking reading
         return null;
     }
 

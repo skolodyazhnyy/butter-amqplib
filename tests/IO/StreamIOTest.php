@@ -2,8 +2,12 @@
 
 namespace ButterAMQPTest\IO;
 
+use ButterAMQP\Exception\IOException;
 use ButterAMQP\IO\StreamIO;
 
+/**
+ * @group slow
+ */
 class StreamIOTest extends TestCase
 {
     /**
@@ -11,14 +15,16 @@ class StreamIOTest extends TestCase
      */
     public function testConnecting()
     {
-        $io = new StreamIO();
+        $this->serverStart();
+
+        $io = new StreamIO(1, 1);
         $io->open($this->serverHost, $this->serverPort);
 
         $io->write('ping');
         $this->assertServerReceive('ping');
 
         $this->serverWrite('pong');
-        $data = $io->read(4, true, 1);
+        $data = $io->read(4, true);
 
         $io->close();
 
@@ -30,7 +36,9 @@ class StreamIOTest extends TestCase
      */
     public function testWriting()
     {
-        $io = new StreamIO();
+        $this->serverStart();
+
+        $io = new StreamIO(1, 1);
         $io->open($this->serverHost, $this->serverPort);
         $io->write('ping');
         $io->close();
@@ -43,14 +51,16 @@ class StreamIOTest extends TestCase
      */
     public function testPeeking()
     {
-        $io = new StreamIO();
+        $this->serverStart();
+
+        $io = new StreamIO(1, 0.1);
         $io->open($this->serverHost, $this->serverPort);
 
         $this->serverWrite('ping');
 
-        $peekOne = $io->peek(4, true, 1);
-        $peekTwo = $io->peek(4, true, 1);
-        $peekThree = $io->peek(5, true, 0.1);
+        $peekOne = $io->peek(4, true);
+        $peekTwo = $io->peek(4, true);
+        $peekThree = $io->peek(5, true);
 
         $io->close();
 
@@ -64,17 +74,57 @@ class StreamIOTest extends TestCase
      */
     public function testReading()
     {
-        $io = new StreamIO();
+        $this->serverStart();
+
+        $io = new StreamIO(1, 0.1);
         $io->open($this->serverHost, $this->serverPort);
 
         $this->serverWrite('pingpo');
 
-        $readOne = $io->read(4, true, 1);
-        $readTwo = $io->read(4, true, 1);
+        $readOne = $io->read(4, true);
+        $readTwo = $io->read(4, true);
 
         $io->close();
 
         self::assertEquals('ping', $readOne);
         self::assertNull($readTwo);
+    }
+
+    /**
+     * Disconnected while reading.
+     */
+    public function testDisconnectWhileReading()
+    {
+        $this->expectException(IOException::class);
+
+        $this->serverStart();
+
+        $io = new StreamIO(1, 0.1);
+        $io->open($this->serverHost, $this->serverPort);
+
+        $this->serverWrite('pi');
+        $this->serverStop();
+
+        self::assertNull($io->read(4, true));
+        self::assertNull($io->read(4, true));
+    }
+
+    /**
+     * Disconnected while writing.
+     */
+    public function testDisconnectWhileWriting()
+    {
+        $this->expectException(IOException::class);
+
+        $this->serverStart();
+
+        $io = new StreamIO();
+        $io->open($this->serverHost, $this->serverPort);
+
+        $io->write('foo');
+
+        $this->serverForceStop();
+
+        $io->write('bar');
     }
 }

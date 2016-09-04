@@ -38,20 +38,6 @@ class BufferIOTest extends TestCase
         self::assertNull($this->io->read(3, true, 1));
     }
 
-    public function testInfiniteReadingException()
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $this->io->read(3, true, 0);
-    }
-
-    public function testInfinitePeekingException()
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $this->io->peek(3, true, 0);
-    }
-
     public function testWriting()
     {
         $this->io->write('f');
