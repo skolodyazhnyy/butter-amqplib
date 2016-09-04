@@ -618,7 +618,7 @@ CODE;
 
 function generate_exceptions_factory_class($constants)
 {
-    yield 'AMQPFailure.php' => implode('', [
+    yield 'AMQPException.php' => implode('', [
         generate_exceptions_factory_class_header(),
         generate_exceptions_factory_class_body($constants),
         generate_exceptions_factory_class_footer(),
@@ -630,7 +630,7 @@ function generate_exceptions_factory_class_header()
     return <<<HEADER
 namespace ButterAMQP\Exception;
 
-class AMQPFailure extends \Exception
+class AMQPException extends \Exception
 {
 HEADER;
 }

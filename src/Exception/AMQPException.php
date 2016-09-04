@@ -5,7 +5,7 @@
 
 namespace ButterAMQP\Exception;
 
-class AMQPFailure extends \Exception
+class AMQPException extends \Exception
 {
     public static function make($message, $code)
     {

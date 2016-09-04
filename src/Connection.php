@@ -2,7 +2,7 @@
 
 namespace ButterAMQP;
 
-use ButterAMQP\Exception\AMQPFailure;
+use ButterAMQP\Exception\AMQPException;
 use ButterAMQP\Exception\InvalidChannelNumberException;
 use ButterAMQP\Framing\Frame;
 use ButterAMQP\Framing\Heartbeat;
@@ -300,7 +300,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     /**
      * @param ConnectionClose $frame
      *
-     * @throws AMQPFailure
+     * @throws AMQPException
      */
     private function onConnectionClose(ConnectionClose $frame)
     {
@@ -310,7 +310,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         $this->status = self::STATUS_CLOSED;
 
         if ($frame->getReplyCode()) {
-            throw AMQPFailure::make($frame->getReplyText(), $frame->getReplyCode());
+            throw AMQPException::make($frame->getReplyText(), $frame->getReplyCode());
         }
     }
 
