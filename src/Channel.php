@@ -3,6 +3,7 @@
 namespace ButterAMQP;
 
 use ButterAMQP\Exception\AMQPException;
+use ButterAMQP\Exception\NoReturnException;
 use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Frame;
@@ -13,11 +14,17 @@ use ButterAMQP\Framing\Method\BasicCancelOk;
 use ButterAMQP\Framing\Method\BasicConsume;
 use ButterAMQP\Framing\Method\BasicConsumeOk;
 use ButterAMQP\Framing\Method\BasicDeliver;
+use ButterAMQP\Framing\Method\BasicGet;
+use ButterAMQP\Framing\Method\BasicGetEmpty;
+use ButterAMQP\Framing\Method\BasicGetOk;
 use ButterAMQP\Framing\Method\BasicNack;
 use ButterAMQP\Framing\Method\BasicPublish;
 use ButterAMQP\Framing\Method\BasicQos;
 use ButterAMQP\Framing\Method\BasicQosOk;
+use ButterAMQP\Framing\Method\BasicRecover;
+use ButterAMQP\Framing\Method\BasicRecoverOk;
 use ButterAMQP\Framing\Method\BasicReject;
+use ButterAMQP\Framing\Method\BasicReturn;
 use ButterAMQP\Framing\Method\ChannelClose;
 use ButterAMQP\Framing\Method\ChannelCloseOk;
 use ButterAMQP\Framing\Method\ChannelFlow;
@@ -55,6 +62,11 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      * @var callable[]
      */
     private $consumers = [];
+
+    /**
+     * @var callable
+     */
+    private $returnCallable;
 
     /**
      * @param WireInterface $wire
@@ -174,6 +186,50 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     /**
      * {@inheritdoc}
      */
+    public function get($queue, $withAck = true)
+    {
+        /** @var BasicGetOk|BasicGetEmpty $frame */
+        $frame = $this->send(new BasicGet(0, $queue, !$withAck))
+            ->wait([BasicGetOk::class, BasicGetEmpty::class]);
+
+        if ($frame instanceof BasicGetEmpty) {
+            return null;
+        }
+
+        /** @var Header $header */
+        $header = $this->wait(Header::class);
+        $content = '';
+
+        while ($header->getSize() > Binary::length($content)) {
+            $content .= $this->wait(Content::class)->getData();
+        }
+
+        return new Delivery(
+            $this,
+            '',
+            $frame->getDeliveryTag(),
+            $frame->isRedelivered(),
+            $frame->getExchange(),
+            $frame->getRoutingKey(),
+            $content,
+            $header->getProperties()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function recover($requeue = true)
+    {
+        $this->send(new BasicRecover($requeue))
+            ->wait(BasicRecoverOk::class);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function cancel($tag, $flags = 0)
     {
         $this->send(new BasicCancel($tag, $flags & Consumer::FLAG_NO_WAIT));
@@ -234,6 +290,16 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     /**
      * {@inheritdoc}
      */
+    public function onReturn(callable $callable)
+    {
+        $this->returnCallable = $callable;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function hasConsumer($tag)
     {
         return isset($this->consumers[$tag]);
@@ -270,7 +336,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     }
 
     /**
-     * @param string $type
+     * @param string|array $type
      *
      * @return Frame
      */
@@ -294,6 +360,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         if ($frame instanceof BasicDeliver) {
             $this->onBasicDeliver($frame);
+        }
+
+        if ($frame instanceof BasicReturn) {
+            $this->onBasicReturn($frame);
         }
     }
 
@@ -331,6 +401,41 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         );
 
         call_user_func($this->consumers[$frame->getConsumerTag()], $delivery);
+    }
+
+    /**
+     * @param BasicReturn $frame
+     *
+     * @throws \Exception
+     */
+    private function onBasicReturn(BasicReturn $frame)
+    {
+        /** @var Header $header */
+        $header = $this->wait(Header::class);
+        $content = '';
+
+        while ($header->getSize() > Binary::length($content)) {
+            $content .= $this->wait(Content::class)->getData();
+        }
+
+        if (!$this->returnCallable) {
+            throw new NoReturnException(
+                'A message was returned but there is no return handler. '.
+                'Make sure you setup a handler for returned messages using Channel::onReturn method, '.
+                ', or remove MANDATORY and IMMEDIATE flags when publishing messages.'
+            );
+        }
+
+        $returned = new Returned(
+            $frame->getReplyCode(),
+            $frame->getReplyText(),
+            $frame->getExchange(),
+            $frame->getRoutingKey(),
+            $content,
+            $header->getProperties()
+        );
+
+        call_user_func($this->returnCallable, $returned);
     }
 
     /**

@@ -1,0 +1,70 @@
+<?php
+
+namespace ButterAMQP;
+
+class Returned extends Message
+{
+    /**
+     * @var string
+     */
+    private $exchange;
+
+    /**
+     * @var string
+     */
+    private $routingKey;
+
+    /**
+     * @var int
+     */
+    private $replyCode;
+
+    /**
+     * @var string
+     */
+    private $replyText;
+
+    /**
+     * @param int    $replyCode
+     * @param string $replyText
+     * @param string $exchange
+     * @param string $routingKey
+     * @param string $body
+     * @param array  $properties
+     */
+    public function __construct(
+        $replyCode,
+        $replyText,
+        $exchange,
+        $routingKey,
+        $body,
+        array $properties
+    ) {
+        $this->replyCode = $replyCode;
+        $this->replyText = $replyText;
+        $this->exchange = $exchange;
+        $this->routingKey = $routingKey;
+
+        parent::__construct($body, $properties);
+    }
+
+    /**
+     * Exchange where message was sent initially.
+     *
+     * @return string
+     */
+    public function getExchange()
+    {
+        return $this->exchange;
+    }
+
+    /**
+     * Routing key.
+     *
+     * @return string
+     */
+    public function getRoutingKey()
+    {
+        return $this->routingKey;
+    }
+}

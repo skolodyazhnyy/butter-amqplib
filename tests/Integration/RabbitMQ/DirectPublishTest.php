@@ -7,6 +7,10 @@ use ButterAMQP\Message;
 use ButterAMQP\Queue;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
+/**
+ * @group slow
+ * @group integration
+ */
 class DirectPublishTest extends TestCase
 {
     public function testDirectPublish()

@@ -100,6 +100,10 @@ class Delivery extends Message
      */
     public function cancel()
     {
+        if (empty($this->consumerTag)) {
+            throw new \LogicException('Consumer is not assigned to this delivery.');
+        }
+
         $this->channel->cancel($this->consumerTag);
 
         return $this;

@@ -24,11 +24,10 @@ interface ConnectionInterface
      * Fetch and process notifications from server.
      *
      * @param bool $blocking
-     * @param null $timeout
      *
      * @return ConnectionInterface
      */
-    public function serve($blocking = true, $timeout = null);
+    public function serve($blocking = true);
 
     /**
      * Close connection.

@@ -36,7 +36,7 @@ class TestCase extends BaseTestCase
             self::markTestSkipped('Environment variable RABBITMQ_URL is not set.');
         }
 
-        $this->io = new StreamIO();
+        $this->io = new StreamIO(1, 1);
         $this->wire = new Wire($this->io);
         $this->connection = new Connection($_SERVER['RABBITMQ_URL'], $this->wire);
     }

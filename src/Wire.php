@@ -66,19 +66,19 @@ class Wire implements WireInterface, LoggerAwareInterface
     /**
      * {@inheritdoc}
      */
-    public function next($blocking = true, $timeout = 0)
+    public function next($blocking = true)
     {
         if ($this->heartbeat->shouldSendHeartbeat()) {
             $this->send(0, new Heartbeat());
         }
 
-        if (($buffer = $this->io->peek(7, $blocking, $timeout)) === null) {
+        if (($buffer = $this->io->peek(7, $blocking)) === null) {
             return null;
         }
 
         $header = unpack('Ctype/nchannel/Nsize', $buffer);
 
-        if (($buffer = $this->io->read($header['size'] + 8, $blocking, $timeout)) === null) {
+        if (($buffer = $this->io->read($header['size'] + 8, $blocking)) === null) {
             return null;
         }
 
@@ -158,16 +158,30 @@ class Wire implements WireInterface, LoggerAwareInterface
     /**
      * {@inheritdoc}
      */
-    public function wait($channel, $type)
+    public function wait($channel, $types)
     {
-        $this->logger->debug(sprintf('Waiting "%s" at channel #%d', $type, $channel), [
+        if (!is_array($types)) {
+            $types = [$types];
+        }
+
+        $this->logger->debug(sprintf('Waiting "%s" at channel #%d', implode('", "', $types), $channel), [
             'channel' => $channel,
-            'frame' => $type,
+            'frame' => $types,
         ]);
 
         do {
             $frame = $this->next(true);
-        } while (!$frame || $frame->getChannel() != $channel || !is_a($frame, $type));
+
+            if (!$frame || $frame->getChannel() != $channel) {
+                continue;
+            }
+
+            foreach ($types as $type) {
+                if (is_a($frame, $type)) {
+                    return $frame;
+                }
+            }
+        } while (true);
 
         return $frame;
     }

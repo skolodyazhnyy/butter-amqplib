@@ -7,6 +7,10 @@ use ButterAMQP\Exception\AMQP\PreconditionFailedException;
 use ButterAMQP\Exchange;
 use ButterAMQP\Message;
 
+/**
+ * @group slow
+ * @group integration
+ */
 class ErrorHandlingTest extends TestCase
 {
     public function testConnectionErrorHandling()

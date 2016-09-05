@@ -6,6 +6,7 @@ use ButterAMQP\Channel;
 use ButterAMQP\Consumer;
 use ButterAMQP\Delivery;
 use ButterAMQP\Exception\ChannelException;
+use ButterAMQP\Exception\NoReturnException;
 use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Exchange;
 use ButterAMQP\Framing\Content;
@@ -16,11 +17,17 @@ use ButterAMQP\Framing\Method\BasicCancelOk;
 use ButterAMQP\Framing\Method\BasicConsumeOk;
 use ButterAMQP\Framing\Method\BasicConsume;
 use ButterAMQP\Framing\Method\BasicDeliver;
+use ButterAMQP\Framing\Method\BasicGet;
+use ButterAMQP\Framing\Method\BasicGetEmpty;
+use ButterAMQP\Framing\Method\BasicGetOk;
 use ButterAMQP\Framing\Method\BasicNack;
 use ButterAMQP\Framing\Method\BasicPublish;
 use ButterAMQP\Framing\Method\BasicQos;
 use ButterAMQP\Framing\Method\BasicQosOk;
+use ButterAMQP\Framing\Method\BasicRecover;
+use ButterAMQP\Framing\Method\BasicRecoverOk;
 use ButterAMQP\Framing\Method\BasicReject;
+use ButterAMQP\Framing\Method\BasicReturn;
 use ButterAMQP\Framing\Method\ChannelClose;
 use ButterAMQP\Framing\Method\ChannelCloseOk;
 use ButterAMQP\Framing\Method\ChannelFlow;
@@ -29,6 +36,7 @@ use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
 use ButterAMQP\Message;
 use ButterAMQP\Queue;
+use ButterAMQP\Returned;
 use ButterAMQP\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
@@ -321,6 +329,66 @@ class ChannelTest extends TestCase
         $this->channel->publish(new Message('butter', ['delivery-mode' => 1]), 'foo', 'bar');
     }
 
+    /**
+     * Channel should send basic.get when fetching a message and collect message when basic.get-ok is received.
+     */
+    public function testGet()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new BasicGet(0, 'test', false));
+
+        $this->wire->expects(self::atLeastOnce())
+            ->method('wait')
+            ->withConsecutive(
+                [51, [BasicGetOk::class, BasicGetEmpty::class]],
+                [51, Header::class],
+                [51, Content::class],
+                [51, Content::class]
+            )
+            ->willReturnOnConsecutiveCalls(
+                new BasicGetOk(1, false, 'inbox', 'test', 0),
+                new Header(60, 0, 6, []),
+                new Content('foo'),
+                new Content('bar')
+            );
+
+        $this->channel->get('test', true);
+    }
+
+    /**
+     * Channel should send basic.get when fetching a message and return null when basic.get-empty is received.
+     */
+    public function testGetEmpty()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new BasicGet(0, 'test', false));
+
+        $this->wire->expects(self::once())
+            ->method('wait')
+            ->with(51, [BasicGetOk::class, BasicGetEmpty::class])
+            ->willReturn(new BasicGetEmpty(0));
+
+        $this->channel->get('test', true);
+    }
+
+    /**
+     * Channel should send basic.recover and wait for reply.
+     */
+    public function testRecover()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new BasicRecover(true));
+
+        $this->wire->expects(self::once())
+            ->method('wait')
+            ->with(51, BasicRecoverOk::class);
+
+        $this->channel->recover(true);
+    }
+
     public function testDispatchChannelClose()
     {
         $this->expectException(ChannelException::class);
@@ -384,5 +452,50 @@ class ChannelTest extends TestCase
             );
 
         $this->channel->dispatch(new BasicDeliver('foo', 77, false, 'bar', 'baz'));
+    }
+
+    public function testDispatchBasicReturn()
+    {
+        $callable = $this->getCallableMock();
+        $callable->expects(self::once())
+            ->method('__invoke')
+            ->with(self::isInstanceOf(Returned::class));
+
+        $this->channel->onReturn($callable);
+
+        $this->wire->expects(self::atLeastOnce())
+            ->method('wait')
+            ->willReturnOnConsecutiveCalls(
+                new Header(60, 0, 6, ['delivery-mode' => 2]),
+                new Content('abc'),
+                new Content('def')
+            );
+
+        $this->channel->dispatch(new BasicReturn(0, '', '', ''));
+    }
+
+    public function testDispatchBasicReturnWithoutReturnCallable()
+    {
+        $this->expectException(NoReturnException::class);
+
+        $this->wire->expects(self::atLeastOnce())
+            ->method('wait')
+            ->willReturnOnConsecutiveCalls(
+                new Header(60, 0, 6, ['delivery-mode' => 2]),
+                new Content('abc'),
+                new Content('def')
+            );
+
+        $this->channel->dispatch(new BasicReturn(0, '', '', ''));
+    }
+
+    /**
+     * @return Mock|callable
+     */
+    private function getCallableMock()
+    {
+        return $this->getMockBuilder(\stdClass::class)
+            ->setMethods(['__invoke'])
+            ->getMock();
     }
 }

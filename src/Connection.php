@@ -196,9 +196,9 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     /**
      * {@inheritdoc}
      */
-    public function serve($blocking = true, $timeout = null)
+    public function serve($blocking = true)
     {
-        $this->wire->next($blocking, $timeout);
+        $this->wire->next($blocking);
 
         return $this;
     }
@@ -218,7 +218,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
-     * @param string $type
+     * @param string|array $type
      *
      * @return Frame
      */

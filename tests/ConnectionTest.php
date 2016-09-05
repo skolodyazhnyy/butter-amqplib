@@ -145,9 +145,9 @@ class ConnectionTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('next')
-            ->with(true, 10);
+            ->with(true);
 
-        $this->connection->serve(true, 10);
+        $this->connection->serve(true);
     }
 
     /**

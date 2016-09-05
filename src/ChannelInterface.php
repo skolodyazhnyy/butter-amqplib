@@ -70,9 +70,28 @@ interface ChannelInterface
     public function consume($queue, callable $callback, $flags = 0, $tag = '', array $arguments = []);
 
     /**
+     * Fetch a single message directly from the queue.
+     *
+     * @param string $queue
+     * @param bool   $withAck
+     *
+     * @return Delivery|null
+     */
+    public function get($queue, $withAck = true);
+
+    /**
+     * Re-deliver all messages assigned to this consumer but not acknowledged.
+     *
+     * @param bool $requeue
+     *
+     * @return ChannelInterface
+     */
+    public function recover($requeue = true);
+
+    /**
      * Cancel consuming.
      *
-     * @param $tag
+     * @param string $tag
      *
      * @return ChannelInterface
      */
@@ -104,6 +123,15 @@ interface ChannelInterface
      * @return ChannelInterface
      */
     public function reject($deliveryTag, $requeue = true, $multiple = false);
+
+    /**
+     * Set a callback to handle returned messages.
+     *
+     * @param callable $callable
+     *
+     * @return ChannelInterface
+     */
+    public function onReturn(callable $callable);
 
     /**
      * @param string $tag

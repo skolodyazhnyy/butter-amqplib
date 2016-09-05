@@ -167,7 +167,7 @@ class Exchange implements ExchangeInterface
     }
 
     /**
-     * @param string $type
+     * @param string|array $type
      *
      * @return Frame
      */

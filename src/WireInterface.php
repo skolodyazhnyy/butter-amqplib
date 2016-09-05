@@ -48,25 +48,11 @@ interface WireInterface
      *  - Method will return null if no frame is fully available and reading is non-blocking
      *  - Method will return null if no frame is fully available, reading is blocking but timeout is reached
      *
-     * Example 1: Get a frame if any available otherwise return control immediately
-     *
-     *   $wire->next(false, 0); // will return null or Frame
-     *
-     * Example 2: Wait for a frame for at most 2.5 seconds and return control afterwards
-     *
-     *   $wire->next(true, 2.5); // will return null or Frame
-     *
-     * Example 3: Block execution until any Frame is received
-     *
-     *   $wire->next(true, 0); // will always return a frame
-     *
-     *
-     * @param bool      $blocking specify if reading should block execution
-     * @param float|int $timeout  timeout for reading
+     * @param bool $blocking specify if reading should block execution
      *
      * @return Frame|null
      */
-    public function next($blocking = true, $timeout = 0);
+    public function next($blocking = true);
 
     /**
      * Send a frame to the connection.
@@ -87,12 +73,12 @@ interface WireInterface
      *   $frame = $wire->wait(5, ChannelFlowOk::class);
      *
      *
-     * @param int    $channel channel to watch
-     * @param string $type    frame class name
+     * @param int          $channel channel to watch
+     * @param string|array $types   frame class name
      *
      * @return Frame
      */
-    public function wait($channel, $type);
+    public function wait($channel, $types);
 
     /**
      * Set frame handler for a given channel.

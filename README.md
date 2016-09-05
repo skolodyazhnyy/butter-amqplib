@@ -11,7 +11,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 ### Features
 
 - [x] Error response handling, proper Exception types
-- [ ] Handle connection errors (connecting, reading, writing)
+- [x] Handle connection errors (connecting, reading, writing)
 - [ ] SSL support
 - [x] Split content frames into multiple pieces if frame-max exceeded
 - [x] Collect all data pieces when getting basic.delivery
@@ -27,13 +27,13 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Basic Cancel
 - [x] Basic Consume
 - [x] Basic Deliver
-- [ ] Basic Get
+- [x] Basic Get
 - [x] Basic NACK
 - [x] Basic Publish
 - [x] Basic QOS
-- [ ] Basic Recover
+- [x] Basic Recover
 - [x] Basic Reject
-- [ ] Basic Return
+- [x] Basic Return
 - [x] Channel Close
 - [x] Channel Flow
 - [x] Channel Open

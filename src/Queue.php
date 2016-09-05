@@ -220,7 +220,7 @@ class Queue implements QueueInterface
     }
 
     /**
-     * @param string $type
+     * @param string|array $type
      *
      * @return Frame
      */

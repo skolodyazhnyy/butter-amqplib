@@ -5,6 +5,7 @@ namespace ButterAMQPTest;
 use ButterAMQP\Exception\InvalidFrameEndingException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\Framing\Method\ConnectionBlocked;
 use ButterAMQP\HeartbeatInterface;
 use ButterAMQP\IO\BufferIO;
 use ButterAMQP\IOInterface;
@@ -237,6 +238,25 @@ class WireTest extends TestCase
         $this->io->push("\x03\x00\x02\x00\x00\x00\x01\x02\xCE");
 
         $content = $this->wire->wait(2, Content::class);
+
+        self::assertEquals("\x02", $content->getData());
+    }
+
+    /**
+     * Wire should wait for one of the given frame frames to appear in the reading buffer.
+     */
+    public function testWaitForTwo()
+    {
+        // Wrong frame type should be skipped
+        $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xCE");
+
+        // Wrong channel number should be skipped
+        $this->io->push("\x03\x00\x01\x00\x00\x00\x01\x01\xCE");
+
+        // All good, should be returned
+        $this->io->push("\x03\x00\x02\x00\x00\x00\x01\x02\xCE");
+
+        $content = $this->wire->wait(2, [Content::class, ConnectionBlocked::class]);
 
         self::assertEquals("\x02", $content->getData());
     }
