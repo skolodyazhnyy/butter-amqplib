@@ -2,6 +2,9 @@
 
 namespace ButterAMQP;
 
+/**
+ * Channel is an isolated thread within a connection.
+ */
 interface ChannelInterface
 {
     /**
@@ -98,6 +101,8 @@ interface ChannelInterface
     public function cancel($tag);
 
     /**
+     * Publish a message.
+     *
      * @param Message $message
      * @param string  $exchange
      * @param string  $routingKey
@@ -108,6 +113,8 @@ interface ChannelInterface
     public function publish(Message $message, $exchange = '', $routingKey = '', $flags = 0);
 
     /**
+     * Acknowledge a message(s).
+     *
      * @param string $deliveryTag
      * @param bool   $multiple
      *
@@ -116,6 +123,8 @@ interface ChannelInterface
     public function ack($deliveryTag, $multiple = false);
 
     /**
+     * Reject (or negative acknowledgement) a message(s).
+     *
      * @param string $deliveryTag
      * @param bool   $requeue
      * @param bool   $multiple

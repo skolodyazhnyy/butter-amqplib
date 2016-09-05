@@ -4,6 +4,9 @@ namespace ButterAMQP;
 
 Binary::init();
 
+/**
+ * Simple set of static methods to polyfill some PHP functions.
+ */
 class Binary
 {
     /**
@@ -30,7 +33,7 @@ class Binary
     }
 
     /**
-     * Unpack a value.
+     * Pack a value.
      *
      * @param string $format
      * @param string $value
@@ -82,6 +85,8 @@ class Binary
     }
 
     /**
+     * Return byte-string length.
+     *
      * @param string $data
      *
      * @return int
@@ -92,6 +97,8 @@ class Binary
     }
 
     /**
+     * Return a sub set of byte-string bytes.
+     *
      * @param string $data
      * @param int    $offset
      * @param int    $length

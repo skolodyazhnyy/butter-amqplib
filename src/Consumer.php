@@ -40,11 +40,19 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * @return string
+     * {@inheritdoc}
      */
     public function tag()
     {
         return $this->tag;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isActive()
+    {
+        return $this->channel->hasConsumer($this->tag);
     }
 
     /**
@@ -53,13 +61,5 @@ class Consumer implements ConsumerInterface
     public function __toString()
     {
         return $this->tag;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isActive()
-    {
-        return $this->channel->hasConsumer($this->tag);
     }
 }

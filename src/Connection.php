@@ -85,7 +85,12 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
-     * @param int $frameMax
+     * Set max frame size.
+     * This value could be lowered by server.
+     * Zero means - no preference.
+     * Minimal value 4096, established by protocol specification.
+     *
+     * @param int $frameMax maximum desired length of the frame
      *
      * @return $this
      */
@@ -97,6 +102,11 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * Set max number of channels in the connection.
+     * This value could be lowered by server.
+     * Zero means - no preference.
+     * Limited to 65535 by protocol specification.
+     *
      * @param int $channelMax
      *
      * @return $this
@@ -109,6 +119,10 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * Set desired heartbeat delay.
+     * This value could be lowered by server.
+     * Zero means - no heartbeat.
+     *
      * @param int $heartbeat
      *
      * @return $this
@@ -121,6 +135,8 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * Connection status. See STATUS_* constants for possible values.
+     *
      * @return string
      */
     public function getStatus()
@@ -204,7 +220,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
-     * Sends frame to the server.
+     * Sends frame to the service channel (#0).
      *
      * @param Frame $frame
      *
@@ -218,6 +234,8 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * Wait for a frame in the service channel (#0).
+     *
      * @param string|array $type
      *
      * @return Frame
@@ -254,6 +272,9 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * This frame is the first frame received from server.
+     * It provides server details and requests client credentials.
+     *
      * @param ConnectionStart $frame
      */
     private function onConnectionStart(ConnectionStart $frame)
@@ -272,6 +293,11 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * This frame is received to setup connection preferences, like max frame size,
+     * max number of channel and heartbeat delay.
+     *
+     * Values in the request can be lowered by client.
+     *
      * @param ConnectionTune $frame
      */
     private function onConnectionTune(ConnectionTune $frame)
@@ -298,6 +324,8 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * This frame is received once server decide to close connection, normally because an unrecoverable error occur.
+     *
      * @param ConnectionClose $frame
      *
      * @throws AMQPException
@@ -315,13 +343,21 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     }
 
     /**
+     * This frame is received once server decide to suspend connection, for example because server
+     * run out of memory and can not provide service for the connection. When this happen consumer
+     * suppose to suspend all activities until connection.unblocked is received.
+     *
      * @param ConnectionBlocked $frame
      */
     private function onConnectionBlocked(ConnectionBlocked $frame)
     {
         $this->status = self::STATUS_BLOCKED;
     }
+
     /**
+     * This frame is received once connection returns back to normal state after being suspended.
+     * See onConnectionBlocked above.
+     *
      * @param ConnectionUnblocked $frame
      */
     private function onConnectionUnblocked(ConnectionUnblocked $frame)

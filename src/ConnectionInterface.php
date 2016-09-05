@@ -2,6 +2,9 @@
 
 namespace ButterAMQP;
 
+/**
+ * Connection to AMQP server.
+ */
 interface ConnectionInterface
 {
     /**
@@ -12,7 +15,12 @@ interface ConnectionInterface
     public function open();
 
     /**
-     * Create a channel within connection.
+     * Create a new or receive an existent channel within connection.
+     *
+     * Channel represents an isolated thread within connection. It allows multiple sub-processes
+     * talk independently through a single socket connection.
+     *
+     * Most likely you don't need more channels than threads in your application.
      *
      * @param int|null $id
      *

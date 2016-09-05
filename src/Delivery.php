@@ -2,6 +2,9 @@
 
 namespace ButterAMQP;
 
+/**
+ * Delivery is a message received (consumed) from the server.
+ */
 class Delivery extends Message
 {
     /**

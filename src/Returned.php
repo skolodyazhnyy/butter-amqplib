@@ -2,6 +2,9 @@
 
 namespace ButterAMQP;
 
+/**
+ * Message returned back to the publisher.
+ */
 class Returned extends Message
 {
     /**

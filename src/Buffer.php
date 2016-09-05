@@ -2,6 +2,9 @@
 
 namespace ButterAMQP;
 
+/**
+ * Simple reading buffered data stream provide simple API to read data byte by byte.
+ */
 class Buffer
 {
     /**
@@ -30,6 +33,8 @@ class Buffer
     }
 
     /**
+     * Return $length bytes and move offset.
+     *
      * @param int $length
      *
      * @return string
@@ -43,6 +48,8 @@ class Buffer
     }
 
     /**
+     * Return buffer total size.
+     *
      * @return int
      */
     public function size()
@@ -51,6 +58,8 @@ class Buffer
     }
 
     /**
+     * Check if offset reached end of the buffer.
+     *
      * @return string
      */
     public function eof()
