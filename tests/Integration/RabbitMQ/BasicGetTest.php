@@ -9,7 +9,7 @@ use ButterAMQP\Queue;
  * @group slow
  * @group integration
  */
-class QueueBasicGetTest extends TestCase
+class BasicGetTest extends TestCase
 {
     public function testGetMessage()
     {

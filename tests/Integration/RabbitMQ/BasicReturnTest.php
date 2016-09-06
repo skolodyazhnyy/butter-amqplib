@@ -11,7 +11,7 @@ use PHPUnit_Framework_MockObject_MockObject as Mock;
  * @group slow
  * @group integration
  */
-class QueueBasicReturnTest extends TestCase
+class BasicReturnTest extends TestCase
 {
     public function testReturnMandatory()
     {
