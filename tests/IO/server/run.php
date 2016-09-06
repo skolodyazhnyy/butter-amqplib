@@ -9,16 +9,37 @@
  * See TestCast.php for more details.
  */
 
-if (!isset($argv[1])) {
-    echo 'Usage: php echo-server.php <host>:<port>'.PHP_EOL.PHP_EOL;
+if ($argc <= 3) {
+    echo 'Usage: php server/run.php <protocol> <host> <port>'.PHP_EOL.PHP_EOL;
     die(-1);
 }
 
-$socket = 'tcp://'.$argv[1];
+$socket = sprintf('%s://%s:%d', $argv[1], $argv[2], $argv[3]);
 
 echo sprintf('Starting echo-server at "%s"', $socket).PHP_EOL;
 
-$server = stream_socket_server($socket);
+$context = stream_context_create();
+
+if (strtolower($argv[1]) === 'ssl') {
+    echo 'Setup local certificate'.PHP_EOL;
+
+    stream_context_set_option($context, 'ssl', 'local_cert', __DIR__.DIRECTORY_SEPARATOR.'cert.pem');
+    stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
+    stream_context_set_option($context, 'ssl', 'verify_peer', false);
+}
+
+$server = stream_socket_server(
+    $socket,
+    $errno,
+    $errstr,
+    STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
+    $context
+);
+
+if ($errstr) {
+    throw new \Exception('An error occur while starting server: '.$errstr);
+}
+
 $control = stream_socket_accept($server, 2);
 
 if ($control === false) {

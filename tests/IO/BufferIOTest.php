@@ -22,7 +22,7 @@ class BufferIOTest extends TestCase
 
     public function testOpenClose()
     {
-        $this->io->open('x', 1);
+        $this->io->open('x', 'y', 1);
         $this->io->close();
     }
 

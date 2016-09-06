@@ -36,7 +36,7 @@ class TxAckModeTest extends TestCase
         // There are 3 messages in the queue
         self::assertEquals(3, $queue->messagesCount());
 
-        // Ack one message
+        // Ack few messages
         $channel->get($queue)
             ->reject(true);
 
@@ -85,7 +85,7 @@ class TxAckModeTest extends TestCase
         // There are 3 messages in the queue
         self::assertEquals(3, $queue->messagesCount());
 
-        // Ack one message
+        // Ack few messages
         $channel->get($queue)
             ->reject(true);
 

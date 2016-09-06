@@ -24,31 +24,43 @@ class TestCase extends BaseTestCase
     protected $serverPort;
 
     /**
+     * @var string
+     */
+    protected $serverProtocol;
+
+    /**
+     * @var string
+     */
+    protected $serverCert;
+
+    /**
      * @var resource
      */
     protected $control;
 
     /**
-     * Start echo server.
+     * Starts the server and establish control connection.
+     *
+     * @param bool $secure
      */
-    protected function setUp()
+    protected function serverStart($secure = false)
     {
+        $this->serverProtocol = $secure ? 'ssl' : 'tcp';
         $this->serverHost = '127.0.0.1';
         $this->serverPort = rand(23000, 24000);
+        $this->serverCert = __DIR__.DIRECTORY_SEPARATOR.'server/cert.pem';
 
         $this->serverProcess = new Process(implode(' ', [
             escapeshellcmd(PHP_BINARY),
-            escapeshellarg(__DIR__.DIRECTORY_SEPARATOR.'echo-server.php'),
-            escapeshellarg($this->serverHost.':'.$this->serverPort),
+            escapeshellarg(__DIR__.DIRECTORY_SEPARATOR.'server/run.php'),
+            escapeshellarg($this->serverProtocol),
+            escapeshellarg($this->serverHost),
+            escapeshellarg($this->serverPort),
         ]));
-    }
 
-    /**
-     * Starts the server and establish control connection.
-     */
-    protected function serverStart()
-    {
-        $this->serverProcess->start();
+        $this->serverProcess->start(function ($type, $output) {
+            // echo $output;
+        });
 
         $this->setUpControlConnection();
     }
@@ -58,8 +70,23 @@ class TestCase extends BaseTestCase
      */
     protected function setUpControlConnection()
     {
+        $context = stream_context_create();
+
+        if ($this->serverProtocol === 'ssl') {
+            stream_context_set_option($context, 'ssl', 'local_cert', $this->serverCert);
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
+            stream_context_set_option($context, 'ssl', 'verify_peer', false);
+        }
+
         for ($i = 0; $i < 5; ++$i) {
-            $this->control = @fsockopen($this->serverHost, $this->serverPort, $errno, $errstr, 5);
+            $this->control = @stream_socket_client(
+                sprintf('%s://%s:%d', $this->serverProtocol, $this->serverHost, $this->serverPort),
+                $errno,
+                $errstr,
+                1,
+                STREAM_CLIENT_CONNECT,
+                $context
+            );
 
             if (is_resource($this->control)) {
                 break;
@@ -69,7 +96,7 @@ class TestCase extends BaseTestCase
         }
 
         if (!is_resource($this->control)) {
-            self::markTestSkipped('An error occur when establishing control connection to echo server');
+            self::markTestSkipped('An error occur when establishing control connection to the server: '.$errstr);
         }
 
         stream_set_timeout($this->control, 1);

@@ -18,7 +18,29 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO(1, 1);
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
+
+        $io->write('ping');
+        $this->assertServerReceive('ping');
+
+        $this->serverWrite('pong');
+        $data = $io->read(4, true);
+
+        $io->close();
+
+        self::assertEquals('pong', $data);
+    }
+
+    public function testSecureConnection()
+    {
+        $this->serverStart(true);
+
+        $io = new StreamIO(1, 1);
+        $io->open($this->serverProtocol, $this->serverHost, $this->serverPort, [
+            'certfile' => $this->serverCert,
+            'verify' => false,
+            'allow_self_signed' => true,
+        ]);
 
         $io->write('ping');
         $this->assertServerReceive('ping');
@@ -39,7 +61,7 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO(1, 1);
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
         $io->write('ping');
         $io->close();
 
@@ -54,7 +76,7 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO(1, 0.1);
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
 
         $this->serverWrite('ping');
 
@@ -77,7 +99,7 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO(1, 0.1);
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
 
         $this->serverWrite('pingpo');
 
@@ -100,7 +122,7 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO(1, 0.1);
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
 
         $this->serverWrite('pi');
         $this->serverStop();
@@ -119,7 +141,7 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO();
-        $io->open($this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort);
 
         $io->write('foo');
 

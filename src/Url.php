@@ -42,21 +42,35 @@ class Url
     private $vhost;
 
     /**
+     * @var array
+     */
+    private $query = [];
+
+    /**
      * @param string $scheme
      * @param string $host
      * @param string $port
      * @param string $user
      * @param string $pass
      * @param string $vhost
+     * @param array  $query
      */
-    public function __construct($scheme = null, $host = null, $port = null, $user = null, $pass = null, $vhost = null)
-    {
+    public function __construct(
+        $scheme = null,
+        $host = null,
+        $port = null,
+        $user = null,
+        $pass = null,
+        $vhost = null,
+        array $query = []
+    ) {
         $this->scheme = empty($scheme) ? self::DEFAULT_SCHEMA : $scheme;
         $this->host = empty($host) ? self::DEFAULT_HOST : $host;
         $this->port = empty($port) ? self::DEFAULT_PORT : $port;
         $this->user = empty($user) ? self::DEFAULT_USER : $user;
         $this->pass = empty($pass) ? self::DEFAULT_PASS : $pass;
         $this->vhost = empty($vhost) ? self::DEFAULT_VHOST : $vhost;
+        $this->query = $query;
     }
 
     /**
@@ -108,6 +122,14 @@ class Url
     }
 
     /**
+     * @return array
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
      * @param string $url
      *
      * @return Url
@@ -120,13 +142,18 @@ class Url
             throw new \InvalidArgumentException(sprintf('Invalid URL "%s"', $url));
         }
 
+        $query = [];
+
+        parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
+
         return new self(
             isset($parts['scheme']) ? $parts['scheme'] : null,
             isset($parts['host']) ? $parts['host'] : null,
             isset($parts['port']) ? $parts['port'] : null,
             isset($parts['user']) ? $parts['user'] : null,
             isset($parts['pass']) ? $parts['pass'] : null,
-            isset($parts['path']) ? urldecode(substr($parts['path'], 1)) : null
+            isset($parts['path']) ? urldecode(substr($parts['path'], 1)) : null,
+            $query
         );
     }
 
@@ -138,13 +165,14 @@ class Url
     public function compose($maskPassword = false)
     {
         return sprintf(
-            '%s://%s:%s@%s:%d/%s',
+            '%s://%s:%s@%s:%d/%s%s',
             urlencode($this->scheme),
             urlencode($this->user),
             $maskPassword ? '******' : urlencode($this->pass),
             urlencode($this->host),
             $this->port,
-            urlencode($this->vhost)
+            urlencode($this->vhost),
+            $this->query ? '?'.http_build_query($this->query) : ''
         );
     }
 

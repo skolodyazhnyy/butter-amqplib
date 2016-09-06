@@ -151,7 +151,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     {
         $this->channels = [];
 
-        $this->wire->open($this->url->getHost(), $this->url->getPort())
+        $this->wire->open($this->url)
             ->subscribe(0, $this);
 
         $this->wait(ConnectionTune::class);

@@ -28,7 +28,7 @@ class BufferIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function open($host, $port)
+    public function open($protocol, $host, $port, array $parameters = [])
     {
         return $this;
     }

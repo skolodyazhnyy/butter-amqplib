@@ -53,11 +53,17 @@ class Wire implements WireInterface, LoggerAwareInterface
     /**
      * {@inheritdoc}
      */
-    public function open($host, $port)
+    public function open(Url $url)
     {
         $this->subscribers = [];
 
-        $this->io->open($host, $port);
+        $this->io->open(
+            $this->getProtocolForScheme($url),
+            $url->getHost(),
+            $url->getPort(),
+            $url->getQuery()
+        );
+
         $this->io->write(self::PROTOCOL_HEADER);
 
         // @todo: peek next 8 bytes and check if its a frame or "wrong protocol" reply
@@ -240,5 +246,15 @@ class Wire implements WireInterface, LoggerAwareInterface
     private function getSubscriber($channel)
     {
         return isset($this->subscribers[$channel]) ? $this->subscribers[$channel] : null;
+    }
+
+    /**
+     * @param Url $url
+     *
+     * @return string
+     */
+    private function getProtocolForScheme(Url $url)
+    {
+        return strcasecmp($url->getScheme(), 'amqps') == 0 ? 'ssl' : 'tcp';
     }
 }

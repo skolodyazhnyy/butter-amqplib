@@ -33,12 +33,11 @@ interface WireInterface
     /**
      * Opens connection to given host and port.
      *
-     * @param string $host
-     * @param string $port
+     * @param Url $url
      *
      * @return WireInterface
      */
-    public function open($host, $port);
+    public function open(Url $url);
 
     /**
      * Fetches next frame from the server.

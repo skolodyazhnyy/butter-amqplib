@@ -9,6 +9,7 @@ use ButterAMQP\Framing\Method\ConnectionBlocked;
 use ButterAMQP\HeartbeatInterface;
 use ButterAMQP\IO\BufferIO;
 use ButterAMQP\IOInterface;
+use ButterAMQP\Url;
 use ButterAMQP\Wire;
 use ButterAMQP\WireSubscriberInterface;
 use PHPUnit\Framework\TestCase;
@@ -41,14 +42,14 @@ class WireTest extends TestCase
 
         $io->expects(self::once())
             ->method('open')
-            ->with('amqp.server', 5621)
+            ->with('ssl', 'amqp.server', 5621)
             ->willReturnSelf();
 
         $io->expects(self::once())
             ->method('write')
             ->with("AMQP\x00\x00\x09\x01");
 
-        $wire->open('amqp.server', 5621);
+        $wire->open(Url::parse('amqps://amqp.server:5621'));
     }
 
     /**

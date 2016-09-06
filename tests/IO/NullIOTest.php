@@ -22,7 +22,7 @@ class NullIOTest extends TestCase
 
     public function testNothingHappens()
     {
-        self::assertSame($this->io, $this->io->open('x', 1));
+        self::assertSame($this->io, $this->io->open('x', 'y', 1));
         self::assertSame($this->io, $this->io->close());
         self::assertSame($this->io, $this->io->write(''));
         self::assertNull($this->io->read(1));

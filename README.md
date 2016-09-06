@@ -12,7 +12,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 
 - [x] Error response handling, proper Exception types
 - [x] Handle connection errors (connecting, reading, writing)
-- [ ] SSL support
+- [x] SSL support
 - [x] Split content frames into multiple pieces if frame-max exceeded
 - [x] Collect all data pieces when getting basic.delivery
 - [x] Implement non-blocking reading and reading timeout

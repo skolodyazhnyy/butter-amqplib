@@ -7,12 +7,14 @@ interface IOInterface
     /**
      * Open connection.
      *
+     * @param string $protocol
      * @param string $host
      * @param int    $port
+     * @param array  $parameters
      *
      * @return IOInterface
      */
-    public function open($host, $port);
+    public function open($protocol, $host, $port, array $parameters = []);
 
     /**
      * Close connection.

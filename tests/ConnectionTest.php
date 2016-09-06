@@ -21,6 +21,8 @@ use ButterAMQP\Framing\Method\ConnectionUnblocked;
 use ButterAMQP\Heartbeat\TimeHeartbeat;
 use ButterAMQP\Security\AuthenticatorInterface;
 use ButterAMQP\Security\MechanismInterface;
+use ButterAMQP\Url;
+use ButterAMQP\Wire;
 use ButterAMQP\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
@@ -59,7 +61,7 @@ class ConnectionTest extends TestCase
     {
         $this->wire->expects(self::at(0))
             ->method('open')
-            ->with('phpunit', 5672)
+            ->with(self::isInstanceOf(Url::class))
             ->willReturnSelf();
 
         $this->wire->expects(self::at(1))

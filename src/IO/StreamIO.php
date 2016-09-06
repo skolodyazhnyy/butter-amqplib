@@ -52,18 +52,29 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     /**
      * {@inheritdoc}
      */
-    public function open($host, $port)
+    public function open($protocol, $host, $port, array $parameters = [])
     {
         if ($this->stream && $this->isOpen()) {
             return $this;
         }
 
-        $this->logger->debug(sprintf('Connecting to "%s"...', $host.':'.$port), [
+        $this->logger->debug(sprintf('Connecting to "%s://%s:%d"...', $protocol, $host, $port), [
+            'protocol' => $protocol,
             'host' => $host,
             'port' => $port,
+            'parameters' => $parameters,
         ]);
 
-        $this->stream = fsockopen($host, intval($port), $errno, $errstr, $this->connectionTimeout);
+        $context = $this->createStreamContext($parameters);
+
+        $this->stream = stream_socket_client(
+            sprintf('%s://%s:%d', $protocol, $host, $port),
+            $errno,
+            $errstr,
+            $this->connectionTimeout,
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
 
         if (!$this->stream) {
             throw new IOException(sprintf(
@@ -252,5 +263,41 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     private function isOpen()
     {
         return is_resource($this->stream) && feof($this->stream);
+    }
+
+    /**
+     * @param array $parameters
+     *
+     * @return resource
+     */
+    protected function createStreamContext(array $parameters)
+    {
+        $context = stream_context_create();
+
+        if (isset($parameters['certfile'])) {
+            stream_context_set_option($context, 'ssl', 'local_cert', $parameters['certfile']);
+        }
+
+        if (isset($parameters['keyfile'])) {
+            stream_context_set_option($context, 'ssl', 'local_pk', $parameters['keyfile']);
+        }
+
+        if (isset($parameters['cacertfile'])) {
+            stream_context_set_option($context, 'ssl', 'cafile', $parameters['cacertfile']);
+        }
+
+        if (isset($parameters['passphrase'])) {
+            stream_context_set_option($context, 'ssl', 'passphrase', $parameters['passphrase']);
+        }
+
+        if (isset($parameters['verify'])) {
+            stream_context_set_option($context, 'ssl', 'verify_peer', (bool) $parameters['verify']);
+        }
+
+        if (isset($parameters['allow_self_signed'])) {
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', (bool) $parameters['allow_self_signed']);
+        }
+
+        return $context;
     }
 }
