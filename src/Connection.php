@@ -314,6 +314,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
                     'exchange_exchange_bindings' => true,
                     'basic.nack' => true,
                     'connection.blocked' => true,
+                    'consumer_cancel_notify' => true,
                 ],
             ],
             $mechanism->getName(),

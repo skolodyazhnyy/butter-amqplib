@@ -619,6 +619,39 @@ class ChannelTest extends TestCase
         $this->channel->dispatch(new BasicNack(2, true, true));
     }
 
+    public function testDispatchBasicCancel()
+    {
+        $this->wire->expects(self::exactly(2))
+            ->method('send')
+            ->withConsecutive(
+                [51, self::isInstanceOf(BasicConsume::class)],
+                [51, new BasicCancelOk('baz')]
+            );
+
+        $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
+
+        self::assertTrue($this->channel->hasConsumer('baz'));
+
+        $this->channel->dispatch(new BasicCancel('baz', false));
+
+        self::assertFalse($this->channel->hasConsumer('baz'));
+    }
+
+    public function testDispatchBasicCancelNoWait()
+    {
+        $this->wire->expects(self::exactly(1))
+            ->method('send')
+            ->with(51, self::isInstanceOf(BasicConsume::class));
+
+        $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
+
+        self::assertTrue($this->channel->hasConsumer('baz'));
+
+        $this->channel->dispatch(new BasicCancel('baz', true));
+
+        self::assertFalse($this->channel->hasConsumer('baz'));
+    }
+
     /**
      * @return Mock|callable
      */

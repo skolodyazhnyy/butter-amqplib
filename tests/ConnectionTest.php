@@ -185,6 +185,31 @@ class ConnectionTest extends TestCase
         $this->connection->dispatch(new ConnectionStart(0, 9, [], 'AMQPLAIN PLAIN', 'es-ES en-US'));
     }
 
+    public function testDispatchConnectionStartServerCapabilities()
+    {
+        $this->authenticator->expects(self::once())
+            ->method('get')
+            ->with(['AMQPLAIN', 'PLAIN'])
+            ->willReturn($this->createMock(MechanismInterface::class));
+
+        $this->connection->dispatch(new ConnectionStart(
+            0,
+            9,
+            [
+                'capabilities' => [
+                    'foo' => true,
+                    'bar' => false,
+                ],
+            ],
+            'AMQPLAIN PLAIN',
+            'es-ES en-US'
+        ));
+
+        self::assertTrue($this->connection->isSupported('foo'));
+        self::assertFalse($this->connection->isSupported('bar'));
+        self::assertFalse($this->connection->isSupported('baz'));
+    }
+
     /**
      * Connection should reply connection.tune-ok when connection.tune is received.
      */

@@ -1,7 +1,7 @@
 {
     "name": "skolodyazhnyy/butter-amqplib",
     "description": "Butter AMQP library for PHP, written purely in PHP",
-    "homepage": "https://github.com/skolodyazhnyy/butter-amqp",
+    "homepage": "https://github.com/skolodyazhnyy/butter-amqplib",
     "keywords": ["amqp", "amqplib"],
     "license": "MIT",
     "authors": [

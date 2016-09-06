@@ -387,7 +387,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function hasConsumer($tag)
     {
-        return isset($this->consumers[$tag]);
+        return isset($this->consumers[(string) $tag]);
     }
 
     /**
@@ -465,6 +465,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         if ($frame instanceof BasicNack) {
             $this->onBasicNack($frame);
+        }
+
+        if ($frame instanceof BasicCancel) {
+            $this->onBasicCancel($frame);
         }
     }
 
@@ -565,6 +569,18 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         }
 
         call_user_func($this->confirmCallable, new Confirm(false, $frame->getDeliveryTag(), $frame->isMultiple()));
+    }
+
+    /**
+     * @param BasicCancel $frame
+     */
+    private function onBasicCancel(BasicCancel $frame)
+    {
+        unset($this->consumers[$frame->getConsumerTag()]);
+
+        if (!$frame->isNoWait()) {
+            $this->send(new BasicCancelOk($frame->getConsumerTag()));
+        }
     }
 
     /**
