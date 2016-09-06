@@ -5,7 +5,6 @@ namespace ButterAMQPTest\Integration\RabbitMQ;
 use ButterAMQP\Confirm;
 use ButterAMQP\Message;
 use ButterAMQP\Queue;
-use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**
  * @group slow
@@ -15,47 +14,56 @@ class ConfirmModeTest extends TestCase
 {
     public function testConfirm()
     {
-        $unconfirmed = [1, 2, 3];
-
-        $onConfirmCallable = $this->getCallableMock();
-        $onConfirmCallable->expects(self::atLeastOnce())
-            ->method('__invoke')
-            ->willReturnCallback(function (Confirm $c) use (&$unconfirmed) {
-                foreach ($unconfirmed as $key => $number) {
-                    if ($number == $c->getDeliveryTag() || ($c->isMultiple() && $number < $c->getDeliveryTag())) {
-                        unset($unconfirmed[$key]);
-                    }
-                }
-
-                $unconfirmed = array_values($unconfirmed);
-            });
+        $unconfirmed = [];
 
         $channel = $this->connection->open()
             ->channel();
 
-        $channel->onConfirm($onConfirmCallable);
+        $channel->selectConfirm(function (Confirm $confirm) use (&$unconfirmed) {
+            $min = empty($unconfirmed) ? 1 : min(array_keys($unconfirmed));
+
+            $numbers = $confirm->isMultiple() ? range($min, $confirm->getDeliveryTag()) :
+                [$confirm->getDeliveryTag()];
+
+            foreach ($numbers as $number) {
+                unset($unconfirmed[$number]);
+            }
+        });
 
         $queue = $channel->queue()
             ->define(Queue::FLAG_AUTO_DELETE);
 
         $channel->publish(new Message(''), '', $queue);
-        $channel->publish(new Message(''), '', $queue);
-        $channel->publish(new Message(''), '', $queue);
+        $unconfirmed[1] = true;
 
-        $this->connection->serve(true);
-        $this->connection->serve(true);
-        $this->connection->serve(true);
+        $channel->publish(new Message(''), '', $queue);
+        $unconfirmed[2] = true;
+
+        $channel->publish(new Message(''), '', $queue);
+        $unconfirmed[3] = true;
+
+        $timeout = $this->createTimeout(1);
+
+        while (!empty($unconfirmed) && !$timeout()) {
+            $this->connection->serve(true);
+        }
 
         self::assertEquals([], $unconfirmed);
     }
 
     /**
-     * @return Mock|callable
+     * Create a timeout closure.
+     *
+     * @param int $delay
+     *
+     * @return \Closure
      */
-    private function getCallableMock()
+    private function createTimeout($delay)
     {
-        return $this->getMockBuilder(\stdClass::class)
-            ->setMethods(['__invoke'])
-            ->getMock();
+        $end = time() + $delay;
+
+        return function () use ($end) {
+            return time() >= $end;
+        };
     }
 }

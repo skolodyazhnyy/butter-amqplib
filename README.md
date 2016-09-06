@@ -54,6 +54,6 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Queue Delete
 - [x] Queue Purge
 - [x] Queue Unbind
-- [ ] Tx Commit
-- [ ] Tx Rollback
-- [ ] Tx Select
+- [x] Tx Commit
+- [x] Tx Rollback
+- [x] Tx Select

@@ -22,6 +22,8 @@ interface ConnectionInterface
      *
      * Most likely you don't need more channels than threads in your application.
      *
+     * Channels will be recreated after connection is re-opened.
+     *
      * @param int|null $id
      *
      * @return ChannelInterface

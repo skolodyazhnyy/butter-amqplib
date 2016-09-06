@@ -55,6 +55,8 @@ class Wire implements WireInterface, LoggerAwareInterface
      */
     public function open($host, $port)
     {
+        $this->subscribers = [];
+
         $this->io->open($host, $port);
         $this->io->write(self::PROTOCOL_HEADER);
 

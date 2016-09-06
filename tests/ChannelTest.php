@@ -37,6 +37,12 @@ use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
 use ButterAMQP\Framing\Method\ConfirmSelect;
 use ButterAMQP\Framing\Method\ConfirmSelectOk;
+use ButterAMQP\Framing\Method\TxCommit;
+use ButterAMQP\Framing\Method\TxCommitOk;
+use ButterAMQP\Framing\Method\TxRollback;
+use ButterAMQP\Framing\Method\TxRollbackOk;
+use ButterAMQP\Framing\Method\TxSelect;
+use ButterAMQP\Framing\Method\TxSelectOk;
 use ButterAMQP\Message;
 use ButterAMQP\Queue;
 use ButterAMQP\Returned;
@@ -392,7 +398,7 @@ class ChannelTest extends TestCase
         $this->channel->recover(true);
     }
 
-    public function testConfirmMode()
+    public function testSelectConfirm()
     {
         $this->wire->expects(self::once())
             ->method('send')
@@ -402,11 +408,11 @@ class ChannelTest extends TestCase
             ->method('wait')
             ->with(51, ConfirmSelectOk::class);
 
-        $this->channel->onConfirm(function () {
+        $this->channel->selectConfirm(function () {
         });
     }
 
-    public function testConfirmModeNoWait()
+    public function testSelectConfirmNoWait()
     {
         $this->wire->expects(self::once())
             ->method('send')
@@ -415,8 +421,64 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::never())
             ->method('wait');
 
-        $this->channel->onConfirm(function () {
-        }, true);
+        $this->channel->selectConfirm(
+            function () {
+            },
+            true
+        );
+    }
+
+    public function testSelectTx()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new TxSelect());
+
+        $this->wire->expects(self::once())
+            ->method('wait')
+            ->with(51, TxSelectOk::class);
+
+        $this->channel->selectTx();
+    }
+
+    public function testTxCommit()
+    {
+        $this->wire->expects(self::exactly(2))
+            ->method('send')
+            ->withConsecutive(
+                [51, new TxSelect()],
+                [51, new TxCommit()]
+            );
+
+        $this->wire->expects(self::exactly(2))
+            ->method('wait')
+            ->withConsecutive(
+                [51, TxSelectOk::class],
+                [51, TxCommitOk::class]
+            );
+
+        $this->channel->selectTx()
+            ->txCommit();
+    }
+
+    public function testTxRollback()
+    {
+        $this->wire->expects(self::exactly(2))
+            ->method('send')
+            ->withConsecutive(
+                [51, new TxSelect()],
+                [51, new TxRollback()]
+            );
+
+        $this->wire->expects(self::exactly(2))
+            ->method('wait')
+            ->withConsecutive(
+                [51, TxSelectOk::class],
+                [51, TxRollbackOk::class]
+            );
+
+        $this->channel->selectTx()
+            ->txRollback();
     }
 
     public function testDispatchChannelClose()
@@ -526,7 +588,7 @@ class ChannelTest extends TestCase
             ->method('__invoke')
             ->with(new Confirm(true, 2, true));
 
-        $this->channel->onConfirm($callable);
+        $this->channel->selectConfirm($callable);
 
         $this->channel->dispatch(new BasicAck(2, true));
     }
@@ -545,7 +607,7 @@ class ChannelTest extends TestCase
             ->method('__invoke')
             ->with(new Confirm(false, 2, true));
 
-        $this->channel->onConfirm($callable);
+        $this->channel->selectConfirm($callable);
 
         $this->channel->dispatch(new BasicNack(2, true, true));
     }

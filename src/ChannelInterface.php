@@ -143,19 +143,52 @@ interface ChannelInterface
     public function onReturn(callable $callable);
 
     /**
-     * Set a callback to handle publishing confirmation.
-     * Once this callback is set channel will be switched to confirm-mode.
+     * Switch channel to confirm mode. In this mode every published message will be acknowledged
+     * by the server once it takes responsibilities for it.
      *
-     * @see https://www.rabbitmq.com/confirms.html
+     * Every time server sends acknowledgment callable will be invoked to handle acknowledgment.
      *
-     * @param callable $callable
-     * @param bool     $noWait
+     * @see for more details see https://www.rabbitmq.com/confirms.html
+     *
+     * @param callable $callable will be called ever time when message is confirmed, and instance
+     *                           of Confirm object will be passed as first argument
+     * @param bool     $noWait   do not wait for server confirmation that channel mode changed
      *
      * @return ChannelInterface
      */
-    public function onConfirm(callable $callable, $noWait = false);
+    public function selectConfirm(callable $callable, $noWait = false);
 
     /**
+     * Switch channel to transactional mode. In this mode all acknowledgments and published messages
+     * will be hold by the server until transaction is committed using ChannelInterface::txCommit()
+     * or will be rejected if transaction is rolled back using ChannelInterface::txRollback().
+     *
+     * Transactions are atomic only within one queue.
+     *
+     * Some AMQP servers, like RabbitMQ, provide additional confirm mode which provide different way
+     * to ensure messages are properly delivered to AMQP server and not lost on its way.
+     *
+     * @return ChannelInterface
+     */
+    public function selectTx();
+
+    /**
+     * Commit transaction. A new transaction will be started immediately.
+     *
+     * @return ChannelInterface
+     */
+    public function txCommit();
+
+    /**
+     * Rollback transaction. A new transaction will be started immediately.
+     *
+     * @return ChannelInterface
+     */
+    public function txRollback();
+
+    /**
+     * Verify if given consumers tag is registered within channel.
+     *
      * @param string $tag
      *
      * @return bool
@@ -163,6 +196,8 @@ interface ChannelInterface
     public function hasConsumer($tag);
 
     /**
+     * Returns all registered consumers in the channel.
+     *
      * @return array
      */
     public function getConsumerTags();

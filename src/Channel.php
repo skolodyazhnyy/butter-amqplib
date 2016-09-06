@@ -4,6 +4,7 @@ namespace ButterAMQP;
 
 use ButterAMQP\Exception\AMQPException;
 use ButterAMQP\Exception\NoReturnException;
+use ButterAMQP\Exception\TransactionNotSelectedException;
 use ButterAMQP\Exception\UnknownConsumerTagException;
 use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Frame;
@@ -33,6 +34,12 @@ use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
 use ButterAMQP\Framing\Method\ConfirmSelect;
 use ButterAMQP\Framing\Method\ConfirmSelectOk;
+use ButterAMQP\Framing\Method\TxCommit;
+use ButterAMQP\Framing\Method\TxCommitOk;
+use ButterAMQP\Framing\Method\TxRollback;
+use ButterAMQP\Framing\Method\TxRollbackOk;
+use ButterAMQP\Framing\Method\TxSelect;
+use ButterAMQP\Framing\Method\TxSelectOk;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -45,6 +52,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     const STATUS_READY = 1;
     const STATUS_INACTIVE = 2;
 
+    const MODE_NORMAL = 0;
+    const MODE_CONFIRM = 1;
+    const MODE_TX = 2;
+
     /**
      * @var int
      */
@@ -56,9 +67,14 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     private $wire;
 
     /**
-     * @var string
+     * @var int
      */
     private $status = self::STATUS_CLOSED;
+
+    /**
+     * @var int
+     */
+    private $mode = self::MODE_NORMAL;
 
     /**
      * @var callable[]
@@ -101,6 +117,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
             ->wait(ChannelOpenOk::class);
 
         $this->status = self::STATUS_READY;
+        $this->mode = self::MODE_NORMAL;
 
         return $this;
     }
@@ -307,7 +324,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     /**
      * {@inheritdoc}
      */
-    public function onConfirm(callable $callable, $noWait = false)
+    public function selectConfirm(callable $callable, $noWait = false)
     {
         $this->confirmCallable = $callable;
 
@@ -317,7 +334,52 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
             $this->wait(ConfirmSelectOk::class);
         }
 
+        $this->mode = self::MODE_CONFIRM;
+
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function selectTx()
+    {
+        $this->send(new TxSelect())
+            ->wait(TxSelectOk::class);
+
+        $this->mode = self::MODE_TX;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function txCommit()
+    {
+        if ($this->mode != self::MODE_TX) {
+            throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
+        }
+
+        $this->send(new TxCommit())
+            ->wait(TxCommitOk::class);
+
+        return;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function txRollback()
+    {
+        if ($this->mode != self::MODE_TX) {
+            throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
+        }
+
+        $this->send(new TxRollback())
+            ->wait(TxRollbackOk::class);
+
+        return;
     }
 
     /**
@@ -342,6 +404,14 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode()
+    {
+        return $this->mode;
     }
 
     /**
