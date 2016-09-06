@@ -37,7 +37,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Channel Close
 - [x] Channel Flow
 - [x] Channel Open
-- [ ] Confirm Select
+- [x] Confirm Select
 - [x] Connection Blocked
 - [x] Connection Close
 - [x] Connection Open

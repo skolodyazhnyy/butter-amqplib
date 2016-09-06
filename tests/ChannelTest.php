@@ -3,6 +3,7 @@
 namespace ButterAMQPTest;
 
 use ButterAMQP\Channel;
+use ButterAMQP\Confirm;
 use ButterAMQP\Consumer;
 use ButterAMQP\Delivery;
 use ButterAMQP\Exception\ChannelException;
@@ -34,6 +35,8 @@ use ButterAMQP\Framing\Method\ChannelFlow;
 use ButterAMQP\Framing\Method\ChannelFlowOk;
 use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
+use ButterAMQP\Framing\Method\ConfirmSelect;
+use ButterAMQP\Framing\Method\ConfirmSelectOk;
 use ButterAMQP\Message;
 use ButterAMQP\Queue;
 use ButterAMQP\Returned;
@@ -389,6 +392,33 @@ class ChannelTest extends TestCase
         $this->channel->recover(true);
     }
 
+    public function testConfirmMode()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new ConfirmSelect(false));
+
+        $this->wire->expects(self::once())
+            ->method('wait')
+            ->with(51, ConfirmSelectOk::class);
+
+        $this->channel->onConfirm(function () {
+        });
+    }
+
+    public function testConfirmModeNoWait()
+    {
+        $this->wire->expects(self::once())
+            ->method('send')
+            ->with(51, new ConfirmSelect(true));
+
+        $this->wire->expects(self::never())
+            ->method('wait');
+
+        $this->channel->onConfirm(function () {
+        }, true);
+    }
+
     public function testDispatchChannelClose()
     {
         $this->expectException(ChannelException::class);
@@ -487,6 +517,44 @@ class ChannelTest extends TestCase
             );
 
         $this->channel->dispatch(new BasicReturn(0, '', '', ''));
+    }
+
+    public function testDispatchBasicAck()
+    {
+        $callable = $this->getCallableMock();
+        $callable->expects(self::once())
+            ->method('__invoke')
+            ->with(new Confirm(true, 2, true));
+
+        $this->channel->onConfirm($callable);
+
+        $this->channel->dispatch(new BasicAck(2, true));
+    }
+
+    public function testDispatchBasicAckWithoutConfirmCallable()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->channel->dispatch(new BasicAck(2, true, true));
+    }
+
+    public function testDispatchBasicNack()
+    {
+        $callable = $this->getCallableMock();
+        $callable->expects(self::once())
+            ->method('__invoke')
+            ->with(new Confirm(false, 2, true));
+
+        $this->channel->onConfirm($callable);
+
+        $this->channel->dispatch(new BasicNack(2, true, true));
+    }
+
+    public function testDispatchBasicNackWithoutConfirmCallable()
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->channel->dispatch(new BasicNack(2, true, true));
     }
 
     /**

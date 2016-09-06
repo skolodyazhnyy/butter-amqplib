@@ -31,6 +31,8 @@ use ButterAMQP\Framing\Method\ChannelFlow;
 use ButterAMQP\Framing\Method\ChannelFlowOk;
 use ButterAMQP\Framing\Method\ChannelOpen;
 use ButterAMQP\Framing\Method\ChannelOpenOk;
+use ButterAMQP\Framing\Method\ConfirmSelect;
+use ButterAMQP\Framing\Method\ConfirmSelectOk;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -67,6 +69,11 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      * @var callable
      */
     private $returnCallable;
+
+    /**
+     * @var callable
+     */
+    private $confirmCallable;
 
     /**
      * @param WireInterface $wire
@@ -300,6 +307,22 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     /**
      * {@inheritdoc}
      */
+    public function onConfirm(callable $callable, $noWait = false)
+    {
+        $this->confirmCallable = $callable;
+
+        $this->send(new ConfirmSelect($noWait));
+
+        if (!$noWait) {
+            $this->wait(ConfirmSelectOk::class);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function hasConsumer($tag)
     {
         return isset($this->consumers[$tag]);
@@ -364,6 +387,14 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         if ($frame instanceof BasicReturn) {
             $this->onBasicReturn($frame);
+        }
+
+        if ($frame instanceof BasicAck) {
+            $this->onBasicAck($frame);
+        }
+
+        if ($frame instanceof BasicNack) {
+            $this->onBasicNack($frame);
         }
     }
 
@@ -436,6 +467,34 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         );
 
         call_user_func($this->returnCallable, $returned);
+    }
+
+    /**
+     * @param BasicAck $frame
+     */
+    private function onBasicAck(BasicAck $frame)
+    {
+        if (!$this->confirmCallable) {
+            throw new \RuntimeException(
+                'Something is wrong: channel is in confirm mode, but confirm callable is not set'
+            );
+        }
+
+        call_user_func($this->confirmCallable, new Confirm(true, $frame->getDeliveryTag(), $frame->isMultiple()));
+    }
+
+    /**
+     * @param BasicNack $frame
+     */
+    private function onBasicNack(BasicNack $frame)
+    {
+        if (!$this->confirmCallable) {
+            throw new \RuntimeException(
+                'Something is wrong: channel is in confirm mode, but confirm callable is not set'
+            );
+        }
+
+        call_user_func($this->confirmCallable, new Confirm(false, $frame->getDeliveryTag(), $frame->isMultiple()));
     }
 
     /**

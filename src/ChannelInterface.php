@@ -143,6 +143,19 @@ interface ChannelInterface
     public function onReturn(callable $callable);
 
     /**
+     * Set a callback to handle publishing confirmation.
+     * Once this callback is set channel will be switched to confirm-mode.
+     *
+     * @see https://www.rabbitmq.com/confirms.html
+     *
+     * @param callable $callable
+     * @param bool     $noWait
+     *
+     * @return ChannelInterface
+     */
+    public function onConfirm(callable $callable, $noWait = false);
+
+    /**
      * @param string $tag
      *
      * @return bool
