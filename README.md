@@ -17,7 +17,7 @@ More documentation and complete support for AMQP 0.9.1 coming soon, but feel fre
 - [x] Collect all data pieces when getting basic.delivery
 - [x] Implement non-blocking reading and reading timeout
 - [x] Implement heartbeat
-- [ ] Send Client Capabilities
+- [x] Send Client Capabilities
 - [ ] Decimal type support
 - [ ] Verify and fix long long and unsigned long long type
 

@@ -72,6 +72,11 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     private $heartbeat = 0;
 
     /**
+     * @var array
+     */
+    private $capabilities = [];
+
+    /**
      * @param Url|string             $url
      * @param WireInterface          $wire
      * @param AuthenticatorInterface $authenticator
@@ -150,6 +155,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     public function open()
     {
         $this->channels = [];
+        $this->capabilities = [];
 
         $this->wire->open($this->url)
             ->subscribe(0, $this);
@@ -207,6 +213,15 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         $this->wire->close();
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isSupported($capability)
+    {
+        return isset($this->capabilities[$capability]) ?
+            (bool) $this->capabilities[$capability] : false;
     }
 
     /**
@@ -279,13 +294,28 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
      */
     private function onConnectionStart(ConnectionStart $frame)
     {
+        $properties = $frame->getServerProperties();
+
+        $this->capabilities = isset($properties['capabilities']) ?
+            $properties['capabilities'] : [];
+
         $mechanism = $this->authenticator
             ->get(explode(' ', $frame->getMechanisms()));
 
         list($locale) = explode(' ', $frame->getLocales());
 
         $this->send(new ConnectionStartOk(
-            ['product' => 'ButterAMQP', 'version' => '0.1.0', 'platform' => 'PHP '.PHP_VERSION],
+            [
+                'platform' => 'PHP '.PHP_VERSION,
+                'product' => 'ButterAMQP',
+                'version' => '0.1.0',
+                'capabilities' => [
+                    'publisher_confirms' => true,
+                    'exchange_exchange_bindings' => true,
+                    'basic.nack' => true,
+                    'connection.blocked' => true,
+                ],
+            ],
             $mechanism->getName(),
             $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
             $locale

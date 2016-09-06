@@ -48,4 +48,13 @@ interface ConnectionInterface
      * @return ConnectionInterface
      */
     public function close($code = 0, $text = '');
+
+    /**
+     * Check if server supports capabilities.
+     *
+     * @param string $capability
+     *
+     * @return bool
+     */
+    public function isSupported($capability);
 }
