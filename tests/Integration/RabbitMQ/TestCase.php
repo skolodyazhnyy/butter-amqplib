@@ -4,6 +4,7 @@ namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Connection;
 use ButterAMQP\IO\StreamIO;
+use ButterAMQP\Url;
 use ButterAMQP\Wire;
 use ButterAMQP\WireInterface;
 use PHPUnit_Framework_TestCase as BaseTestCase;
@@ -36,7 +37,7 @@ class TestCase extends BaseTestCase
 
         $this->io = new StreamIO(1, 1);
         $this->wire = new Wire($this->io);
-        $this->connection = new Connection($_SERVER['RABBITMQ_URL'], $this->wire);
+        $this->connection = new Connection(Url::parse($_SERVER['RABBITMQ_URL']), $this->wire);
     }
 
     /**

@@ -17,6 +17,7 @@ use ButterAMQP\Framing\Method\ConnectionTune;
 use ButterAMQP\Framing\Method\ConnectionTuneOk;
 use ButterAMQP\Framing\Method\ConnectionUnblocked;
 use ButterAMQP\Heartbeat\TimeHeartbeat;
+use ButterAMQP\IO\StreamIO;
 use ButterAMQP\Security\Authenticator;
 use ButterAMQP\Security\AuthenticatorInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -81,12 +82,27 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
      * @param WireInterface          $wire
      * @param AuthenticatorInterface $authenticator
      */
-    public function __construct($url, WireInterface $wire, AuthenticatorInterface $authenticator = null)
+    public function __construct(Url $url, WireInterface $wire, AuthenticatorInterface $authenticator = null)
     {
-        $this->url = $url instanceof Url ? $url : Url::parse($url);
+        $this->url = $url;
         $this->wire = $wire;
         $this->authenticator = $authenticator ?: Authenticator::build();
         $this->logger = new NullLogger();
+    }
+
+    /**
+     * @param Url|string $url
+     *
+     * @return Connection
+     */
+    public static function make($url)
+    {
+        $url = $url instanceof Url ? $url : Url::parse($url);
+
+        return new self($url, new Wire(new StreamIO(
+            (float) $url->getQueryParameter('connection_timeout', 30),
+            (float) $url->getQueryParameter('timeout', 0.5)
+        )));
     }
 
     /**

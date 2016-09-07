@@ -28,13 +28,9 @@ of the Composer documentation.
 
 use ButterAMQP\Connection;
 use ButterAMQP\Message;
-use ButterAMQP\IO\StreamIO;
-use ButterAMQP\Wire;
-
-$url = "amqp://guest:guest@localhost:5672/";
 
 // Initialize connection to AMQP server
-$connection = new Connection($url, new Wire(new StreamIO()));
+$connection = Connection::make("amqp://guest:guest@localhost:5672/");
 
 // Connect to the server
 $connection->open();
@@ -58,13 +54,9 @@ $connection->close();
 
 use ButterAMQP\Connection;
 use ButterAMQP\Delivery;
-use ButterAMQP\IO\StreamIO;
-use ButterAMQP\Wire;
-
-$url = "amqp://guest:guest@localhost:5672/";
 
 // Initialize connection to AMQP server
-$connection = new Connection($url, new Wire(new StreamIO()));
+$connection = Connection::make("amqp://guest:guest@localhost:5672/");
 
 // Connect to the server
 $connection->open();

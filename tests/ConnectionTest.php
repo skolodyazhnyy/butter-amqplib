@@ -51,7 +51,7 @@ class ConnectionTest extends TestCase
     {
         $this->wire = $this->createMock(WireInterface::class);
         $this->authenticator = $this->createMock(AuthenticatorInterface::class);
-        $this->connection = new Connection('amqp://phpunit/foo', $this->wire, $this->authenticator);
+        $this->connection = new Connection(Url::parse('amqp://phpunit/foo'), $this->wire, $this->authenticator);
     }
 
     /**

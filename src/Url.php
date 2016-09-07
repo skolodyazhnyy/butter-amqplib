@@ -135,6 +135,17 @@ class Url
     }
 
     /**
+     * @param string $key
+     * @param mixed  $default
+     *
+     * @return mixed
+     */
+    public function getQueryParameter($key, $default = null)
+    {
+        return isset($this->query[$key]) ? $this->query[$key] : $default;
+    }
+
+    /**
      * @param string $url
      *
      * @return Url
