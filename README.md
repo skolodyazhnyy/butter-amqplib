@@ -38,10 +38,10 @@ $connection->open();
 $channel = $connection->channel();
 
 // Construct a message to be published
-$message = new Message('hi there', ['content-type' => 'plain/text']);
+$message = new Message('hi there', ['content-type' => 'text/plain']);
 
 // Publish message to default exchange, with routing key "text-messages".
-$channel->publish($message, '', 'text-message');
+$channel->publish($message, '', 'text-messages');
 
 // Close connection
 $connection->close();
@@ -70,7 +70,7 @@ $consumer = $channel->consume('text-messages', function(Delivery $delivery) {
     $delivery->ack();
 });
 
-// Serve connection until consumer is active
+// Serve connection until consumer is cancelled
 while($consumer->isActive()) {
     $connection->serve();
 }
