@@ -33,7 +33,7 @@ class AMQPlainMechanism implements MechanismInterface
             Binary::pack('C', Binary::length(self::PASSWORD_KEY)),
             self::PASSWORD_KEY,
             self::STRING_TYPE_HINT,
-            Binary::pack('N', Binary::length($username)),
+            Binary::pack('N', Binary::length($password)),
             $password,
         ]);
     }

@@ -24,8 +24,8 @@ class AMQPlainMechanismTest extends \PHPUnit_Framework_TestCase
     public function testResponse()
     {
         $this->assertEquals(
-            "\x05LOGINS\x00\x00\x00\x05guest\x08PASSWORDS\x00\x00\x00\x05guest",
-            $this->mechanism->getResponse('guest', 'guest')
+            "\x05LOGINS\x00\x00\x00\x05guest\x08PASSWORDS\x00\x00\x00\x07batman1",
+            $this->mechanism->getResponse('guest', 'batman1')
         );
     }
 }

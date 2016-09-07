@@ -24,8 +24,8 @@ class PlainMechanismTest extends \PHPUnit_Framework_TestCase
     public function testResponse()
     {
         $this->assertEquals(
-            "\x00guest\x00guest",
-            $this->mechanism->getResponse('guest', 'guest')
+            "\x00guest\x00batman1",
+            $this->mechanism->getResponse('guest', 'batman1')
         );
     }
 }
