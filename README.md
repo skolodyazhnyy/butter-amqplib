@@ -6,54 +6,90 @@ This library provides functional level interfaces for interacting with AMQP serv
 
 More documentation and complete support for AMQP 0.9.1 coming soon, but feel free to leave any suggestion or give feedback.
 
-## To do
+## Installation
 
-### Features
+Easiest way to start using Butter AMQP library is to install it using [composer](https://getcomposer.org/doc/00-intro.md#introduction). 
+It has almost no dependencies and does not conflict with any other library.
 
-- [x] Error response handling, proper Exception types
-- [x] Handle connection errors (connecting, reading, writing)
-- [x] SSL support
-- [x] Split content frames into multiple pieces if frame-max exceeded
-- [x] Collect all data pieces when getting basic.delivery
-- [x] Implement non-blocking reading and reading timeout
-- [x] Implement heartbeat
-- [x] Send Client Capabilities
-- [ ] Decimal type support
-- [ ] Verify and fix long long and unsigned long long type
+Open a command console, enter your project directory and execute the following command to download the latest version of this library.
 
-### Frames
+```bash
+$ composer require skolodyazhnyy/butter-amqplib dev-master
+```
 
-- [x] Basic ACK
-- [x] Basic Cancel
-- [x] Basic Consume
-- [x] Basic Deliver
-- [x] Basic Get
-- [x] Basic NACK
-- [x] Basic Publish
-- [x] Basic QOS
-- [x] Basic Recover
-- [x] Basic Reject
-- [x] Basic Return
-- [x] Channel Close
-- [x] Channel Flow
-- [x] Channel Open
-- [x] Confirm Select
-- [x] Connection Blocked
-- [x] Connection Close
-- [x] Connection Open
-- [ ] Connection Secure
-- [x] Connection Start
-- [x] Connection Tune
-- [x] Connection Unblocked
-- [x] Exchange Bind
-- [x] Exchange Declare
-- [x] Exchange Delete
-- [x] Exchange Unbind
-- [x] Queue Bind
-- [x] Queue Declare
-- [x] Queue Delete
-- [x] Queue Purge
-- [x] Queue Unbind
-- [x] Tx Commit
-- [x] Tx Rollback
-- [x] Tx Select
+This command requires you to have Composer installed globally, as explained in the  [installation chapter](https://getcomposer.org/doc/00-intro.md)
+of the Composer documentation.
+
+## Usage
+
+### Publishing messages
+
+```php
+
+use ButterAMQP\Connection;
+use ButterAMQP\Message;
+use ButterAMQP\IO\StreamIO;
+use ButterAMQP\Wire;
+
+$url = "amqp://guest:guest@localhost:5672/";
+
+// Initialize connection to AMQP server
+$connection = new Connection($url, new Wire(new StreamIO()));
+
+// Connect to the server
+$connection->open();
+
+// Fetch a channel (thread within a connection)
+$channel = $connection->channel();
+
+// Construct a message to be published
+$message = new Message('hi there', ['content-type' => 'plain/text']);
+
+// Publish message to default exchange, with routing key "text-messages".
+$channel->publish($message, '', 'text-message');
+
+// Close connection
+$connection->close();
+```
+
+### Consuming messages
+
+```php
+
+use ButterAMQP\Connection;
+use ButterAMQP\Delivery;
+use ButterAMQP\IO\StreamIO;
+use ButterAMQP\Wire;
+
+$url = "amqp://guest:guest@localhost:5672/";
+
+// Initialize connection to AMQP server
+$connection = new Connection($url, new Wire(new StreamIO()));
+
+// Connect to the server
+$connection->open();
+
+// Fetch a channel (thread within a connection)
+$channel = $connection->channel();
+
+// Declare consumer
+$consumer = $channel->consume('text-messages', function(Delivery $delivery) {
+    echo "Receive a message: " . $delivery->getBody() . PHP_EOL;
+    
+    // Acknowledge delivery
+    $delivery->ack();
+});
+
+// Serve connection until consumer is active
+while($consumer->isActive()) {
+    $connection->serve();
+}
+
+// Close connection
+$connection->close();
+```
+
+## Known issues
+
+- [ ] Decimal type is not supported
+- [ ] Unsigned long long type is not supported
