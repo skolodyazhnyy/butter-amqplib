@@ -25,7 +25,6 @@ of the Composer documentation.
 ### Publishing messages
 
 ```php
-
 use ButterAMQP\Connection;
 use ButterAMQP\Message;
 
@@ -51,7 +50,6 @@ $connection->close();
 ### Consuming messages
 
 ```php
-
 use ButterAMQP\Connection;
 use ButterAMQP\Delivery;
 
