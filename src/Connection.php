@@ -58,21 +58,6 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
     private $channels = [];
 
     /**
-     * @var int
-     */
-    private $frameMax = 0;
-
-    /**
-     * @var int
-     */
-    private $channelMax = 0;
-
-    /**
-     * @var int
-     */
-    private $heartbeat = 0;
-
-    /**
      * @var array
      */
     private $capabilities = [];
@@ -103,56 +88,6 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
             (float) $url->getQueryParameter('connection_timeout', 30),
             (float) $url->getQueryParameter('timeout', 0.5)
         )));
-    }
-
-    /**
-     * Set max frame size.
-     * This value could be lowered by server.
-     * Zero means - no preference.
-     * Minimal value 4096, established by protocol specification.
-     *
-     * @param int $frameMax maximum desired length of the frame
-     *
-     * @return $this
-     */
-    public function setFrameMax($frameMax)
-    {
-        $this->frameMax = $frameMax;
-
-        return $this;
-    }
-
-    /**
-     * Set max number of channels in the connection.
-     * This value could be lowered by server.
-     * Zero means - no preference.
-     * Limited to 65535 by protocol specification.
-     *
-     * @param int $channelMax
-     *
-     * @return $this
-     */
-    public function setChannelMax($channelMax)
-    {
-        $this->channelMax = $channelMax;
-
-        return $this;
-    }
-
-    /**
-     * Set desired heartbeat delay.
-     * This value could be lowered by server.
-     * Zero means - no heartbeat.
-     *
-     * @param int $heartbeat
-     *
-     * @return $this
-     */
-    public function setHeartbeat($heartbeat)
-    {
-        $this->heartbeat = $heartbeat;
-
-        return $this;
     }
 
     /**
@@ -354,21 +289,21 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
             return ($a * $b == 0) ? max($a, $b) : min($a, $b);
         };
 
-        $this->channelMax = $negotiate($this->channelMax, $frame->getChannelMax());
-        $this->frameMax = $negotiate($this->frameMax, $frame->getFrameMax());
-        $this->heartbeat = $negotiate($this->heartbeat, $frame->getHeartbeat());
+        $channelMax = $negotiate($this->url->getQueryParameter('channel_max', 0), $frame->getChannelMax());
+        $frameMax = $negotiate($this->url->getQueryParameter('frame_max', 0), $frame->getFrameMax());
+        $heartbeat = $negotiate($this->url->getQueryParameter('heartbeat', 60), $frame->getHeartbeat());
 
         $this->logger->debug(sprintf(
             'Tune connection: up to %d channels, %d frame size, heartbeat every %d seconds',
-            $this->channelMax,
-            $this->frameMax,
-            $this->heartbeat
+            $channelMax,
+            $frameMax,
+            $heartbeat
         ));
 
-        $this->send(new ConnectionTuneOk($this->channelMax, $this->frameMax, $this->heartbeat));
+        $this->send(new ConnectionTuneOk($channelMax, $frameMax, $heartbeat));
 
-        $this->wire->setHeartbeat(new TimeHeartbeat($this->heartbeat))
-            ->setFrameMax($this->frameMax);
+        $this->wire->setHeartbeat(new TimeHeartbeat($heartbeat))
+            ->setFrameMax($frameMax);
     }
 
     /**

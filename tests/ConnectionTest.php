@@ -237,6 +237,9 @@ class ConnectionTest extends TestCase
      */
     public function testDispatchConnectionTuneNegotiate()
     {
+        $url = Url::parse('amqp://phpunit/foo?heartbeat=1&frame_max=0&channel_max=3');
+        $connection = new Connection($url, $this->wire, $this->authenticator);
+
         $this->wire->expects(self::once())
             ->method('setHeartbeat')
             ->willReturnSelf();
@@ -249,11 +252,7 @@ class ConnectionTest extends TestCase
             ->method('send')
             ->with(0, new ConnectionTuneOk(1, 2, 1));
 
-        $this->connection->setChannelMax(3);
-        $this->connection->setFrameMax(0);
-        $this->connection->setHeartbeat(1);
-
-        $this->connection->dispatch(new ConnectionTune(1, 2, 3));
+        $connection->dispatch(new ConnectionTune(1, 2, 3));
     }
 
     /**
