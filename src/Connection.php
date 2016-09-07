@@ -315,6 +315,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
                     'basic.nack' => true,
                     'connection.blocked' => true,
                     'consumer_cancel_notify' => true,
+                    'authentication_failure_close' => true,
                 ],
             ],
             $mechanism->getName(),
