@@ -171,4 +171,17 @@ class Message
 
         return $this->withProperty('headers', $headers);
     }
+
+    /**
+     * Define how to print object when dumping.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [
+            'properties' => $this->getProperties(),
+            'body' => $this->getBody(),
+        ];
+    }
 }

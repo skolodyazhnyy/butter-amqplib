@@ -70,4 +70,19 @@ class Returned extends Message
     {
         return $this->routingKey;
     }
+
+    /**
+     * Define how to print object when dumping.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return array_merge(parent::__debugInfo(), [
+            'reply_code' => $this->replyCode,
+            'reply_text' => $this->replyText,
+            'exchange' => $this->exchange,
+            'routing_key' => $this->routingKey,
+        ]);
+    }
 }

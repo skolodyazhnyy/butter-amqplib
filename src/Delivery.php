@@ -163,4 +163,21 @@ class Delivery extends Message
     {
         return $this->routingKey;
     }
+
+    /**
+     * Define how to print object when dumping.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return array_merge(parent::__debugInfo(), [
+            'consumer_tag' => $this->consumerTag,
+            'delivery_tag' => $this->deliveryTag,
+            'redeliver' => $this->redeliver,
+            'exchange' => $this->exchange,
+            'routing_key' => $this->routingKey,
+            'channel_object_hash' => spl_object_hash($this->channel),
+        ]);
+    }
 }

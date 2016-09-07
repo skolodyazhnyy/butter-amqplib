@@ -41,7 +41,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      * @param int|float $connectionTimeout
      * @param int|float $readingTimeout
      */
-    public function __construct($connectionTimeout = 30, $readingTimeout = 30)
+    public function __construct($connectionTimeout = 30, $readingTimeout = 1)
     {
         $this->logger = new NullLogger();
 
@@ -67,7 +67,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
 
         $context = $this->createStreamContext($parameters);
 
-        $this->stream = stream_socket_client(
+        $this->stream = @stream_socket_client(
             sprintf('%s://%s:%d', $protocol, $host, $port),
             $errno,
             $errstr,
@@ -260,7 +260,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     /**
      * @return bool
      */
-    private function isOpen()
+    public function isOpen()
     {
         return is_resource($this->stream) && feof($this->stream);
     }

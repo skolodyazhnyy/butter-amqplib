@@ -5,8 +5,9 @@ namespace ButterAMQP;
 class Url
 {
     const DEFAULT_SCHEMA = 'amqp';
-    const DEFAULT_HOST = 'locahost';
+    const DEFAULT_HOST = 'localhost';
     const DEFAULT_PORT = 5672;
+    const DEFAULT_SECURE_PORT = 5671;
     const DEFAULT_USER = 'guest';
     const DEFAULT_PASS = 'guest';
     const DEFAULT_VHOST = '/';
@@ -64,11 +65,15 @@ class Url
         $vhost = null,
         array $query = []
     ) {
-        $this->scheme = empty($scheme) ? self::DEFAULT_SCHEMA : $scheme;
-        $this->host = empty($host) ? self::DEFAULT_HOST : $host;
-        $this->port = empty($port) ? self::DEFAULT_PORT : $port;
-        $this->user = empty($user) ? self::DEFAULT_USER : $user;
-        $this->pass = empty($pass) ? self::DEFAULT_PASS : $pass;
+        if (empty($port)) {
+            $port = strcasecmp($scheme, 'amqps') == 0 ? self::DEFAULT_SECURE_PORT : self::DEFAULT_PORT;
+        }
+
+        $this->scheme = $scheme === null ? self::DEFAULT_SCHEMA : $scheme;
+        $this->host = $host === null ? self::DEFAULT_HOST : $host;
+        $this->port = $port;
+        $this->user = $user === null ? self::DEFAULT_USER : $user;
+        $this->pass = $pass === null ? self::DEFAULT_PASS : $pass;
         $this->vhost = empty($vhost) ? self::DEFAULT_VHOST : $vhost;
         $this->query = $query;
     }

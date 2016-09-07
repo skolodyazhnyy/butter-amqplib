@@ -3,9 +3,7 @@
 namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Connection;
-use ButterAMQP\ConnectionInterface;
 use ButterAMQP\IO\StreamIO;
-use ButterAMQP\IOInterface;
 use ButterAMQP\Wire;
 use ButterAMQP\WireInterface;
 use PHPUnit_Framework_TestCase as BaseTestCase;
@@ -13,12 +11,12 @@ use PHPUnit_Framework_TestCase as BaseTestCase;
 class TestCase extends BaseTestCase
 {
     /**
-     * @var ConnectionInterface
+     * @var Connection
      */
     protected $connection;
 
     /**
-     * @var IOInterface
+     * @var StreamIO
      */
     protected $io;
 
@@ -39,5 +37,15 @@ class TestCase extends BaseTestCase
         $this->io = new StreamIO(1, 1);
         $this->wire = new Wire($this->io);
         $this->connection = new Connection($_SERVER['RABBITMQ_URL'], $this->wire);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown()
+    {
+        if ($this->io->isOpen()) {
+            $this->connection->close();
+        }
     }
 }

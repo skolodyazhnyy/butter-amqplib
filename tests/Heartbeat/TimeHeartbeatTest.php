@@ -46,6 +46,7 @@ class TimeHeartbeatTest extends TestCase
             ->willReturnOnConsecutiveCalls(100, 109);
 
         $this->heartbeat->clientBeat();
+        $this->heartbeat->setClientBeatFactor(1);
 
         self::assertFalse($this->heartbeat->shouldSendHeartbeat());
     }
@@ -59,6 +60,7 @@ class TimeHeartbeatTest extends TestCase
             ->willReturnOnConsecutiveCalls(100, 999);
 
         $heartbeat->clientBeat();
+        $this->heartbeat->setClientBeatFactor(1);
 
         self::assertFalse($heartbeat->shouldSendHeartbeat());
     }
