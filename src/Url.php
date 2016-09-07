@@ -193,10 +193,48 @@ class Url
     }
 
     /**
+     * Import URL from an array.
+     *
+     * @param array $data
+     *
+     * @return Url
+     */
+    public static function import(array $data)
+    {
+        return new self(
+            isset($data['scheme']) ? $data['scheme'] : null,
+            isset($data['host']) ? $data['host'] : null,
+            isset($data['port']) ? (int) $data['port'] : null,
+            isset($data['user']) ? $data['user'] : null,
+            isset($data['password']) ? $data['password'] : null,
+            isset($data['vhost']) ? $data['vhost'] : null,
+            isset($data['parameters']) ? (array) $data['parameters'] : []
+        );
+    }
+
+    /**
+     * Export URL to an array.
+     *
+     * @return array
+     */
+    public function export()
+    {
+        return [
+            'scheme' => $this->scheme,
+            'host' => $this->host,
+            'port' => $this->port,
+            'user' => $this->user,
+            'password' => $this->pass,
+            'vhost' => $this->vhost,
+            'parameters' => $this->query,
+        ];
+    }
+
+    /**
      * @return string
      */
     public function __toString()
     {
-        return $this->compose();
+        return $this->compose(true);
     }
 }

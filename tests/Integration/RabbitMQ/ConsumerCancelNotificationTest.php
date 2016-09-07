@@ -4,6 +4,10 @@ namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Queue;
 
+/**
+ * @group slow
+ * @group integration
+ */
 class ConsumerCancelNotificationTest extends TestCase
 {
     public function testNotification()
