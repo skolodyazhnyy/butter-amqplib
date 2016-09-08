@@ -25,11 +25,11 @@ of the Composer documentation.
 ### Publishing messages
 
 ```php
-use ButterAMQP\Connection;
+use ButterAMQP\ConnectionManager;
 use ButterAMQP\Message;
 
 // Initialize connection to AMQP server
-$connection = Connection::make("amqp://guest:guest@localhost:5672/");
+$connection = ConnectionManager::connect("amqp://guest:guest@localhost:5672/");
 
 // Connect to the server
 $connection->open();
@@ -50,11 +50,11 @@ $connection->close();
 ### Consuming messages
 
 ```php
-use ButterAMQP\Connection;
+use ButterAMQP\ConnectionManager;
 use ButterAMQP\Delivery;
 
 // Initialize connection to AMQP server
-$connection = Connection::make("amqp://guest:guest@localhost:5672/");
+$connection = ConnectionManager::connect("amqp://guest:guest@localhost:5672/");
 
 // Connect to the server
 $connection->open();

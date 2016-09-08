@@ -67,6 +67,14 @@ class StreamIO implements IOInterface, LoggerAwareInterface
 
         $context = $this->createStreamContext($parameters);
 
+        if (isset($parameters['connection_timeout'])) {
+            $this->setConnectionTimeout($parameters['connection_timeout']);
+        }
+
+        if (isset($parameters['timeout'])) {
+            $this->setReadingTimeout($parameters['timeout']);
+        }
+
         $this->stream = @stream_socket_client(
             sprintf('%s://%s:%d', $protocol, $host, $port),
             $errno,
@@ -102,7 +110,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      *
      * @return $this
      */
-    public function setReadingTimeout($timeout)
+    private function setReadingTimeout($timeout)
     {
         $this->readingTimeout = $timeout;
 
@@ -118,7 +126,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      *
      * @return $this
      */
-    public function setConnectionTimeout($connectionTimeout)
+    private function setConnectionTimeout($connectionTimeout)
     {
         $this->connectionTimeout = $connectionTimeout;
 

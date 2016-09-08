@@ -22,7 +22,7 @@ interface ConnectionInterface
      *
      * Most likely you don't need more channels than threads in your application.
      *
-     * Channels will be recreated after connection is re-opened.
+     * Channels would need to be re-created after connection is re-opened.
      *
      * @param int|null $id
      *
@@ -50,7 +50,7 @@ interface ConnectionInterface
     public function close($code = 0, $text = '');
 
     /**
-     * Check if server supports capabilities.
+     * Check if server supports capability.
      *
      * @param string $capability
      *
