@@ -4,7 +4,7 @@ _This is really work in progress AMQP library written purely in PHP, supporting 
  
 This library provides functional level interfaces for interacting with AMQP server.
 
-More documentation and complete support for AMQP 0.9.1 coming soon, but feel free to leave any suggestion or give feedback.
+More documentation coming soon, but feel free to leave any suggestion or give feedback.
 
 ## Installation
 
