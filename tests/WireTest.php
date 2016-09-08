@@ -83,7 +83,7 @@ class WireTest extends TestCase
      */
     public function testNextFrameEmptyBuffer()
     {
-        $frame = $this->wire->next(true, 1);
+        $frame = $this->wire->next(true);
 
         self::assertNull($frame);
     }
@@ -95,7 +95,7 @@ class WireTest extends TestCase
     {
         $this->io->push("\x03\x00\x00\x00\x00\x00\x01\x02");
 
-        $frame = $this->wire->next(true, 1);
+        $frame = $this->wire->next(true);
 
         self::assertNull($frame);
     }
@@ -107,7 +107,7 @@ class WireTest extends TestCase
     {
         $this->io->push("\x08\x00\x00\x00\x00\x00\x00");
 
-        $frame = $this->wire->next(true, 1);
+        $frame = $this->wire->next(true);
 
         self::assertNull($frame);
     }
@@ -121,7 +121,7 @@ class WireTest extends TestCase
 
         $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xAA");
 
-        $this->wire->next(true, 1);
+        $this->wire->next(true);
     }
 
     /**
@@ -142,7 +142,7 @@ class WireTest extends TestCase
 
         $this->wire->subscribe(0, $chZeroSubscriber);
         $this->wire->subscribe(1, $chOneSubscriber);
-        $this->wire->next(true, 1);
+        $this->wire->next(true);
     }
 
     /**
@@ -158,7 +158,7 @@ class WireTest extends TestCase
 
         $this->io->push("\x03\x00\x01\x00\x00\x00\x00\xCE");
 
-        $this->wire->next(true, 1);
+        $this->wire->next(true);
     }
 
     /**
@@ -173,7 +173,7 @@ class WireTest extends TestCase
 
         $this->wire->setHeartbeat($heartbeat);
 
-        $this->wire->next(true, 1);
+        $this->wire->next(true);
 
         self::assertEquals("\x08\x00\x00\x00\x00\x00\x00\xCE", $this->io->pop(8));
     }
