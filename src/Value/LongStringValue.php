@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class LongStringValue extends AbstractValue
@@ -14,7 +13,7 @@ class LongStringValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return LongValue::encode(Binary::length($value)).$value;
+        return LongValue::encode(strlen($value)).$value;
     }
 
     /**

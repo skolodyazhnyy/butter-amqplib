@@ -224,7 +224,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         $header = $this->wait(Header::class);
         $content = '';
 
-        while ($header->getSize() > Binary::length($content)) {
+        while ($header->getSize() > strlen($content)) {
             $content .= $this->wait(Content::class)->getData();
         }
 
@@ -284,7 +284,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         $body = $message->getBody();
 
-        $this->send(new Header(60, 0, Binary::length($body), $message->getProperties()));
+        $this->send(new Header(60, 0, strlen($body), $message->getProperties()));
         $this->send(new Content($body));
 
         return $this;
@@ -483,7 +483,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         $header = $this->wait(Header::class);
         $content = '';
 
-        while ($header->getSize() > Binary::length($content)) {
+        while ($header->getSize() > strlen($content)) {
             $content .= $this->wait(Content::class)->getData();
         }
 
@@ -519,7 +519,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         $header = $this->wait(Header::class);
         $content = '';
 
-        while ($header->getSize() > Binary::length($content)) {
+        while ($header->getSize() > strlen($content)) {
             $content .= $this->wait(Content::class)->getData();
         }
 

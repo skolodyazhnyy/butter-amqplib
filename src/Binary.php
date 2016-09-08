@@ -17,19 +17,11 @@ class Binary
     private static $isBigEndian = false;
 
     /**
-     * Check if mb_ functions are available.
-     *
-     * @var bool
-     */
-    private static $isMultibyteAvailable = false;
-
-    /**
      * Initialize flags.
      */
     public static function init()
     {
         self::$isBigEndian = unpack('S', "\x00\x01")[1] == 1;
-        self::$isMultibyteAvailable = function_exists('mb_strlen');
     }
 
     /**
@@ -82,32 +74,5 @@ class Binary
     public static function unpackbe($format, $data)
     {
         return self::$isBigEndian ? unpack($format, $data)[1] : unpack($format, strrev($data))[1];
-    }
-
-    /**
-     * Return byte-string length.
-     *
-     * @param string $data
-     *
-     * @return int
-     */
-    public static function length($data)
-    {
-        return self::$isMultibyteAvailable ? mb_strlen($data, 'ASCII') : strlen($data);
-    }
-
-    /**
-     * Return a sub set of byte-string bytes.
-     *
-     * @param string $data
-     * @param int    $offset
-     * @param int    $length
-     *
-     * @return int
-     */
-    public static function subset($data, $offset = 0, $length = null)
-    {
-        return self::$isMultibyteAvailable ? mb_substr($data, $offset, $length, 'ASCII') :
-            substr($data, $offset, $length);
     }
 }

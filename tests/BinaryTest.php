@@ -64,25 +64,6 @@ class BinaryTest extends TestCase
     }
 
     /**
-     * Binary::length should give size of the binary buffer no matter what symbols are there.
-     */
-    public function testLength()
-    {
-        self::assertEquals(10, Binary::length("\r\n\0abc\0def"));
-    }
-
-    /**
-     * Binary::subset should return sub set of the binary buffer.
-     */
-    public function testSubset()
-    {
-        self::assertEquals("\0abc", Binary::subset("\r\n\0abc\0def", 2, 4));
-        self::assertEquals("\0abc\0d", Binary::subset("\r\n\0abc\0def", 2, -2));
-        self::assertEquals('def', Binary::subset("\r\n\0abc\0def", -3));
-        self::assertEquals("\r\n\0abc\0", Binary::subset("\r\n\0abc\0def", 0, -3));
-    }
-
-    /**
      * @return array
      */
     public function providePackingTestCases()

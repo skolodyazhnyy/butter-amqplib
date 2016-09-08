@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\IO;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Exception\IOClosedException;
 use ButterAMQP\Exception\IOException;
 use ButterAMQP\IOInterface;
@@ -36,12 +35,18 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     private $readingTimeout;
 
     /**
+     * @var int
+     */
+    private $readAheadSize;
+
+    /**
      * Initialize default logger.
      *
      * @param int|float $connectionTimeout
      * @param int|float $readingTimeout
+     * @param int       $readAheadSize
      */
-    public function __construct($connectionTimeout = 30, $readingTimeout = 1)
+    public function __construct($connectionTimeout = 30, $readingTimeout = 1, $readAheadSize = 13000)
     {
         $this->logger = new NullLogger();
 
@@ -58,12 +63,14 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             return $this;
         }
 
-        $this->logger->debug(sprintf('Connecting to "%s://%s:%d"...', $protocol, $host, $port), [
-            'protocol' => $protocol,
-            'host' => $host,
-            'port' => $port,
-            'parameters' => $parameters,
-        ]);
+        $this->blocking = null;
+
+        //$this->logger->debug(sprintf('Connecting to "%s://%s:%d"...', $protocol, $host, $port), [
+        //    'protocol' => $protocol,
+        //    'host' => $host,
+        //    'port' => $port,
+        //    'parameters' => $parameters,
+        //]);
 
         $context = $this->createStreamContext($parameters);
 
@@ -93,10 +100,10 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             ));
         }
 
-        $this->logger->debug(sprintf('Connection established'), [
-            'host' => $host,
-            'port' => $port,
-        ]);
+        //$this->logger->debug(sprintf('Connection established'), [
+        //    'host' => $host,
+        //    'port' => $port,
+        //]);
 
         $this->buffer = '';
 
@@ -146,7 +153,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
 
         $this->stream = null;
 
-        $this->logger->debug('Connection closed');
+        //$this->logger->debug('Connection closed');
 
         return $this;
     }
@@ -166,10 +173,10 @@ class StreamIO implements IOInterface, LoggerAwareInterface
         }
 
         if ($length === null) {
-            $length = Binary::length($data);
+            $length = strlen($data);
         }
 
-        $this->logger->debug(new ReadableBinaryData('Sending', $data));
+        //$this->logger->debug(new ReadableBinaryData('Sending', $data));
 
         while ($length > 0) {
             if ($this->isOpen()) {
@@ -182,7 +189,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             }
 
             $length -= $written;
-            $data = $length ? Binary::subset($data, $written, $length) : '';
+            $data = $length ? substr($data, $written, $length) : '';
         }
 
         return $this;
@@ -193,7 +200,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     public function peek($length, $blocking = true)
     {
-        $received = Binary::length($this->buffer);
+        $received = strlen($this->buffer);
 
         if ($received >= $length) {
             return $this->buffer;
@@ -201,7 +208,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
 
         $this->buffer .= $this->recv($length - $received, $blocking);
 
-        if (Binary::length($this->buffer) >= $length) {
+        if (strlen($this->buffer) >= $length) {
             return $this->buffer;
         }
 
@@ -217,9 +224,9 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             return null;
         }
 
-        $data = Binary::subset($this->buffer, 0, $length);
+        $data = substr($this->buffer, 0, $length);
 
-        $this->buffer = Binary::subset($this->buffer, $length);
+        $this->buffer = substr($this->buffer, $length, strlen($this->buffer) - $length);
 
         return $data;
     }
@@ -242,14 +249,18 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             throw new IOClosedException('Connection is closed');
         }
 
+        if ($this->readAheadSize) {
+            $meta = stream_get_meta_data($this->stream);
+
+            if ($length < $meta['unread_bytes']) {
+                $length = min($this->readAheadSize, $meta['unread_bytes']);
+            }
+        }
+
         stream_set_blocking($this->stream, $blocking);
 
         if (($received = fread($this->stream, $length)) === false) {
             throw new IOException('An error occur while reading from the socket');
-        }
-
-        if ($received) {
-            $this->logger->debug(new ReadableBinaryData('Receive', $received));
         }
 
         return $received;

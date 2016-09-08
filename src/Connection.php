@@ -97,7 +97,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
 
         $this->wait(ConnectionTune::class);
 
-        $this->logger->debug(sprintf('Opening virtual host "%s"', $this->url->getVhost()));
+        //$this->logger->debug(sprintf('Opening virtual host "%s"', $this->url->getVhost()));
 
         $this->send(new ConnectionOpen($this->url->getVhost(), '', false))
             ->wait(ConnectionOpenOk::class);
@@ -277,12 +277,12 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         $frameMax = $negotiate($this->url->getQueryParameter('frame_max', 0), $frame->getFrameMax());
         $heartbeat = $negotiate($this->url->getQueryParameter('heartbeat', 60), $frame->getHeartbeat());
 
-        $this->logger->debug(sprintf(
-            'Tune connection: up to %d channels, %d frame size, heartbeat every %d seconds',
-            $channelMax,
-            $frameMax,
-            $heartbeat
-        ));
+        //$this->logger->debug(sprintf(
+        //    'Tune connection: up to %d channels, %d frame size, heartbeat every %d seconds',
+        //    $channelMax,
+        //    $frameMax,
+        //    $heartbeat
+        //));
 
         $this->send(new ConnectionTuneOk($channelMax, $frameMax, $heartbeat));
 

@@ -25,15 +25,15 @@ class AMQPlainMechanism implements MechanismInterface
     public function getResponse($username, $password)
     {
         return implode('', [
-            Binary::pack('C', Binary::length(self::LOGIN_KEY)),
+            Binary::pack('C', strlen(self::LOGIN_KEY)),
             self::LOGIN_KEY,
             self::STRING_TYPE_HINT,
-            Binary::pack('N', Binary::length($username)),
+            Binary::pack('N', strlen($username)),
             $username,
-            Binary::pack('C', Binary::length(self::PASSWORD_KEY)),
+            Binary::pack('C', strlen(self::PASSWORD_KEY)),
             self::PASSWORD_KEY,
             self::STRING_TYPE_HINT,
-            Binary::pack('N', Binary::length($password)),
+            Binary::pack('N', strlen($password)),
             $password,
         ]);
     }

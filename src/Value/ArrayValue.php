@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class ArrayValue extends AbstractValue
@@ -20,7 +19,7 @@ class ArrayValue extends AbstractValue
             $data .= TypifiedValue::encode($element);
         }
 
-        return LongValue::encode(Binary::length($data)).$data;
+        return LongValue::encode(strlen($data)).$data;
     }
 
     /**

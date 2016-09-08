@@ -2,7 +2,6 @@
 
 namespace ButterAMQPTest\IO;
 
-use ButterAMQP\Binary;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Process\Process;
 
@@ -139,7 +138,7 @@ class TestCase extends BaseTestCase
         $write = fwrite(
             $this->control,
             $data,
-            $length === null ? Binary::length($data) : $length
+            $length === null ? strlen($data) : $length
         );
 
         fflush($this->control);
@@ -182,7 +181,7 @@ class TestCase extends BaseTestCase
      */
     protected function assertServerReceive($data, $message = '')
     {
-        self::assertEquals($data, $this->serverRead(Binary::length($data)), $message);
+        self::assertEquals($data, $this->serverRead(strlen($data)), $message);
     }
 
     /**

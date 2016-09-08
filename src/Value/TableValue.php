@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class TableValue extends AbstractValue
@@ -20,7 +19,7 @@ class TableValue extends AbstractValue
             $data .= ShortStringValue::encode($key).TypifiedValue::encode($element);
         }
 
-        return LongValue::encode(Binary::length($data)).$data;
+        return LongValue::encode(strlen($data)).$data;
     }
 
     /**

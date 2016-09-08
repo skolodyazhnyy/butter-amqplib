@@ -90,8 +90,8 @@ class Wire implements WireInterface, LoggerAwareInterface
             return null;
         }
 
-        $payload = Binary::subset($buffer, 7, -1);
-        $end = Binary::subset($buffer, -1);
+        $payload = substr($buffer, 7, strlen($buffer) - 8);
+        $end = $buffer[strlen($buffer) - 1];
 
         if ($end != self::FRAME_ENDING) {
             throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
@@ -99,10 +99,10 @@ class Wire implements WireInterface, LoggerAwareInterface
 
         $frame = Frame::create($header['type'], $header['channel'], $payload);
 
-        $this->logger->debug(sprintf('Receive "%s" at channel #%d', get_class($frame), $frame->getChannel()), [
-            'channel' => $frame->getChannel(),
-            'frame' => get_class($frame),
-        ]);
+        //$this->logger->debug(sprintf('Receive "%s" at channel #%d', get_class($frame), $frame->getChannel()), [
+        //    'channel' => $frame->getChannel(),
+        //    'frame' => get_class($frame),
+        //]);
 
         if ($subscriber = $this->getSubscriber($frame->getChannel())) {
             $subscriber->dispatch($frame);
@@ -118,10 +118,10 @@ class Wire implements WireInterface, LoggerAwareInterface
      */
     public function send($channel, Frame $frame)
     {
-        $this->logger->debug(sprintf('Sending "%s" to channel #%d', get_class($frame), $channel), [
-            'channel' => $channel,
-            'frame' => get_class($frame),
-        ]);
+        //$this->logger->debug(sprintf('Sending "%s" to channel #%d', get_class($frame), $channel), [
+        //    'channel' => $channel,
+        //    'frame' => get_class($frame),
+        //]);
 
         $this->heartbeat->clientBeat();
 
@@ -131,7 +131,7 @@ class Wire implements WireInterface, LoggerAwareInterface
             $this->io->write(
                 $piece->getFrameType().
                 ShortValue::encode($channel).
-                LongValue::encode(Binary::length($data)).
+                LongValue::encode(strlen($data)).
                 $data.
                 self::FRAME_ENDING
             );
@@ -154,10 +154,10 @@ class Wire implements WireInterface, LoggerAwareInterface
         $frames = [];
         $data = $frame->getData();
         $size = $this->frameMax - 8;
-        $chunks = ceil(Binary::length($data) / $size);
+        $chunks = ceil(strlen($data) / $size);
 
         for ($c = 0; $c < $chunks; ++$c) {
-            $frames[] = new Content(Binary::subset($data, $c * $size, $size));
+            $frames[] = new Content(substr($data, $c * $size, $size));
         }
 
         return $frames;
@@ -172,10 +172,10 @@ class Wire implements WireInterface, LoggerAwareInterface
             $types = [$types];
         }
 
-        $this->logger->debug(sprintf('Waiting "%s" at channel #%d', implode('", "', $types), $channel), [
-            'channel' => $channel,
-            'frame' => $types,
-        ]);
+        //$this->logger->debug(sprintf('Waiting "%s" at channel #%d', implode('", "', $types), $channel), [
+        //    'channel' => $channel,
+        //    'frame' => $types,
+        //]);
 
         do {
             $frame = $this->next(true);

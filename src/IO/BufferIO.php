@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\IO;
 
-use ButterAMQP\Binary;
 use ButterAMQP\IOInterface;
 
 class BufferIO implements IOInterface
@@ -46,9 +45,9 @@ class BufferIO implements IOInterface
      */
     public function read($length, $blocking = true)
     {
-        if (Binary::length($this->readBuffer) >= $length) {
-            $data = Binary::subset($this->readBuffer, 0, $length);
-            $this->readBuffer = Binary::subset($this->readBuffer, $length);
+        if (strlen($this->readBuffer) >= $length) {
+            $data = substr($this->readBuffer, 0, $length);
+            $this->readBuffer = substr($this->readBuffer, $length, strlen($this->readBuffer) - $length);
 
             return $data;
         }
@@ -61,8 +60,8 @@ class BufferIO implements IOInterface
      */
     public function peek($length, $blocking = true)
     {
-        if (Binary::length($this->readBuffer) >= $length) {
-            return Binary::subset($this->readBuffer, 0, $length);
+        if (strlen($this->readBuffer) >= $length) {
+            return substr($this->readBuffer, 0, $length);
         }
 
         return null;
@@ -101,8 +100,8 @@ class BufferIO implements IOInterface
             $data = $this->writeBuffer;
             $this->writeBuffer = '';
         } else {
-            $data = Binary::subset($this->writeBuffer, 0, $length);
-            $this->writeBuffer = Binary::subset($this->writeBuffer, $length);
+            $data = substr($this->writeBuffer, 0, $length);
+            $this->writeBuffer = substr($this->writeBuffer, $length, strlen($this->writeBuffer) - $length);
         }
 
         return $data;

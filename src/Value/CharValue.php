@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class CharValue extends AbstractValue
@@ -14,7 +13,7 @@ class CharValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return Binary::subset($value, 0, 1);
+        return substr($value, 0, 1);
     }
 
     /**

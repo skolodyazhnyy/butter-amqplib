@@ -29,7 +29,7 @@ class Buffer
     public function __construct($data = '', $length = null)
     {
         $this->data = $data;
-        $this->length = $length === null ? Binary::length($data) : $length;
+        $this->length = $length === null ? strlen($data) : $length;
     }
 
     /**
@@ -41,7 +41,7 @@ class Buffer
      */
     public function read($length)
     {
-        $buffer = Binary::subset($this->data, $this->offset, $length);
+        $buffer = substr($this->data, $this->offset, $length);
         $this->offset += $length;
 
         return $buffer;

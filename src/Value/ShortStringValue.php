@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class ShortStringValue extends AbstractValue
@@ -14,7 +13,7 @@ class ShortStringValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return UnsignedOctetValue::encode(Binary::length($value)).$value;
+        return UnsignedOctetValue::encode(strlen($value)).$value;
     }
 
     /**
