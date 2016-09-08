@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueuePurgeOk extends Method
+class QueuePurgeOk extends Frame
 {
     /**
      * @var int
@@ -22,11 +21,14 @@ class QueuePurgeOk extends Method
     private $messageCount;
 
     /**
+     * @param int $channel
      * @param int $messageCount
      */
-    public function __construct($messageCount)
+    public function __construct($channel, $messageCount)
     {
         $this->messageCount = $messageCount;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class QueuePurgeOk extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x1F".
+        $data = "\x00\x32\x00\x1F".
             Value\LongValue::encode($this->messageCount);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ChannelOpenOk extends Method
+class ChannelOpenOk extends Frame
 {
     /**
      * @var string
@@ -22,11 +21,14 @@ class ChannelOpenOk extends Method
     private $reserved1;
 
     /**
+     * @param int    $channel
      * @param string $reserved1
      */
-    public function __construct($reserved1)
+    public function __construct($channel, $reserved1)
     {
         $this->reserved1 = $reserved1;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class ChannelOpenOk extends Method
      */
     public function encode()
     {
-        return "\x00\x14\x00\x0B".
+        $data = "\x00\x14\x00\x0B".
             Value\LongStringValue::encode($this->reserved1);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

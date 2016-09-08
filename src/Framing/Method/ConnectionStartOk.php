@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionStartOk extends Method
+class ConnectionStartOk extends Frame
 {
     /**
      * @var array
@@ -37,17 +36,20 @@ class ConnectionStartOk extends Method
     private $locale;
 
     /**
+     * @param int    $channel
      * @param array  $clientProperties
      * @param string $mechanism
      * @param string $response
      * @param string $locale
      */
-    public function __construct($clientProperties, $mechanism, $response, $locale)
+    public function __construct($channel, $clientProperties, $mechanism, $response, $locale)
     {
         $this->clientProperties = $clientProperties;
         $this->mechanism = $mechanism;
         $this->response = $response;
         $this->locale = $locale;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -95,25 +97,12 @@ class ConnectionStartOk extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x0B".
+        $data = "\x00\x0A\x00\x0B".
             Value\TableValue::encode($this->clientProperties).
             Value\ShortStringValue::encode($this->mechanism).
             Value\LongStringValue::encode($this->response).
             Value\ShortStringValue::encode($this->locale);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\TableValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\LongStringValue::decode($data),
-            Value\ShortStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

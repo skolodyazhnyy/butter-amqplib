@@ -5,31 +5,20 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 
 /**
  * Confirm bind successful.
  *
  * @codeCoverageIgnore
  */
-class ExchangeBindOk extends Method
+class ExchangeBindOk extends Frame
 {
     /**
      * @return string
      */
     public function encode()
     {
-        return "\x00\x28\x00\x1F";
-    }
-
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self();
+        return "\x01".pack('n', $this->channel)."\x00\x00\x00\x04\x00\x28\x00\x1F\xCE";
     }
 }

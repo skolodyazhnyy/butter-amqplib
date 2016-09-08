@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionStart extends Method
+class ConnectionStart extends Frame
 {
     /**
      * @var int
@@ -42,19 +41,22 @@ class ConnectionStart extends Method
     private $locales;
 
     /**
+     * @param int    $channel
      * @param int    $versionMajor
      * @param int    $versionMinor
      * @param array  $serverProperties
      * @param string $mechanisms
      * @param string $locales
      */
-    public function __construct($versionMajor, $versionMinor, $serverProperties, $mechanisms, $locales)
+    public function __construct($channel, $versionMajor, $versionMinor, $serverProperties, $mechanisms, $locales)
     {
         $this->versionMajor = $versionMajor;
         $this->versionMinor = $versionMinor;
         $this->serverProperties = $serverProperties;
         $this->mechanisms = $mechanisms;
         $this->locales = $locales;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -112,27 +114,13 @@ class ConnectionStart extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x0A".
+        $data = "\x00\x0A\x00\x0A".
             Value\OctetValue::encode($this->versionMajor).
             Value\OctetValue::encode($this->versionMinor).
             Value\TableValue::encode($this->serverProperties).
             Value\LongStringValue::encode($this->mechanisms).
             Value\LongStringValue::encode($this->locales);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\OctetValue::decode($data),
-            Value\OctetValue::decode($data),
-            Value\TableValue::decode($data),
-            Value\LongStringValue::decode($data),
-            Value\LongStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

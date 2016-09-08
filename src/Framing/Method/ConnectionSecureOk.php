@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionSecureOk extends Method
+class ConnectionSecureOk extends Frame
 {
     /**
      * @var string
@@ -22,11 +21,14 @@ class ConnectionSecureOk extends Method
     private $response;
 
     /**
+     * @param int    $channel
      * @param string $response
      */
-    public function __construct($response)
+    public function __construct($channel, $response)
     {
         $this->response = $response;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class ConnectionSecureOk extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x15".
+        $data = "\x00\x0A\x00\x15".
             Value\LongStringValue::encode($this->response);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

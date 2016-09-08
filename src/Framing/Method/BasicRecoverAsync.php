@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicRecoverAsync extends Method
+class BasicRecoverAsync extends Frame
 {
     /**
      * @var bool
@@ -22,11 +21,14 @@ class BasicRecoverAsync extends Method
     private $requeue;
 
     /**
+     * @param int  $channel
      * @param bool $requeue
      */
-    public function __construct($requeue)
+    public function __construct($channel, $requeue)
     {
         $this->requeue = $requeue;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class BasicRecoverAsync extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x64".
+        $data = "\x00\x3C\x00\x64".
             Value\BooleanValue::encode($this->requeue);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

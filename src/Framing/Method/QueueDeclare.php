@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueueDeclare extends Method
+class QueueDeclare extends Frame
 {
     /**
      * @var int
@@ -57,6 +56,7 @@ class QueueDeclare extends Method
     private $arguments = [];
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param bool   $passive
@@ -66,7 +66,7 @@ class QueueDeclare extends Method
      * @param bool   $noWait
      * @param array  $arguments
      */
-    public function __construct($reserved1, $queue, $passive, $durable, $exclusive, $autoDelete, $noWait, $arguments)
+    public function __construct($channel, $reserved1, $queue, $passive, $durable, $exclusive, $autoDelete, $noWait, $arguments)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
@@ -76,6 +76,8 @@ class QueueDeclare extends Method
         $this->autoDelete = $autoDelete;
         $this->noWait = $noWait;
         $this->arguments = $arguments;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -163,29 +165,12 @@ class QueueDeclare extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x0A".
+        $data = "\x00\x32\x00\x0A".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\OctetValue::encode(($this->passive ? 1 : 0) | (($this->durable ? 1 : 0) << 1) | (($this->exclusive ? 1 : 0) << 2) | (($this->autoDelete ? 1 : 0) << 3) | (($this->noWait ? 1 : 0) << 4)).
             Value\TableValue::encode($this->arguments);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            (bool) ($flags = Value\OctetValue::decode($data)) & 1,
-            (bool) $flags & 2,
-            (bool) $flags & 4,
-            (bool) $flags & 8,
-            (bool) $flags & 16,
-            Value\TableValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionTune extends Method
+class ConnectionTune extends Frame
 {
     /**
      * @var int
@@ -32,15 +31,18 @@ class ConnectionTune extends Method
     private $heartbeat;
 
     /**
+     * @param int $channel
      * @param int $channelMax
      * @param int $frameMax
      * @param int $heartbeat
      */
-    public function __construct($channelMax, $frameMax, $heartbeat)
+    public function __construct($channel, $channelMax, $frameMax, $heartbeat)
     {
         $this->channelMax = $channelMax;
         $this->frameMax = $frameMax;
         $this->heartbeat = $heartbeat;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,23 +80,11 @@ class ConnectionTune extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x1E".
+        $data = "\x00\x0A\x00\x1E".
             Value\ShortValue::encode($this->channelMax).
             Value\LongValue::encode($this->frameMax).
             Value\ShortValue::encode($this->heartbeat);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\LongValue::decode($data),
-            Value\ShortValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

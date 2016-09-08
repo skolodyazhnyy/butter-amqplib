@@ -2,8 +2,6 @@
 
 namespace ButterAMQP\Framing;
 
-use ButterAMQP\Buffer;
-
 /**
  * @codeCoverageIgnore
  */
@@ -15,11 +13,14 @@ class Content extends Frame
     private $data;
 
     /**
+     * @param int    $channel
      * @param string $data
      */
-    public function __construct($data)
+    public function __construct($channel, $data)
     {
         $this->data = $data;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -35,24 +36,6 @@ class Content extends Frame
      */
     public function encode()
     {
-        return $this->data;
-    }
-
-    /**
-     * @param Buffer $data
-     *
-     * @return Content
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self($data->read($data->size()));
-    }
-
-    /**
-     * @return string
-     */
-    public function getFrameType()
-    {
-        return "\x03";
+        return "\x03".pack('nN', $this->channel, strlen($this->data)).$this->data."\xCE";
     }
 }

@@ -79,7 +79,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ChannelOpen(''));
+            ->with(new ChannelOpen(51, ''));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -97,12 +97,12 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ChannelFlow(true));
+            ->with(new ChannelFlow(51, true));
 
         $this->wire->expects(self::once())
             ->method('wait')
             ->with(51, ChannelFlowOk::class)
-            ->willReturn(new ChannelFlowOk(false));
+            ->willReturn(new ChannelFlowOk(51, false));
 
         $this->channel->flow(true);
 
@@ -120,7 +120,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ChannelClose(0, '', 0, 0));
+            ->with(new ChannelClose(51, 0, '', 0, 0));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -138,7 +138,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicQos(1, 2, false));
+            ->with(new BasicQos(51, 1, 2, false));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -177,12 +177,12 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicConsume(0, 'butter', '', false, false, false, false, []));
+            ->with(new BasicConsume(51, 0, 'butter', '', false, false, false, false, []));
 
         $this->wire->expects(self::once())
             ->method('wait')
             ->with(51, BasicConsumeOk::class)
-            ->willReturn(new BasicConsumeOk('foo'));
+            ->willReturn(new BasicConsumeOk(51, 'foo'));
 
         $consumer = $this->channel->consume('butter', function () {
         });
@@ -201,7 +201,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicConsume(0, 'butter', 'foo', false, false, false, true, []));
+            ->with(new BasicConsume(51, 0, 'butter', 'foo', false, false, false, true, []));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -223,13 +223,18 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, self::isInstanceOf(BasicConsume::class));
+            ->with(self::isInstanceOf(BasicConsume::class));
 
         $this->wire->expects(self::never())
             ->method('wait');
 
-        $consumer = $this->channel->consume('butter', function () {
-        }, Consumer::FLAG_NO_WAIT);
+        $consumer = $this->channel->consume(
+            'butter',
+            function () {
+            },
+            Consumer::FLAG_NO_WAIT
+        );
+
         $tag = $consumer->tag();
 
         self::assertInstanceOf(Consumer::class, $consumer);
@@ -246,7 +251,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicCancel('tag', false));
+            ->with(new BasicCancel(51, 'tag', false));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -262,7 +267,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicCancel('tag', true));
+            ->with(new BasicCancel(51, 'tag', true));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -277,7 +282,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicAck(11, true));
+            ->with(new BasicAck(51, 11, true));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -292,7 +297,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicReject(11, true));
+            ->with(new BasicReject(51, 11, true));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -307,7 +312,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicNack(11, true, false));
+            ->with(new BasicNack(51, 11, true, false));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -322,15 +327,15 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::at(0))
             ->method('send')
-            ->with(51, new BasicPublish(0, 'foo', 'bar', false, false));
+            ->with(new BasicPublish(51, 0, 'foo', 'bar', false, false));
 
         $this->wire->expects(self::at(1))
             ->method('send')
-            ->with(51, new Header(60, 0, 6, ['delivery-mode' => 1]));
+            ->with(new Header(51, 60, 0, 6, ['delivery-mode' => 1]));
 
         $this->wire->expects(self::at(2))
             ->method('send')
-            ->with(51, new Content('butter'));
+            ->with(new Content(51, 'butter'));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -345,7 +350,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicGet(0, 'test', false));
+            ->with(new BasicGet(51, 0, 'test', false));
 
         $this->wire->expects(self::atLeastOnce())
             ->method('wait')
@@ -356,10 +361,10 @@ class ChannelTest extends TestCase
                 [51, Content::class]
             )
             ->willReturnOnConsecutiveCalls(
-                new BasicGetOk(1, false, 'inbox', 'test', 0),
-                new Header(60, 0, 6, []),
-                new Content('foo'),
-                new Content('bar')
+                new BasicGetOk(51, 1, false, 'inbox', 'test', 0),
+                new Header(51, 60, 0, 6, []),
+                new Content(51, 'foo'),
+                new Content(51, 'bar')
             );
 
         $this->channel->get('test', true);
@@ -372,12 +377,12 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicGet(0, 'test', false));
+            ->with(new BasicGet(51, 0, 'test', false));
 
         $this->wire->expects(self::once())
             ->method('wait')
             ->with(51, [BasicGetOk::class, BasicGetEmpty::class])
-            ->willReturn(new BasicGetEmpty(0));
+            ->willReturn(new BasicGetEmpty(51, 0));
 
         $this->channel->get('test', true);
     }
@@ -389,7 +394,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new BasicRecover(true));
+            ->with(new BasicRecover(51, true));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -402,7 +407,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ConfirmSelect(false));
+            ->with(new ConfirmSelect(51, false));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -416,7 +421,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ConfirmSelect(true));
+            ->with(new ConfirmSelect(51, true));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -432,7 +437,7 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new TxSelect());
+            ->with(new TxSelect(51));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -446,8 +451,8 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::exactly(2))
             ->method('send')
             ->withConsecutive(
-                [51, new TxSelect()],
-                [51, new TxCommit()]
+                [new TxSelect(51)],
+                [new TxCommit(51)]
             );
 
         $this->wire->expects(self::exactly(2))
@@ -466,8 +471,8 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::exactly(2))
             ->method('send')
             ->withConsecutive(
-                [51, new TxSelect()],
-                [51, new TxRollback()]
+                [new TxSelect(51)],
+                [new TxRollback(51)]
             );
 
         $this->wire->expects(self::exactly(2))
@@ -487,9 +492,9 @@ class ChannelTest extends TestCase
 
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ChannelCloseOk());
+            ->with(new ChannelCloseOk(51));
 
-        $this->channel->dispatch(new ChannelClose(404, 'Not found', 0, 0));
+        $this->channel->dispatch(new ChannelClose(51, 404, 'Not found', 0, 0));
 
         self::assertEquals(Channel::STATUS_CLOSED, $this->channel->getStatus());
     }
@@ -498,9 +503,9 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(51, new ChannelFlowOk(true));
+            ->with(new ChannelFlowOk(51, true));
 
-        $this->channel->dispatch(new ChannelFlow(true));
+        $this->channel->dispatch(new ChannelFlow(51, true));
 
         self::assertEquals(Channel::STATUS_READY, $this->channel->getStatus());
     }
@@ -520,15 +525,15 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::exactly(4))
             ->method('wait')
             ->willReturnOnConsecutiveCalls(
-                new BasicConsumeOk('foo'),
-                new Header(60, 0, 6, ['delivery-mode' => 2]),
-                new Content('abc'),
-                new Content('def')
+                new BasicConsumeOk(51, 'foo'),
+                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
+                new Content(51, 'abc'),
+                new Content(51, 'def')
             );
 
         $this->channel->consume('', $consumer, 0, 'foo');
 
-        $this->channel->dispatch(new BasicDeliver('foo', 77, false, 'bar', 'baz'));
+        $this->channel->dispatch(new BasicDeliver(51, 'foo', 77, false, 'bar', 'baz'));
     }
 
     public function testDispatchBasicDeliverForUnknownConsumer()
@@ -538,12 +543,12 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::atLeastOnce())
             ->method('wait')
             ->willReturnOnConsecutiveCalls(
-                new Header(60, 0, 6, ['delivery-mode' => 2]),
-                new Content('abc'),
-                new Content('def')
+                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
+                new Content(51, 'abc'),
+                new Content(51, 'def')
             );
 
-        $this->channel->dispatch(new BasicDeliver('foo', 77, false, 'bar', 'baz'));
+        $this->channel->dispatch(new BasicDeliver(51, 'foo', 77, false, 'bar', 'baz'));
     }
 
     public function testDispatchBasicReturn()
@@ -558,12 +563,12 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::atLeastOnce())
             ->method('wait')
             ->willReturnOnConsecutiveCalls(
-                new Header(60, 0, 6, ['delivery-mode' => 2]),
-                new Content('abc'),
-                new Content('def')
+                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
+                new Content(51, 'abc'),
+                new Content(51, 'def')
             );
 
-        $this->channel->dispatch(new BasicReturn(0, '', '', ''));
+        $this->channel->dispatch(new BasicReturn(51, 0, '', '', ''));
     }
 
     public function testDispatchBasicReturnWithoutReturnCallable()
@@ -573,12 +578,12 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::atLeastOnce())
             ->method('wait')
             ->willReturnOnConsecutiveCalls(
-                new Header(60, 0, 6, ['delivery-mode' => 2]),
-                new Content('abc'),
-                new Content('def')
+                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
+                new Content(51, 'abc'),
+                new Content(51, 'def')
             );
 
-        $this->channel->dispatch(new BasicReturn(0, '', '', ''));
+        $this->channel->dispatch(new BasicReturn(51, 0, '', '', ''));
     }
 
     public function testDispatchBasicAck()
@@ -590,7 +595,7 @@ class ChannelTest extends TestCase
 
         $this->channel->selectConfirm($callable);
 
-        $this->channel->dispatch(new BasicAck(2, true));
+        $this->channel->dispatch(new BasicAck(51, 2, true));
     }
 
     public function testDispatchBasicAckWithoutConfirmCallable()
@@ -609,14 +614,14 @@ class ChannelTest extends TestCase
 
         $this->channel->selectConfirm($callable);
 
-        $this->channel->dispatch(new BasicNack(2, true, true));
+        $this->channel->dispatch(new BasicNack(51, 2, true, true));
     }
 
     public function testDispatchBasicNackWithoutConfirmCallable()
     {
         $this->expectException(\RuntimeException::class);
 
-        $this->channel->dispatch(new BasicNack(2, true, true));
+        $this->channel->dispatch(new BasicNack(51, 2, true, true));
     }
 
     public function testDispatchBasicCancel()
@@ -624,15 +629,15 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::exactly(2))
             ->method('send')
             ->withConsecutive(
-                [51, self::isInstanceOf(BasicConsume::class)],
-                [51, new BasicCancelOk('baz')]
+                [self::isInstanceOf(BasicConsume::class)],
+                [new BasicCancelOk(51, 'baz')]
             );
 
         $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
 
         self::assertTrue($this->channel->hasConsumer('baz'));
 
-        $this->channel->dispatch(new BasicCancel('baz', false));
+        $this->channel->dispatch(new BasicCancel(51, 'baz', false));
 
         self::assertFalse($this->channel->hasConsumer('baz'));
     }
@@ -641,13 +646,13 @@ class ChannelTest extends TestCase
     {
         $this->wire->expects(self::exactly(1))
             ->method('send')
-            ->with(51, self::isInstanceOf(BasicConsume::class));
+            ->with(self::isInstanceOf(BasicConsume::class));
 
         $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
 
         self::assertTrue($this->channel->hasConsumer('baz'));
 
-        $this->channel->dispatch(new BasicCancel('baz', true));
+        $this->channel->dispatch(new BasicCancel(51, 'baz', true));
 
         self::assertFalse($this->channel->hasConsumer('baz'));
     }

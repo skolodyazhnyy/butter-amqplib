@@ -183,7 +183,7 @@ class WireTest extends TestCase
      */
     public function testSend()
     {
-        $this->wire->send(1, new Content("\xBA\xAB"));
+        $this->wire->send(new Content(1, "\xBA\xAB"));
 
         self::assertEquals("\x03\x00\x01\x00\x00\x00\x02\xBA\xAB\xCE", $this->io->pop(10));
     }
@@ -195,10 +195,7 @@ class WireTest extends TestCase
     {
         $this->wire->setFrameMax(16);
 
-        $this->wire->send(1, new Content(
-            str_repeat("\x00\x01", 8).
-            str_repeat("\xFE\xFF", 7)
-        ));
+        $this->wire->send(new Content(1, str_repeat("\x00\x01", 8).str_repeat("\xFE\xFF", 7)));
 
         /*
          * Max frame size is 16 bytes, 8 used by header in each frame, so 30 bytes of content should be
@@ -221,7 +218,7 @@ class WireTest extends TestCase
 
         $this->wire->setHeartbeat($heartbeat);
 
-        $this->wire->send(1, new Content("\xBA\xAB"));
+        $this->wire->send(new Content(1, "\xBA\xAB"));
     }
 
     /**

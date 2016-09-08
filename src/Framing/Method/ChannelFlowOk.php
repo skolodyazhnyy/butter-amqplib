@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ChannelFlowOk extends Method
+class ChannelFlowOk extends Frame
 {
     /**
      * @var bool
@@ -22,11 +21,14 @@ class ChannelFlowOk extends Method
     private $active;
 
     /**
+     * @param int  $channel
      * @param bool $active
      */
-    public function __construct($active)
+    public function __construct($channel, $active)
     {
         $this->active = $active;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class ChannelFlowOk extends Method
      */
     public function encode()
     {
-        return "\x00\x14\x00\x15".
+        $data = "\x00\x14\x00\x15".
             Value\BooleanValue::encode($this->active);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

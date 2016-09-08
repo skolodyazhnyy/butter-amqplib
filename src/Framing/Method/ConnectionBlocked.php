@@ -5,14 +5,13 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
  * @codeCoverageIgnore
  */
-class ConnectionBlocked extends Method
+class ConnectionBlocked extends Frame
 {
     /**
      * @var string
@@ -20,11 +19,14 @@ class ConnectionBlocked extends Method
     private $reason;
 
     /**
+     * @param int    $channel
      * @param string $reason
      */
-    public function __construct($reason)
+    public function __construct($channel, $reason)
     {
         $this->reason = $reason;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -42,19 +44,9 @@ class ConnectionBlocked extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x3C".
+        $data = "\x00\x0A\x00\x3C".
             Value\ShortStringValue::encode($this->reason);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

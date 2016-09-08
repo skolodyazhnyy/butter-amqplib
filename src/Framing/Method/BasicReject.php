@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicReject extends Method
+class BasicReject extends Frame
 {
     /**
      * @var int
@@ -27,13 +26,16 @@ class BasicReject extends Method
     private $requeue;
 
     /**
+     * @param int  $channel
      * @param int  $deliveryTag
      * @param bool $requeue
      */
-    public function __construct($deliveryTag, $requeue)
+    public function __construct($channel, $deliveryTag, $requeue)
     {
         $this->deliveryTag = $deliveryTag;
         $this->requeue = $requeue;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -61,21 +63,10 @@ class BasicReject extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x5A".
+        $data = "\x00\x3C\x00\x5A".
             Value\LongLongValue::encode($this->deliveryTag).
             Value\BooleanValue::encode($this->requeue);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongLongValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicNack extends Method
+class BasicNack extends Frame
 {
     /**
      * @var int
@@ -32,15 +31,18 @@ class BasicNack extends Method
     private $requeue;
 
     /**
+     * @param int  $channel
      * @param int  $deliveryTag
      * @param bool $multiple
      * @param bool $requeue
      */
-    public function __construct($deliveryTag, $multiple, $requeue)
+    public function __construct($channel, $deliveryTag, $multiple, $requeue)
     {
         $this->deliveryTag = $deliveryTag;
         $this->multiple = $multiple;
         $this->requeue = $requeue;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,22 +80,10 @@ class BasicNack extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x78".
+        $data = "\x00\x3C\x00\x78".
             Value\LongLongValue::encode($this->deliveryTag).
             Value\OctetValue::encode(($this->multiple ? 1 : 0) | (($this->requeue ? 1 : 0) << 1));
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongLongValue::decode($data),
-            (bool) ($flags = Value\OctetValue::decode($data)) & 1,
-            (bool) $flags & 2
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

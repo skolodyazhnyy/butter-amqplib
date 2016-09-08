@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueueUnbind extends Method
+class QueueUnbind extends Frame
 {
     /**
      * @var int
@@ -42,19 +41,22 @@ class QueueUnbind extends Method
     private $arguments = [];
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param string $exchange
      * @param string $routingKey
      * @param array  $arguments
      */
-    public function __construct($reserved1, $queue, $exchange, $routingKey, $arguments)
+    public function __construct($channel, $reserved1, $queue, $exchange, $routingKey, $arguments)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
         $this->exchange = $exchange;
         $this->routingKey = $routingKey;
         $this->arguments = $arguments;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -112,27 +114,13 @@ class QueueUnbind extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x32".
+        $data = "\x00\x32\x00\x32".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\ShortStringValue::encode($this->exchange).
             Value\ShortStringValue::encode($this->routingKey).
             Value\TableValue::encode($this->arguments);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\TableValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

@@ -99,7 +99,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
 
         //$this->logger->debug(sprintf('Opening virtual host "%s"', $this->url->getVhost()));
 
-        $this->send(new ConnectionOpen($this->url->getVhost(), '', false))
+        $this->send(new ConnectionOpen(0, $this->url->getVhost(), '', false))
             ->wait(ConnectionOpenOk::class);
 
         $this->status = self::STATUS_READY;
@@ -140,7 +140,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
      */
     public function close($code = 0, $reason = '')
     {
-        $this->send(new ConnectionClose($code, $reason, 0, 0))
+        $this->send(new ConnectionClose(0, $code, $reason, 0, 0))
             ->wait(ConnectionCloseOk::class);
 
         $this->status = self::STATUS_CLOSED;
@@ -178,7 +178,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
      */
     private function send(Frame $frame)
     {
-        $this->wire->send(0, $frame);
+        $this->wire->send($frame);
 
         return $this;
     }
@@ -240,6 +240,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         list($locale) = explode(' ', $frame->getLocales());
 
         $this->send(new ConnectionStartOk(
+            0,
             [
                 'platform' => 'PHP '.PHP_VERSION,
                 'product' => 'ButterAMQP',
@@ -284,7 +285,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         //    $heartbeat
         //));
 
-        $this->send(new ConnectionTuneOk($channelMax, $frameMax, $heartbeat));
+        $this->send(new ConnectionTuneOk(0, $channelMax, $frameMax, $heartbeat));
 
         $this->wire->setHeartbeat(new TimeHeartbeat($heartbeat))
             ->setFrameMax($frameMax);
@@ -299,7 +300,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
      */
     private function onConnectionClose(ConnectionClose $frame)
     {
-        $this->send(new ConnectionCloseOk());
+        $this->send(new ConnectionCloseOk(0));
         $this->wire->close();
 
         $this->status = self::STATUS_CLOSED;

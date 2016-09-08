@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueueDelete extends Method
+class QueueDelete extends Frame
 {
     /**
      * @var int
@@ -42,19 +41,22 @@ class QueueDelete extends Method
     private $noWait;
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param bool   $ifUnused
      * @param bool   $ifEmpty
      * @param bool   $noWait
      */
-    public function __construct($reserved1, $queue, $ifUnused, $ifEmpty, $noWait)
+    public function __construct($channel, $reserved1, $queue, $ifUnused, $ifEmpty, $noWait)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
         $this->ifUnused = $ifUnused;
         $this->ifEmpty = $ifEmpty;
         $this->noWait = $noWait;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -112,25 +114,11 @@ class QueueDelete extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x28".
+        $data = "\x00\x32\x00\x28".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\OctetValue::encode(($this->ifUnused ? 1 : 0) | (($this->ifEmpty ? 1 : 0) << 1) | (($this->noWait ? 1 : 0) << 2));
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            (bool) ($flags = Value\OctetValue::decode($data)) & 1,
-            (bool) $flags & 2,
-            (bool) $flags & 4
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

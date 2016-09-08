@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicConsumeOk extends Method
+class BasicConsumeOk extends Frame
 {
     /**
      * @var string
@@ -22,11 +21,14 @@ class BasicConsumeOk extends Method
     private $consumerTag;
 
     /**
+     * @param int    $channel
      * @param string $consumerTag
      */
-    public function __construct($consumerTag)
+    public function __construct($channel, $consumerTag)
     {
         $this->consumerTag = $consumerTag;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class BasicConsumeOk extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x15".
+        $data = "\x00\x3C\x00\x15".
             Value\ShortStringValue::encode($this->consumerTag);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

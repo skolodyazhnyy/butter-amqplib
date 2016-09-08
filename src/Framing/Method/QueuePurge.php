@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueuePurge extends Method
+class QueuePurge extends Frame
 {
     /**
      * @var int
@@ -32,15 +31,18 @@ class QueuePurge extends Method
     private $noWait;
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param bool   $noWait
      */
-    public function __construct($reserved1, $queue, $noWait)
+    public function __construct($channel, $reserved1, $queue, $noWait)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
         $this->noWait = $noWait;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,23 +80,11 @@ class QueuePurge extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x1E".
+        $data = "\x00\x32\x00\x1E".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\BooleanValue::encode($this->noWait);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

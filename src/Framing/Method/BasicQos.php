@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicQos extends Method
+class BasicQos extends Frame
 {
     /**
      * @var int
@@ -32,15 +31,18 @@ class BasicQos extends Method
     private $global;
 
     /**
+     * @param int  $channel
      * @param int  $prefetchSize
      * @param int  $prefetchCount
      * @param bool $global
      */
-    public function __construct($prefetchSize, $prefetchCount, $global)
+    public function __construct($channel, $prefetchSize, $prefetchCount, $global)
     {
         $this->prefetchSize = $prefetchSize;
         $this->prefetchCount = $prefetchCount;
         $this->global = $global;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,23 +80,11 @@ class BasicQos extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x0A".
+        $data = "\x00\x3C\x00\x0A".
             Value\LongValue::encode($this->prefetchSize).
             Value\ShortValue::encode($this->prefetchCount).
             Value\BooleanValue::encode($this->global);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongValue::decode($data),
-            Value\ShortValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

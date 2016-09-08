@@ -46,7 +46,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      * @param int|float $readingTimeout
      * @param int       $readAheadSize
      */
-    public function __construct($connectionTimeout = 30, $readingTimeout = 1, $readAheadSize = 13000)
+    public function __construct($connectionTimeout = 30, $readingTimeout = 1, $readAheadSize = 130000)
     {
         $this->logger = new NullLogger();
 
@@ -62,8 +62,6 @@ class StreamIO implements IOInterface, LoggerAwareInterface
         if ($this->stream && $this->isOpen()) {
             return $this;
         }
-
-        $this->blocking = null;
 
         //$this->logger->debug(sprintf('Connecting to "%s://%s:%d"...', $protocol, $host, $port), [
         //    'protocol' => $protocol,
@@ -176,7 +174,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             $length = strlen($data);
         }
 
-        //$this->logger->debug(new ReadableBinaryData('Sending', $data));
+        $this->logger->debug(new ReadableBinaryData('Sending', $data));
 
         while ($length > 0) {
             if ($this->isOpen()) {
@@ -262,6 +260,10 @@ class StreamIO implements IOInterface, LoggerAwareInterface
         if (($received = fread($this->stream, $length)) === false) {
             throw new IOException('An error occur while reading from the socket');
         }
+
+        //if ($received) {
+        //    $this->logger->debug(new ReadableBinaryData('Receive', $received));
+        //}
 
         return $received;
     }

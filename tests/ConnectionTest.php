@@ -74,7 +74,7 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::at(3))
             ->method('send')
-            ->with(0, new ConnectionOpen('foo', '', false));
+            ->with(new ConnectionOpen(0, 'foo', '', false));
 
         $this->wire->expects(self::at(4))
             ->method('wait')
@@ -97,7 +97,7 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::at(1))
             ->method('send')
-            ->with(1, new ChannelOpen(''));
+            ->with(new ChannelOpen(1, ''));
 
         $this->wire->expects(self::at(2))
             ->method('wait')
@@ -125,7 +125,7 @@ class ConnectionTest extends TestCase
     {
         $this->wire->expects(self::at(0))
             ->method('send')
-            ->with(0, new ConnectionClose(0, '', 0, 0));
+            ->with(new ConnectionClose(0, 0, '', 0, 0));
 
         $this->wire->expects(self::at(1))
             ->method('wait')
@@ -173,8 +173,8 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(0, self::isInstanceOf(ConnectionStartOk::class))
-            ->willReturnCallback(function ($channel, ConnectionStartOk $frame) {
+            ->with(self::isInstanceOf(ConnectionStartOk::class))
+            ->willReturnCallback(function (ConnectionStartOk $frame) {
                 self::assertEquals('es-ES', $frame->getLocale());
                 self::assertEquals('PLAIN', $frame->getMechanism());
                 self::assertEquals('**response**', $frame->getResponse());
@@ -182,7 +182,7 @@ class ConnectionTest extends TestCase
                 return $this->wire;
             });
 
-        $this->connection->dispatch(new ConnectionStart(0, 9, [], 'AMQPLAIN PLAIN', 'es-ES en-US'));
+        $this->connection->dispatch(new ConnectionStart(0, 0, 9, [], 'AMQPLAIN PLAIN', 'es-ES en-US'));
     }
 
     public function testDispatchConnectionStartServerCapabilities()
@@ -193,6 +193,7 @@ class ConnectionTest extends TestCase
             ->willReturn($this->createMock(MechanismInterface::class));
 
         $this->connection->dispatch(new ConnectionStart(
+            0,
             0,
             9,
             [
@@ -227,9 +228,9 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(0, new ConnectionTuneOk(1, 2, 3));
+            ->with(new ConnectionTuneOk(0, 1, 2, 3));
 
-        $this->connection->dispatch(new ConnectionTune(1, 2, 3));
+        $this->connection->dispatch(new ConnectionTune(0, 1, 2, 3));
     }
 
     /**
@@ -250,9 +251,9 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(0, new ConnectionTuneOk(1, 2, 1));
+            ->with(new ConnectionTuneOk(0, 1, 2, 1));
 
-        $connection->dispatch(new ConnectionTune(1, 2, 3));
+        $connection->dispatch(new ConnectionTune(0, 1, 2, 3));
     }
 
     /**
@@ -262,12 +263,12 @@ class ConnectionTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(0, new ConnectionCloseOk());
+            ->with(new ConnectionCloseOk(0));
 
         $this->wire->expects(self::once())
             ->method('close');
 
-        $this->connection->dispatch(new ConnectionClose(0, '', 0, 0));
+        $this->connection->dispatch(new ConnectionClose(0, 0, '', 0, 0));
     }
 
     /**
@@ -279,12 +280,12 @@ class ConnectionTest extends TestCase
 
         $this->wire->expects(self::once())
             ->method('send')
-            ->with(0, new ConnectionCloseOk());
+            ->with(new ConnectionCloseOk(0));
 
         $this->wire->expects(self::once())
             ->method('close');
 
-        $this->connection->dispatch(new ConnectionClose(320, 'Failed', 0, 0));
+        $this->connection->dispatch(new ConnectionClose(0, 320, 'Failed', 0, 0));
     }
 
     /**
@@ -292,7 +293,7 @@ class ConnectionTest extends TestCase
      */
     public function testDispatchConnectionBlocked()
     {
-        $this->connection->dispatch(new ConnectionBlocked('no-reason'));
+        $this->connection->dispatch(new ConnectionBlocked(0, 'no-reason'));
 
         self::assertEquals(Connection::STATUS_BLOCKED, $this->connection->getStatus());
     }
@@ -302,7 +303,7 @@ class ConnectionTest extends TestCase
      */
     public function testDispatchConnectionUnblocked()
     {
-        $this->connection->dispatch(new ConnectionUnblocked());
+        $this->connection->dispatch(new ConnectionUnblocked(0));
 
         self::assertEquals(Connection::STATUS_READY, $this->connection->getStatus());
     }

@@ -5,31 +5,20 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 
 /**
  * Abandon the current transaction.
  *
  * @codeCoverageIgnore
  */
-class TxRollback extends Method
+class TxRollback extends Frame
 {
     /**
      * @return string
      */
     public function encode()
     {
-        return "\x00\x5A\x00\x1E";
-    }
-
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self();
+        return "\x01".pack('n', $this->channel)."\x00\x00\x00\x04\x00\x5A\x00\x1E\xCE";
     }
 }

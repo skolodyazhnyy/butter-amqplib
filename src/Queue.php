@@ -68,6 +68,7 @@ class Queue implements QueueInterface
     public function define($flags = 0, array $arguments = [])
     {
         $this->send(new QueueDeclare(
+            $this->channel,
             0,
             $this->name,
             $flags & self::FLAG_PASSIVE,
@@ -98,6 +99,7 @@ class Queue implements QueueInterface
     public function delete($flags = 0)
     {
         $this->send(new QueueDelete(
+            $this->channel,
             0,
             $this->name,
             $flags & self::FLAG_IF_UNUSED,
@@ -123,6 +125,7 @@ class Queue implements QueueInterface
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
         $this->send(new QueueBind(
+            $this->channel,
             0,
             $this->name,
             (string) $exchange,
@@ -144,6 +147,7 @@ class Queue implements QueueInterface
     public function unbind($exchange, $routingKey = '', array $arguments = [])
     {
         $this->send(new QueueUnbind(
+            $this->channel,
             0,
             $this->name,
             $exchange,
@@ -161,7 +165,12 @@ class Queue implements QueueInterface
      */
     public function purge($flags = 0)
     {
-        $this->send(new QueuePurge(0, $this->name, (bool) ($flags & self::FLAG_NO_WAIT)));
+        $this->send(new QueuePurge(
+            $this->channel,
+            0,
+            $this->name,
+            (bool) ($flags & self::FLAG_NO_WAIT)
+        ));
 
         if ($flags & self::FLAG_NO_WAIT) {
             return $this;
@@ -214,7 +223,7 @@ class Queue implements QueueInterface
      */
     private function send(Frame $frame)
     {
-        $this->wire->send($this->channel, $frame);
+        $this->wire->send($frame);
 
         return $this;
     }

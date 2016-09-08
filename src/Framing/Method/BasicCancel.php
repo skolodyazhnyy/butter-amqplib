@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicCancel extends Method
+class BasicCancel extends Frame
 {
     /**
      * @var string
@@ -27,13 +26,16 @@ class BasicCancel extends Method
     private $noWait;
 
     /**
+     * @param int    $channel
      * @param string $consumerTag
      * @param bool   $noWait
      */
-    public function __construct($consumerTag, $noWait)
+    public function __construct($channel, $consumerTag, $noWait)
     {
         $this->consumerTag = $consumerTag;
         $this->noWait = $noWait;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -61,21 +63,10 @@ class BasicCancel extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x1E".
+        $data = "\x00\x3C\x00\x1E".
             Value\ShortStringValue::encode($this->consumerTag).
             Value\BooleanValue::encode($this->noWait);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortStringValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

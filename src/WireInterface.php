@@ -56,12 +56,11 @@ interface WireInterface
     /**
      * Send a frame to the connection.
      *
-     * @param int   $channel
      * @param Frame $frame
      *
      * @return WireInterface
      */
-    public function send($channel, Frame $frame);
+    public function send(Frame $frame);
 
     /**
      * Wait for a given type of the frame in the given channel.

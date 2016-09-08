@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicConsume extends Method
+class BasicConsume extends Frame
 {
     /**
      * @var int
@@ -57,6 +56,7 @@ class BasicConsume extends Method
     private $arguments = [];
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param string $consumerTag
@@ -66,7 +66,7 @@ class BasicConsume extends Method
      * @param bool   $noWait
      * @param array  $arguments
      */
-    public function __construct($reserved1, $queue, $consumerTag, $noLocal, $noAck, $exclusive, $noWait, $arguments)
+    public function __construct($channel, $reserved1, $queue, $consumerTag, $noLocal, $noAck, $exclusive, $noWait, $arguments)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
@@ -76,6 +76,8 @@ class BasicConsume extends Method
         $this->exclusive = $exclusive;
         $this->noWait = $noWait;
         $this->arguments = $arguments;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -163,30 +165,13 @@ class BasicConsume extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x14".
+        $data = "\x00\x3C\x00\x14".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\ShortStringValue::encode($this->consumerTag).
             Value\OctetValue::encode(($this->noLocal ? 1 : 0) | (($this->noAck ? 1 : 0) << 1) | (($this->exclusive ? 1 : 0) << 2) | (($this->noWait ? 1 : 0) << 3)).
             Value\TableValue::encode($this->arguments);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            (bool) ($flags = Value\OctetValue::decode($data)) & 1,
-            (bool) $flags & 2,
-            (bool) $flags & 4,
-            (bool) $flags & 8,
-            Value\TableValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

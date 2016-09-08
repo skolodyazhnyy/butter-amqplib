@@ -7,8 +7,6 @@ use ButterAMQP\Framing\Content;
 use ButterAMQP\Framing\Frame;
 use ButterAMQP\Framing\Heartbeat;
 use ButterAMQP\Heartbeat\NullHeartbeat;
-use ButterAMQP\Value\LongValue;
-use ButterAMQP\Value\ShortValue;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -77,27 +75,26 @@ class Wire implements WireInterface, LoggerAwareInterface
     public function next($blocking = true)
     {
         if ($this->heartbeat->shouldSendHeartbeat()) {
-            $this->send(0, new Heartbeat());
+            $this->send(new Heartbeat(0));
         }
 
-        if (($buffer = $this->io->peek(7, $blocking)) === null) {
+        if (($peek = $this->io->peek(7, $blocking)) === null) {
             return null;
         }
 
-        $header = unpack('Ctype/nchannel/Nsize', $buffer);
+        $header = unpack('Ctype/nchannel/Nsize', $peek);
 
-        if (($buffer = $this->io->read($header['size'] + 8, $blocking)) === null) {
+        if (($data = $this->io->read($header['size'] + 8, $blocking)) === null) {
             return null;
         }
 
-        $payload = substr($buffer, 7, strlen($buffer) - 8);
-        $end = $buffer[strlen($buffer) - 1];
+        $end = $data[strlen($data) - 1];
 
         if ($end != self::FRAME_ENDING) {
             throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
         }
 
-        $frame = Frame::create($header['type'], $header['channel'], $payload);
+        $frame = Frame::decode(new Buffer($data));
 
         //$this->logger->debug(sprintf('Receive "%s" at channel #%d', get_class($frame), $frame->getChannel()), [
         //    'channel' => $frame->getChannel(),
@@ -116,7 +113,7 @@ class Wire implements WireInterface, LoggerAwareInterface
     /**
      * {@inheritdoc}
      */
-    public function send($channel, Frame $frame)
+    public function send(Frame $frame)
     {
         //$this->logger->debug(sprintf('Sending "%s" to channel #%d', get_class($frame), $channel), [
         //    'channel' => $channel,
@@ -126,15 +123,7 @@ class Wire implements WireInterface, LoggerAwareInterface
         $this->heartbeat->clientBeat();
 
         foreach ($this->chop($frame) as $piece) {
-            $data = $piece->encode();
-
-            $this->io->write(
-                $piece->getFrameType().
-                ShortValue::encode($channel).
-                LongValue::encode(strlen($data)).
-                $data.
-                self::FRAME_ENDING
-            );
+            $this->io->write($piece->encode());
         }
 
         return $this;
@@ -157,7 +146,7 @@ class Wire implements WireInterface, LoggerAwareInterface
         $chunks = ceil(strlen($data) / $size);
 
         for ($c = 0; $c < $chunks; ++$c) {
-            $frames[] = new Content(substr($data, $c * $size, $size));
+            $frames[] = new Content($frame->getChannel(), substr($data, $c * $size, $size));
         }
 
         return $frames;

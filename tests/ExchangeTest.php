@@ -49,7 +49,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, true, ['foo' => 'bar']));
+            ->with(new ExchangeDeclare($this->channel, 0, 'foo', 'fanout', true, true, false, false, true, ['foo' => 'bar']));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -66,7 +66,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeDeclare(0, 'foo', 'fanout', true, true, false, false, false, ['foo' => 'bar']));
+            ->with(new ExchangeDeclare($this->channel, 0, 'foo', 'fanout', true, true, false, false, false, ['foo' => 'bar']));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -84,7 +84,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeDelete(0, 'foo', true, true));
+            ->with(new ExchangeDelete($this->channel, 0, 'foo', true, true));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -99,7 +99,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeDelete(0, 'foo', true, false));
+            ->with(new ExchangeDelete($this->channel, 0, 'foo', true, false));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -115,7 +115,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
+            ->with(new ExchangeBind($this->channel, 0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -130,7 +130,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
+            ->with(new ExchangeBind($this->channel, 0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
 
         $this->wire->expects(self::once())
             ->method('wait')
@@ -146,7 +146,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeBind(0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
+            ->with(new ExchangeBind($this->channel, 0, 'bar', 'foo', 'baz', true, ['foo' => 'bar']));
 
         $this->wire->expects(self::never())
             ->method('wait');
@@ -161,7 +161,7 @@ class ExchangeTest extends TestCase
     {
         $this->wire->expects(self::once())
             ->method('send')
-            ->with($this->channel, new ExchangeUnbind(0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
+            ->with(new ExchangeUnbind($this->channel, 0, 'bar', 'foo', 'baz', false, ['foo' => 'bar']));
 
         $this->wire->expects(self::once())
             ->method('wait')

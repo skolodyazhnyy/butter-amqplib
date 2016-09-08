@@ -5,14 +5,13 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
  * @codeCoverageIgnore
  */
-class ConfirmSelect extends Method
+class ConfirmSelect extends Frame
 {
     /**
      * @var bool
@@ -20,11 +19,14 @@ class ConfirmSelect extends Method
     private $nowait;
 
     /**
+     * @param int  $channel
      * @param bool $nowait
      */
-    public function __construct($nowait)
+    public function __construct($channel, $nowait)
     {
         $this->nowait = $nowait;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -42,19 +44,9 @@ class ConfirmSelect extends Method
      */
     public function encode()
     {
-        return "\x00\x55\x00\x0A".
+        $data = "\x00\x55\x00\x0A".
             Value\BooleanValue::encode($this->nowait);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

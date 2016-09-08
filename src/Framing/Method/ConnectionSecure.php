@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionSecure extends Method
+class ConnectionSecure extends Frame
 {
     /**
      * @var string
@@ -22,11 +21,14 @@ class ConnectionSecure extends Method
     private $challenge;
 
     /**
+     * @param int    $channel
      * @param string $challenge
      */
-    public function __construct($challenge)
+    public function __construct($channel, $challenge)
     {
         $this->challenge = $challenge;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -44,19 +46,9 @@ class ConnectionSecure extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x14".
+        $data = "\x00\x0A\x00\x14".
             Value\LongStringValue::encode($this->challenge);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

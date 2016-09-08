@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class QueueBind extends Method
+class QueueBind extends Frame
 {
     /**
      * @var int
@@ -47,6 +46,7 @@ class QueueBind extends Method
     private $arguments = [];
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param string $exchange
@@ -54,7 +54,7 @@ class QueueBind extends Method
      * @param bool   $noWait
      * @param array  $arguments
      */
-    public function __construct($reserved1, $queue, $exchange, $routingKey, $noWait, $arguments)
+    public function __construct($channel, $reserved1, $queue, $exchange, $routingKey, $noWait, $arguments)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
@@ -62,6 +62,8 @@ class QueueBind extends Method
         $this->routingKey = $routingKey;
         $this->noWait = $noWait;
         $this->arguments = $arguments;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -129,29 +131,14 @@ class QueueBind extends Method
      */
     public function encode()
     {
-        return "\x00\x32\x00\x14".
+        $data = "\x00\x32\x00\x14".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\ShortStringValue::encode($this->exchange).
             Value\ShortStringValue::encode($this->routingKey).
             Value\BooleanValue::encode($this->noWait).
             Value\TableValue::encode($this->arguments);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\BooleanValue::decode($data),
-            Value\TableValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

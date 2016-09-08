@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicAck extends Method
+class BasicAck extends Frame
 {
     /**
      * @var int
@@ -27,13 +26,16 @@ class BasicAck extends Method
     private $multiple;
 
     /**
+     * @param int  $channel
      * @param int  $deliveryTag
      * @param bool $multiple
      */
-    public function __construct($deliveryTag, $multiple)
+    public function __construct($channel, $deliveryTag, $multiple)
     {
         $this->deliveryTag = $deliveryTag;
         $this->multiple = $multiple;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -61,21 +63,10 @@ class BasicAck extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x50".
+        $data = "\x00\x3C\x00\x50".
             Value\LongLongValue::encode($this->deliveryTag).
             Value\BooleanValue::encode($this->multiple);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\LongLongValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

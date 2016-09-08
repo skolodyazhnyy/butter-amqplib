@@ -2,8 +2,6 @@
 
 namespace ButterAMQP\Framing;
 
-use ButterAMQP\Buffer;
-
 /**
  * @codeCoverageIgnore
  */
@@ -14,24 +12,6 @@ class Heartbeat extends Frame
      */
     public function encode()
     {
-        return '';
-    }
-
-    /**
-     * @param Buffer $data
-     *
-     * @return Heartbeat
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFrameType()
-    {
-        return "\x08";
+        return "\x08".pack('n', $this->channel)."\x00\x00\x00\x00\xCE";
     }
 }

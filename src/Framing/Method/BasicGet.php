@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicGet extends Method
+class BasicGet extends Frame
 {
     /**
      * @var int
@@ -32,15 +31,18 @@ class BasicGet extends Method
     private $noAck;
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $queue
      * @param bool   $noAck
      */
-    public function __construct($reserved1, $queue, $noAck)
+    public function __construct($channel, $reserved1, $queue, $noAck)
     {
         $this->reserved1 = $reserved1;
         $this->queue = $queue;
         $this->noAck = $noAck;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,23 +80,11 @@ class BasicGet extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x46".
+        $data = "\x00\x3C\x00\x46".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->queue).
             Value\BooleanValue::encode($this->noAck);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

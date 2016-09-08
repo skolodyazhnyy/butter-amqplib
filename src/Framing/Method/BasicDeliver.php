@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicDeliver extends Method
+class BasicDeliver extends Frame
 {
     /**
      * @var string
@@ -42,19 +41,22 @@ class BasicDeliver extends Method
     private $routingKey;
 
     /**
+     * @param int    $channel
      * @param string $consumerTag
      * @param int    $deliveryTag
      * @param bool   $redelivered
      * @param string $exchange
      * @param string $routingKey
      */
-    public function __construct($consumerTag, $deliveryTag, $redelivered, $exchange, $routingKey)
+    public function __construct($channel, $consumerTag, $deliveryTag, $redelivered, $exchange, $routingKey)
     {
         $this->consumerTag = $consumerTag;
         $this->deliveryTag = $deliveryTag;
         $this->redelivered = $redelivered;
         $this->exchange = $exchange;
         $this->routingKey = $routingKey;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -112,27 +114,13 @@ class BasicDeliver extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x3C".
+        $data = "\x00\x3C\x00\x3C".
             Value\ShortStringValue::encode($this->consumerTag).
             Value\LongLongValue::encode($this->deliveryTag).
             Value\BooleanValue::encode($this->redelivered).
             Value\ShortStringValue::encode($this->exchange).
             Value\ShortStringValue::encode($this->routingKey);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortStringValue::decode($data),
-            Value\LongLongValue::decode($data),
-            Value\BooleanValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

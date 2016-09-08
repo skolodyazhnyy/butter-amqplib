@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicReturn extends Method
+class BasicReturn extends Frame
 {
     /**
      * @var int
@@ -37,17 +36,20 @@ class BasicReturn extends Method
     private $routingKey;
 
     /**
+     * @param int    $channel
      * @param int    $replyCode
      * @param string $replyText
      * @param string $exchange
      * @param string $routingKey
      */
-    public function __construct($replyCode, $replyText, $exchange, $routingKey)
+    public function __construct($channel, $replyCode, $replyText, $exchange, $routingKey)
     {
         $this->replyCode = $replyCode;
         $this->replyText = $replyText;
         $this->exchange = $exchange;
         $this->routingKey = $routingKey;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -95,25 +97,12 @@ class BasicReturn extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x32".
+        $data = "\x00\x3C\x00\x32".
             Value\ShortValue::encode($this->replyCode).
             Value\ShortStringValue::encode($this->replyText).
             Value\ShortStringValue::encode($this->exchange).
             Value\ShortStringValue::encode($this->routingKey);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

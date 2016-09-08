@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionClose extends Method
+class ConnectionClose extends Frame
 {
     /**
      * @var int
@@ -37,17 +36,20 @@ class ConnectionClose extends Method
     private $methodId;
 
     /**
+     * @param int    $channel
      * @param int    $replyCode
      * @param string $replyText
      * @param int    $classId
      * @param int    $methodId
      */
-    public function __construct($replyCode, $replyText, $classId, $methodId)
+    public function __construct($channel, $replyCode, $replyText, $classId, $methodId)
     {
         $this->replyCode = $replyCode;
         $this->replyText = $replyText;
         $this->classId = $classId;
         $this->methodId = $methodId;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -95,25 +97,12 @@ class ConnectionClose extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x32".
+        $data = "\x00\x0A\x00\x32".
             Value\ShortValue::encode($this->replyCode).
             Value\ShortStringValue::encode($this->replyText).
             Value\ShortValue::encode($this->classId).
             Value\ShortValue::encode($this->methodId);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortValue::decode($data),
-            Value\ShortValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

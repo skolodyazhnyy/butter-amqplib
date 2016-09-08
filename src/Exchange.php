@@ -59,6 +59,7 @@ class Exchange implements ExchangeInterface
     public function define($type, $flags = 0, array $arguments = [])
     {
         $this->send(new ExchangeDeclare(
+            $this->channel,
             0,
             $this->name,
             $type,
@@ -83,6 +84,7 @@ class Exchange implements ExchangeInterface
     public function delete($flags = 0)
     {
         $this->send(new ExchangeDelete(
+            $this->channel,
             0,
             $this->name,
             (bool) ($flags & self::FLAG_IF_UNUSED),
@@ -102,6 +104,7 @@ class Exchange implements ExchangeInterface
     public function bind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
         $this->send(new ExchangeBind(
+            $this->channel,
             0,
             $exchange,
             $this->name,
@@ -123,6 +126,7 @@ class Exchange implements ExchangeInterface
     public function unbind($exchange, $routingKey = '', array $arguments = [], $flags = 0)
     {
         $this->send(new ExchangeUnbind(
+            $this->channel,
             0,
             $exchange,
             $this->name,
@@ -161,7 +165,7 @@ class Exchange implements ExchangeInterface
      */
     private function send(Frame $frame)
     {
-        $this->wire->send($this->channel, $frame);
+        $this->wire->send($frame);
 
         return $this;
     }

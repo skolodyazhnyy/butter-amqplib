@@ -5,31 +5,20 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 
 /**
  * Confirm a channel close.
  *
  * @codeCoverageIgnore
  */
-class ChannelCloseOk extends Method
+class ChannelCloseOk extends Frame
 {
     /**
      * @return string
      */
     public function encode()
     {
-        return "\x00\x14\x00\x29";
-    }
-
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self();
+        return "\x01".pack('n', $this->channel)."\x00\x00\x00\x04\x00\x14\x00\x29\xCE";
     }
 }

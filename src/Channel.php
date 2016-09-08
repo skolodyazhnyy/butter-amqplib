@@ -113,7 +113,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         $this->wire->subscribe($this->id, $this);
 
-        $this->send(new ChannelOpen(''))
+        $this->send(new ChannelOpen($this->id, ''))
             ->wait(ChannelOpenOk::class);
 
         $this->status = self::STATUS_READY;
@@ -128,7 +128,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     public function flow($active)
     {
         /** @var ChannelFlowOk $frame */
-        $frame = $this->send(new ChannelFlow($active))
+        $frame = $this->send(new ChannelFlow($this->id, $active))
             ->wait(ChannelFlowOk::class);
 
         $this->status = $frame->isActive() ? self::STATUS_READY :
@@ -142,7 +142,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function close()
     {
-        $this->send(new ChannelClose(0, '', 0, 0))
+        $this->send(new ChannelClose($this->id, 0, '', 0, 0))
             ->wait(ChannelCloseOk::class);
 
         $this->status = self::STATUS_CLOSED;
@@ -155,7 +155,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function qos($prefetchSize, $prefetchCount, $globally = false)
     {
-        $this->send(new BasicQos($prefetchSize, $prefetchCount, $globally))
+        $this->send(new BasicQos($this->id, $prefetchSize, $prefetchCount, $globally))
             ->wait(BasicQosOk::class);
 
         return $this;
@@ -187,6 +187,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         }
 
         $this->send(new BasicConsume(
+            $this->id,
             0,
             $queue,
             $tag,
@@ -213,7 +214,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     public function get($queue, $withAck = true)
     {
         /** @var BasicGetOk|BasicGetEmpty $frame */
-        $frame = $this->send(new BasicGet(0, $queue, !$withAck))
+        $frame = $this->send(new BasicGet($this->id, 0, $queue, !$withAck))
             ->wait([BasicGetOk::class, BasicGetEmpty::class]);
 
         if ($frame instanceof BasicGetEmpty) {
@@ -245,7 +246,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function recover($requeue = true)
     {
-        $this->send(new BasicRecover($requeue))
+        $this->send(new BasicRecover($this->id, $requeue))
             ->wait(BasicRecoverOk::class);
 
         return $this;
@@ -256,7 +257,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function cancel($tag, $flags = 0)
     {
-        $this->send(new BasicCancel($tag, $flags & Consumer::FLAG_NO_WAIT));
+        $this->send(new BasicCancel($this->id, $tag, $flags & Consumer::FLAG_NO_WAIT));
 
         unset($this->consumers[$tag]);
 
@@ -275,6 +276,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     public function publish(Message $message, $exchange = '', $routingKey = '', $flags = 0)
     {
         $this->send(new BasicPublish(
+            $this->id,
             0,
             $exchange,
             $routingKey,
@@ -284,8 +286,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
 
         $body = $message->getBody();
 
-        $this->send(new Header(60, 0, strlen($body), $message->getProperties()));
-        $this->send(new Content($body));
+        $this->send(new Header($this->id, 60, 0, strlen($body), $message->getProperties()));
+        $this->send(new Content($this->id, $body));
 
         return $this;
     }
@@ -295,7 +297,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function ack($deliveryTag, $multiple = false)
     {
-        $this->send(new BasicAck($deliveryTag, $multiple));
+        $this->send(new BasicAck($this->id, $deliveryTag, $multiple));
 
         return $this;
     }
@@ -305,8 +307,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function reject($deliveryTag, $requeue = true, $multiple = false)
     {
-        $multiple ? $this->send(new BasicNack($deliveryTag, $multiple, $requeue)) :
-            $this->send(new BasicReject($deliveryTag, $requeue));
+        $multiple ? $this->send(new BasicNack($this->id, $deliveryTag, $multiple, $requeue)) :
+            $this->send(new BasicReject($this->id, $deliveryTag, $requeue));
 
         return $this;
     }
@@ -328,7 +330,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     {
         $this->confirmCallable = $callable;
 
-        $this->send(new ConfirmSelect($noWait));
+        $this->send(new ConfirmSelect($this->id, $noWait));
 
         if (!$noWait) {
             $this->wait(ConfirmSelectOk::class);
@@ -344,7 +346,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     public function selectTx()
     {
-        $this->send(new TxSelect())
+        $this->send(new TxSelect($this->id))
             ->wait(TxSelectOk::class);
 
         $this->mode = self::MODE_TX;
@@ -361,7 +363,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
             throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
         }
 
-        $this->send(new TxCommit())
+        $this->send(new TxCommit($this->id))
             ->wait(TxCommitOk::class);
 
         return;
@@ -376,7 +378,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
             throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
         }
 
-        $this->send(new TxRollback())
+        $this->send(new TxRollback($this->id))
             ->wait(TxRollbackOk::class);
 
         return;
@@ -423,7 +425,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     private function send(Frame $frame)
     {
-        $this->wire->send($this->id, $frame);
+        $this->wire->send($frame);
 
         return $this;
     }
@@ -579,7 +581,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
         unset($this->consumers[$frame->getConsumerTag()]);
 
         if (!$frame->isNoWait()) {
-            $this->send(new BasicCancelOk($frame->getConsumerTag()));
+            $this->send(new BasicCancelOk($this->id, $frame->getConsumerTag()));
         }
     }
 
@@ -588,7 +590,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     private function onChannelFlow(ChannelFlow $frame)
     {
-        $this->send(new ChannelFlowOk($frame->isActive()));
+        $this->send(new ChannelFlowOk($this->id, $frame->isActive()));
 
         $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
     }
@@ -600,7 +602,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
      */
     private function onChannelClose(ChannelClose $frame)
     {
-        $this->send(new ChannelCloseOk());
+        $this->send(new ChannelCloseOk($this->id));
 
         $this->status = self::STATUS_CLOSED;
 

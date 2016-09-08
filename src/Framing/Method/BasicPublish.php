@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class BasicPublish extends Method
+class BasicPublish extends Frame
 {
     /**
      * @var int
@@ -42,19 +41,22 @@ class BasicPublish extends Method
     private $immediate;
 
     /**
+     * @param int    $channel
      * @param int    $reserved1
      * @param string $exchange
      * @param string $routingKey
      * @param bool   $mandatory
      * @param bool   $immediate
      */
-    public function __construct($reserved1, $exchange, $routingKey, $mandatory, $immediate)
+    public function __construct($channel, $reserved1, $exchange, $routingKey, $mandatory, $immediate)
     {
         $this->reserved1 = $reserved1;
         $this->exchange = $exchange;
         $this->routingKey = $routingKey;
         $this->mandatory = $mandatory;
         $this->immediate = $immediate;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -112,26 +114,12 @@ class BasicPublish extends Method
      */
     public function encode()
     {
-        return "\x00\x3C\x00\x28".
+        $data = "\x00\x3C\x00\x28".
             Value\ShortValue::encode($this->reserved1).
             Value\ShortStringValue::encode($this->exchange).
             Value\ShortStringValue::encode($this->routingKey).
             Value\OctetValue::encode(($this->mandatory ? 1 : 0) | (($this->immediate ? 1 : 0) << 1));
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            (bool) ($flags = Value\OctetValue::decode($data)) & 1,
-            (bool) $flags & 2
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }

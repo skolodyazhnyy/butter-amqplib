@@ -5,8 +5,7 @@
 
 namespace ButterAMQP\Framing\Method;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Method;
+use ButterAMQP\Framing\Frame;
 use ButterAMQP\Value;
 
 /**
@@ -14,7 +13,7 @@ use ButterAMQP\Value;
  *
  * @codeCoverageIgnore
  */
-class ConnectionOpen extends Method
+class ConnectionOpen extends Frame
 {
     /**
      * @var string
@@ -32,15 +31,18 @@ class ConnectionOpen extends Method
     private $reserved2;
 
     /**
+     * @param int    $channel
      * @param string $virtualHost
      * @param string $reserved1
      * @param bool   $reserved2
      */
-    public function __construct($virtualHost, $reserved1, $reserved2)
+    public function __construct($channel, $virtualHost, $reserved1, $reserved2)
     {
         $this->virtualHost = $virtualHost;
         $this->reserved1 = $reserved1;
         $this->reserved2 = $reserved2;
+
+        parent::__construct($channel);
     }
 
     /**
@@ -78,23 +80,11 @@ class ConnectionOpen extends Method
      */
     public function encode()
     {
-        return "\x00\x0A\x00\x28".
+        $data = "\x00\x0A\x00\x28".
             Value\ShortStringValue::encode($this->virtualHost).
             Value\ShortStringValue::encode($this->reserved1).
             Value\BooleanValue::encode($this->reserved2);
-    }
 
-    /**
-     * @param Buffer $data
-     *
-     * @return $this
-     */
-    public static function decode(Buffer $data)
-    {
-        return new self(
-            Value\ShortStringValue::decode($data),
-            Value\ShortStringValue::decode($data),
-            Value\BooleanValue::decode($data)
-        );
+        return "\x01".pack('nN', $this->channel, strlen($data)).$data."\xCE";
     }
 }
