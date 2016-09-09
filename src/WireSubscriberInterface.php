@@ -2,7 +2,7 @@
 
 namespace ButterAMQP;
 
-use ButterAMQP\Framing\Frame;
+use ButterAMQP\AMQP091\Framing\Frame;
 
 interface WireSubscriberInterface
 {

@@ -165,9 +165,9 @@ class Url
         return new self(
             isset($parts['scheme']) ? $parts['scheme'] : null,
             isset($parts['host']) ? $parts['host'] : null,
-            isset($parts['port']) ? $parts['port'] : null,
-            isset($parts['user']) ? $parts['user'] : null,
-            isset($parts['pass']) ? $parts['pass'] : null,
+            isset($parts['port']) ? (int) $parts['port'] : null,
+            isset($parts['user']) ? urldecode($parts['user']) : null,
+            isset($parts['pass']) ? urldecode($parts['pass']) : null,
             isset($parts['path']) ? urldecode(substr($parts['path'], 1)) : null,
             $query
         );

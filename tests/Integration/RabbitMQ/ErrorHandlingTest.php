@@ -4,7 +4,7 @@ namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Exception\AMQP\NotFoundException;
 use ButterAMQP\Exception\AMQP\PreconditionFailedException;
-use ButterAMQP\Exchange;
+use ButterAMQP\AMQP091\Exchange;
 use ButterAMQP\Message;
 
 /**

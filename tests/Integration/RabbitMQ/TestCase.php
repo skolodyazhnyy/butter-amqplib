@@ -2,10 +2,10 @@
 
 namespace ButterAMQPTest\Integration\RabbitMQ;
 
-use ButterAMQP\Connection;
+use ButterAMQP\AMQP091\Connection;
 use ButterAMQP\IO\StreamIO;
 use ButterAMQP\Url;
-use ButterAMQP\Wire;
+use ButterAMQP\AMQP091\Wire;
 use ButterAMQP\WireInterface;
 use PHPUnit_Framework_TestCase as BaseTestCase;
 

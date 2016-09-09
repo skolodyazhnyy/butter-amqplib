@@ -5,7 +5,7 @@ namespace ButterAMQP\IO;
 use ButterAMQP\Exception\IOClosedException;
 use ButterAMQP\Exception\IOException;
 use ButterAMQP\IOInterface;
-use ButterAMQP\Binary\ReadableBinaryData;
+use ButterAMQP\Debug\ReadableBinaryData;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -25,33 +25,16 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     private $buffer;
 
     /**
-     * @var int|float
-     */
-    private $connectionTimeout;
-
-    /**
-     * @var int|float
-     */
-    private $readingTimeout;
-
-    /**
      * @var int
      */
     private $readAheadSize;
 
     /**
      * Initialize default logger.
-     *
-     * @param int|float $connectionTimeout
-     * @param int|float $readingTimeout
-     * @param int       $readAheadSize
      */
-    public function __construct($connectionTimeout = 30, $readingTimeout = 1, $readAheadSize = 130000)
+    public function __construct()
     {
         $this->logger = new NullLogger();
-
-        $this->setConnectionTimeout($connectionTimeout);
-        $this->setReadingTimeout($readingTimeout);
     }
 
     /**
@@ -63,28 +46,13 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             return $this;
         }
 
-        //$this->logger->debug(sprintf('Connecting to "%s://%s:%d"...', $protocol, $host, $port), [
-        //    'protocol' => $protocol,
-        //    'host' => $host,
-        //    'port' => $port,
-        //    'parameters' => $parameters,
-        //]);
-
         $context = $this->createStreamContext($parameters);
-
-        if (isset($parameters['connection_timeout'])) {
-            $this->setConnectionTimeout($parameters['connection_timeout']);
-        }
-
-        if (isset($parameters['timeout'])) {
-            $this->setReadingTimeout($parameters['timeout']);
-        }
 
         $this->stream = @stream_socket_client(
             sprintf('%s://%s:%d', $protocol, $host, $port),
             $errno,
             $errstr,
-            $this->connectionTimeout,
+            isset($parameters['connection_timeout']) ? $parameters['connection_timeout'] : 30,
             STREAM_CLIENT_CONNECT,
             $context
         );
@@ -98,44 +66,54 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             ));
         }
 
-        //$this->logger->debug(sprintf('Connection established'), [
-        //    'host' => $host,
-        //    'port' => $port,
-        //]);
-
         $this->buffer = '';
 
-        $this->applyReadingTimeout();
+        if (isset($parameters['timeout'])) {
+            list($sec, $usec) = explode('|', number_format($parameters['timeout'], 6, '|', ''));
+            stream_set_timeout($this->stream, $sec, $usec);
+        }
 
-        return $this;
-    }
-
-    /**
-     * @param float|int $timeout
-     *
-     * @return $this
-     */
-    private function setReadingTimeout($timeout)
-    {
-        $this->readingTimeout = $timeout;
-
-        if ($this->stream) {
-            $this->applyReadingTimeout();
+        if (isset($parameters['read_ahead'])) {
+            $this->readAheadSize = $parameters['read_ahead'];
         }
 
         return $this;
     }
 
     /**
-     * @param float|int $connectionTimeout
+     * @param array $parameters
      *
-     * @return $this
+     * @return resource
      */
-    private function setConnectionTimeout($connectionTimeout)
+    private function createStreamContext(array $parameters)
     {
-        $this->connectionTimeout = $connectionTimeout;
+        $context = stream_context_create();
 
-        return $this;
+        if (isset($parameters['certfile'])) {
+            stream_context_set_option($context, 'ssl', 'local_cert', $parameters['certfile']);
+        }
+
+        if (isset($parameters['keyfile'])) {
+            stream_context_set_option($context, 'ssl', 'local_pk', $parameters['keyfile']);
+        }
+
+        if (isset($parameters['cacertfile'])) {
+            stream_context_set_option($context, 'ssl', 'cafile', $parameters['cacertfile']);
+        }
+
+        if (isset($parameters['passphrase'])) {
+            stream_context_set_option($context, 'ssl', 'passphrase', $parameters['passphrase']);
+        }
+
+        if (isset($parameters['verify'])) {
+            stream_context_set_option($context, 'ssl', 'verify_peer', (bool) $parameters['verify']);
+        }
+
+        if (isset($parameters['allow_self_signed'])) {
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', (bool) $parameters['allow_self_signed']);
+        }
+
+        return $context;
     }
 
     /**
@@ -150,8 +128,6 @@ class StreamIO implements IOInterface, LoggerAwareInterface
         fclose($this->stream);
 
         $this->stream = null;
-
-        //$this->logger->debug('Connection closed');
 
         return $this;
     }
@@ -261,21 +237,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
             throw new IOException('An error occur while reading from the socket');
         }
 
-        //if ($received) {
-        //    $this->logger->debug(new ReadableBinaryData('Receive', $received));
-        //}
-
         return $received;
-    }
-
-    /**
-     * Apply reading timeout to active stream.
-     */
-    private function applyReadingTimeout()
-    {
-        list($sec, $usec) = explode('|', number_format($this->readingTimeout, 6, '|', ''));
-
-        stream_set_timeout($this->stream, $sec, $usec);
     }
 
     /**
@@ -284,41 +246,5 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     public function isOpen()
     {
         return is_resource($this->stream) && feof($this->stream);
-    }
-
-    /**
-     * @param array $parameters
-     *
-     * @return resource
-     */
-    protected function createStreamContext(array $parameters)
-    {
-        $context = stream_context_create();
-
-        if (isset($parameters['certfile'])) {
-            stream_context_set_option($context, 'ssl', 'local_cert', $parameters['certfile']);
-        }
-
-        if (isset($parameters['keyfile'])) {
-            stream_context_set_option($context, 'ssl', 'local_pk', $parameters['keyfile']);
-        }
-
-        if (isset($parameters['cacertfile'])) {
-            stream_context_set_option($context, 'ssl', 'cafile', $parameters['cacertfile']);
-        }
-
-        if (isset($parameters['passphrase'])) {
-            stream_context_set_option($context, 'ssl', 'passphrase', $parameters['passphrase']);
-        }
-
-        if (isset($parameters['verify'])) {
-            stream_context_set_option($context, 'ssl', 'verify_peer', (bool) $parameters['verify']);
-        }
-
-        if (isset($parameters['allow_self_signed'])) {
-            stream_context_set_option($context, 'ssl', 'allow_self_signed', (bool) $parameters['allow_self_signed']);
-        }
-
-        return $context;
     }
 }

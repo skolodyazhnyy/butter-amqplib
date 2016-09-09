@@ -2,7 +2,7 @@
 
 namespace ButterAMQPTest\Heartbeat;
 
-use ButterAMQP\Framing\Heartbeat;
+use ButterAMQP\AMQP091\Framing\Heartbeat;
 use ButterAMQP\Heartbeat\TimeHeartbeat;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;

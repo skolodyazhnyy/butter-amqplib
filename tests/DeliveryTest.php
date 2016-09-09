@@ -3,7 +3,7 @@
 namespace ButterAMQPTest;
 
 use ButterAMQP\ChannelInterface;
-use ButterAMQP\Consumer;
+use ButterAMQP\AMQP091\Consumer;
 use ButterAMQP\Delivery;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;

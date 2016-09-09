@@ -11,9 +11,9 @@ $properties = iterator_to_array(parse_basic_properties($root, $domains));
 $constants = iterator_to_array(parse_constants($root));
 $path = dirname(__DIR__).'/src';
 
-export_files(generate_frame_class($schema), $path.'/Framing');
-export_files(generate_method_classes($schema), $path.'/Framing');
-export_files(generate_properties_class($properties), $path.'/Framing');
+export_files(generate_frame_class($schema), $path.'/AMQP091/Framing');
+export_files(generate_method_classes($schema), $path.'/AMQP091/Framing');
+export_files(generate_properties_class($properties), $path.'/AMQP091/Framing');
 export_files(generate_exceptions($constants), $path.'/Exception');
 export_files(generate_exceptions_factory_class($constants), $path.'/Exception');
 
@@ -162,10 +162,10 @@ function generate_method_classes_header($class, $method)
     $phpdoc = $label ? "\n * {$label}.\n *" : '';
 
     return <<<HEADER
-namespace ButterAMQP\Framing\Method;
+namespace ButterAMQP\AMQP091\Framing\Method;
 
 use ButterAMQP\Buffer;
-use ButterAMQP\Framing\Frame;
+use ButterAMQP\AMQP091\Framing\Frame;
 use ButterAMQP\Value;
 
 /**{$phpdoc}
@@ -335,7 +335,7 @@ function generate_frame_class($schema)
 function generate_frame_class_header()
 {
     return <<<HEADER
-namespace ButterAMQP\Framing;
+namespace ButterAMQP\AMQP091\Framing;
 
 use ButterAMQP\Buffer;
 use ButterAMQP\Binary;
@@ -514,7 +514,7 @@ function generate_properties_class($properties)
 function generate_properties_class_header()
 {
     return <<<HEADER
-namespace ButterAMQP\Framing;
+namespace ButterAMQP\AMQP091\Framing;
 
 use ButterAMQP\Buffer;
 use ButterAMQP\Binary;

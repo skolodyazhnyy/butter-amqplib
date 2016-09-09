@@ -2,7 +2,7 @@
 
 namespace ButterAMQPTest\Integration\RabbitMQ;
 
-use ButterAMQP\Connection;
+use ButterAMQP\AMQP091\Connection;
 use ButterAMQP\Exception\AMQP\AccessRefusedException;
 use ButterAMQP\Url;
 

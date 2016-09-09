@@ -3,9 +3,9 @@
 namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Delivery;
-use ButterAMQP\Exchange;
+use ButterAMQP\AMQP091\Exchange;
 use ButterAMQP\Message;
-use ButterAMQP\Queue;
+use ButterAMQP\AMQP091\Queue;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**

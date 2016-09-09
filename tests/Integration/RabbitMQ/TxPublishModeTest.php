@@ -3,7 +3,7 @@
 namespace ButterAMQPTest\Integration\RabbitMQ;
 
 use ButterAMQP\Message;
-use ButterAMQP\Queue;
+use ButterAMQP\AMQP091\Queue;
 
 /**
  * @group slow

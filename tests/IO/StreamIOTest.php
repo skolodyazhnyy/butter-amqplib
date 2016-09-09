@@ -17,8 +17,11 @@ class StreamIOTest extends TestCase
     {
         $this->serverStart();
 
-        $io = new StreamIO(1, 1);
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io = new StreamIO();
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
 
         $io->write('ping');
         $this->assertServerReceive('ping');
@@ -35,8 +38,10 @@ class StreamIOTest extends TestCase
     {
         $this->serverStart(true);
 
-        $io = new StreamIO(1, 1);
+        $io = new StreamIO();
         $io->open($this->serverProtocol, $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
             'certfile' => $this->serverCert,
             'verify' => false,
             'allow_self_signed' => true,
@@ -60,8 +65,12 @@ class StreamIOTest extends TestCase
     {
         $this->serverStart();
 
-        $io = new StreamIO(1, 1);
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io = new StreamIO();
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
+
         $io->write('ping');
         $io->close();
 
@@ -75,8 +84,11 @@ class StreamIOTest extends TestCase
     {
         $this->serverStart();
 
-        $io = new StreamIO(1, 0.1);
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io = new StreamIO();
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
 
         $this->serverWrite('ping');
 
@@ -98,8 +110,11 @@ class StreamIOTest extends TestCase
     {
         $this->serverStart();
 
-        $io = new StreamIO(1, 0.1);
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io = new StreamIO();
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
 
         $this->serverWrite('pingpo');
 
@@ -121,8 +136,11 @@ class StreamIOTest extends TestCase
 
         $this->serverStart();
 
-        $io = new StreamIO(1, 0.1);
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io = new StreamIO();
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
 
         $this->serverWrite('pi');
         $this->serverStop();
@@ -141,7 +159,10 @@ class StreamIOTest extends TestCase
         $this->serverStart();
 
         $io = new StreamIO();
-        $io->open('tcp', $this->serverHost, $this->serverPort);
+        $io->open('tcp', $this->serverHost, $this->serverPort, [
+            'connection_timeout' => 0.5,
+            'timeout' => 0.1,
+        ]);
 
         $io->write('foo');
 

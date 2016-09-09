@@ -79,6 +79,20 @@ while($consumer->isActive()) {
 $connection->close();
 ```
 
+## Connection configuration
+
+| parameter          | description                                                                       |
+|--------------------|-----------------------------------------------------------------------------------|
+| connection_timeout | Connection timeout in seconds                                                     |
+| timeout            | Reading timeout, all blocking calls will return control once this timeout reached |
+| read_ahead         | Size of "read ahead" buffer. Use 0 to disable reading ahead                       |
+| certfile           | Path to locally stored SSL certificate (private key + certificate)                |
+| keyfile            | Path to locally stored Private Key                                                |
+| cacertfile         | Path to locally stored CA certificate                                             |
+| passphrase         | Passpharase for private key                                                       |
+| verify             | Boolean flag, should SSL connection verify certificate, normally `true` but `false` can be used for tests |
+| allow_self_signed  | Boolean flag, should SSL connection allow self signed certificates, useful for development environments   |
+
 ## Known issues
 
 - [ ] Decimal type is not supported
