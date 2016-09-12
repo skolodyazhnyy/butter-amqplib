@@ -15,7 +15,7 @@ But if you happen to need a quick code snippet, I have prepared some:
 In Butter AMQP library, URL represents server protocol, address, credentials and all other parameters required to establish connection.
 It can be defined as instance of `ButterAMQP\Url` class, a string or an array. 
 
-**String URL format** is conforming to [RabbitMQ URI specification](https://www.rabbitmq.com/uri-spec.html) with some [additional parameters](#url-parameters).
+**String URL format** is conforming to [RabbitMQ URI specification](https://www.rabbitmq.com/uri-spec.html) with some [additional parameters](#url-parameters-for-all-url-formats).
 This format can be used in your configuration files as simple and compact way to configure AMQP connection. Just make sure **all special symbols are URL encoded**.
 
 ```php
@@ -64,26 +64,27 @@ All available top level keys are listed above.
 
 Once URL is built, use `ButterAMQP\ConnectionBuilder` to create a connection.
  
-```
+```php
 use ButterAMQP\ConnectionBuilder;
 
-$connection = ConnectionBuilder::make()->connect($url);
+$connection = ConnectionBuilder::make()
+    ->connect($url);
 ```
 
 ## 3. Open a channel
 
-AMQP protocol defines channels, independent stream of frames within a TCP connection. These allow multiple threads in your
-application to communicate with server independently. While one thread may wait for a synchronous response form the server,
-another still can receive an asynchronous frame and process it without interrupting others, because they will use different
-channels.
+AMQP protocol defines channels, independent streams of frames within a single TCP connection. These allow multiple threads in your
+application to communicate with server independently. Thanks to multiple channels one thread may wait for a synchronous response
+form the server while another will receive an asynchronous frame and process it without interrupting each other.
 
-There are very few operations that can be performed on the connection itself, but most of them are performed within a channel.
+There are very few operations that can be performed on the connection itself, most of them are performed within a channel. 
+So, normally you would connect to the server, open a channel and pass it around to publish and consume messages.
 
-Taking in account, PHP applications in most cases are single threaded you won't need more than one channel.
-You can boldly open a channel in the beginning of your code and use it everywhere. Just keep in mind few things:
+PHP applications are mostly single threaded, so most likely you won't need more than one channel.
+You can boldly open a channel in the beginning and use it everywhere. Just keep in mind few things:
  
   - Opening a channel require open connection, so once you call `Connection::channel` it will establish TCP connection to the server. 
-  - If connection fails by some reason you need to re-open channel again
+  - If connection closes by some reason you need to re-open channel again
   - Every time when you call `Connection::channel` without arguments it will open a new channel, if you want to always receive same channel you need to pass channel ID as an argument. For example `1`. 
 
 And after all this boring theory, here is one, very practical line.
@@ -92,4 +93,8 @@ And after all this boring theory, here is one, very practical line.
 $channel = $connection->channel(1);
 ```
 
-Here you go, now you can start publising messages!
+Here you go, now you can start publishing and consuming messages!
+
+  - [How to publish a message](publishing.md)
+  - [How to consume a message](consuming.md)
+  - [How to define topology](topology.md)
