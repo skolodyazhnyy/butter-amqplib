@@ -22,6 +22,8 @@ of the Composer documentation.
 
 ## Usage
 
+Every code snippet below extends previous one.
+
 ### Connecting to the server
 
 Establish connection to the server and open a channel. [Read more](/docs/connecting.md)
@@ -84,6 +86,16 @@ $consumer = $channel->consume('text-messages', function(Delivery $delivery) {
 while($consumer->isActive()) {
     $connection->serve();
 }
+```
+
+### Close connection
+
+Properly closing connection to the server will guarantee all temporary queues will be deleted and resources released.
+
+You don't need to close channels, just connection will be enough.
+
+```php
+$connection->close();
 ```
 
 ## Known issues
