@@ -99,6 +99,8 @@ class TestCase extends BaseTestCase
         }
 
         stream_set_timeout($this->control, 1);
+
+        usleep(200000);
     }
 
     /**

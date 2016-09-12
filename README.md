@@ -22,45 +22,55 @@ of the Composer documentation.
 
 ## Usage
 
-### Publishing messages
+### Connecting to the server
+
+Establish connection to the server and open a channel. [Read more](/docs/connecting.md)
 
 ```php
 use ButterAMQP\ConnectionManager;
+
+$connection = ConnectionManager::make()
+    ->connect("//guest:guest@localhost/%2f");
+
+$channel = $connection->channel(1);
+```
+
+### Define topology
+
+Declare exchanges and queues.
+
+```php
+use ButterAMQP\AMQP091\Exchange;
+use ButterAMQP\AMQP091\Queue;
+
+$channel->exchange('butter')
+    ->define(Exchange::TYPE_FANOUT, Exchange::FLAG_DURABLE);
+    
+$channel->queue('butter')
+    ->define(Queue::FLAG_DURABLE | Queue::FLAG_EXCLUSIVE)
+    ->bind('butter');
+```
+
+### Publishing messages
+
+Publish a message to newly declared exchange and it will be delivered to the queue.
+
+```php
 use ButterAMQP\Message;
-
-// Initialize connection to AMQP server
-$connection = ConnectionManager::connect("amqp://guest:guest@localhost:5672/");
-
-// Connect to the server
-$connection->open();
-
-// Fetch a channel (thread within a connection)
-$channel = $connection->channel();
 
 // Construct a message to be published
 $message = new Message('hi there', ['content-type' => 'text/plain']);
 
 // Publish message to default exchange, with routing key "text-messages".
 $channel->publish($message, '', 'text-messages');
-
-// Close connection
-$connection->close();
 ```
 
 ### Consuming messages
 
+Receive your message and acknowledge its delivery.
+
 ```php
-use ButterAMQP\ConnectionManager;
 use ButterAMQP\Delivery;
-
-// Initialize connection to AMQP server
-$connection = ConnectionManager::connect("amqp://guest:guest@localhost:5672/");
-
-// Connect to the server
-$connection->open();
-
-// Fetch a channel (thread within a connection)
-$channel = $connection->channel();
 
 // Declare consumer
 $consumer = $channel->consume('text-messages', function(Delivery $delivery) {
@@ -74,24 +84,7 @@ $consumer = $channel->consume('text-messages', function(Delivery $delivery) {
 while($consumer->isActive()) {
     $connection->serve();
 }
-
-// Close connection
-$connection->close();
 ```
-
-## Connection configuration
-
-| parameter          | description                                                                       |
-|--------------------|-----------------------------------------------------------------------------------|
-| connection_timeout | Connection timeout in seconds                                                     |
-| timeout            | Reading timeout, all blocking calls will return control once this timeout reached |
-| read_ahead         | Size of "read ahead" buffer. Use 0 to disable reading ahead                       |
-| certfile           | Path to locally stored SSL certificate (private key + certificate)                |
-| keyfile            | Path to locally stored Private Key                                                |
-| cacertfile         | Path to locally stored CA certificate                                             |
-| passphrase         | Passpharase for private key                                                       |
-| verify             | Boolean flag, should SSL connection verify certificate, normally `true` but `false` can be used for tests |
-| allow_self_signed  | Boolean flag, should SSL connection allow self signed certificates, useful for development environments   |
 
 ## Known issues
 

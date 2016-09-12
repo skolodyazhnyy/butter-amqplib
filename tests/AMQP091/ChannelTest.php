@@ -73,7 +73,7 @@ class ChannelTest extends TestCase
 
     /**
      * Channel should send channel.open frame and wait for reply.
-     * Channel should not send frame more than once.
+     * Channel should not send frame once connection already open.
      */
     public function testOpen()
     {
@@ -91,7 +91,7 @@ class ChannelTest extends TestCase
 
     /**
      * Channel should allow to activate and deactivate flow.
-     * Channel status should be set based on reply from the server, not request.
+     * Channel status should be set based on reply from the server.
      */
     public function testFlow()
     {
@@ -184,8 +184,9 @@ class ChannelTest extends TestCase
             ->with(51, BasicConsumeOk::class)
             ->willReturn(new BasicConsumeOk(51, 'foo'));
 
-        $consumer = $this->channel->consume('butter', function () {
-        });
+        $consumer = $this->channel
+            ->consume('butter', function () {
+            });
 
         self::assertInstanceOf(Consumer::class, $consumer);
         self::assertEquals('foo', $consumer->tag());
@@ -206,8 +207,13 @@ class ChannelTest extends TestCase
         $this->wire->expects(self::never())
             ->method('wait');
 
-        $consumer = $this->channel->consume('butter', function () {
-        }, Consumer::FLAG_NO_WAIT, 'foo');
+        $consumer = $this->channel->consume(
+            'butter',
+            function () {
+            },
+            Consumer::FLAG_NO_WAIT,
+            'foo'
+        );
 
         self::assertInstanceOf(Consumer::class, $consumer);
         self::assertEquals('foo', $consumer->tag());

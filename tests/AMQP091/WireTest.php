@@ -71,11 +71,12 @@ class WireTest extends TestCase
      */
     public function testNextFrame()
     {
-        $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xCE");
+        $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xCE\xAA");
 
         $frame = $this->wire->next();
 
         self::assertInstanceOf(Heartbeat::class, $frame);
+        self::assertEquals("\xAA", $this->io->read(1));
     }
 
     /**
