@@ -3,12 +3,12 @@
 Before sending and receiving messages you would need to establish connection to the AMQP server.
 It includes defining a URL, normally by reading some configuration file, instantiating Connection object and opening a channel.  
 
-Below you will find detailed description of how to establish connection to the server, and which options exists.
+Below you will find detailed description of how to establish connection to the server, and which options exist.
 But if you happen to need a quick code snippet, I have prepared some:
 
 - [Non-secure connection](examples.md#non-secure-connection)
-- [Connection with self-signed certificate](exmaples.md#connection-with-self-signed-certificate)
-- []Secure connection](examples.md#secure-connection)
+- [Connection with self-signed certificate](examples.md#connection-with-self-signed-certificate)
+- [Secure connection](examples.md#secure-connection)
 
 ## 1. Build a URL
 

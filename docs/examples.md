@@ -22,7 +22,7 @@ $connection = ConnectionManager::make()
     ->connect([
         'host'  => 'localhost',
         'user'  => 'guest',
-        'password'  => 'guest,
+        'password'  => 'guest',
         'port'  => 5672,
         'vhost' => '/',
     ]);
@@ -49,7 +49,7 @@ $connection = ConnectionManager::make()
         'schema' => 'amqps',
         'host'  => 'localhost',
         'user'  => 'guest',
-        'password'  => 'guest,
+        'password'  => 'guest',
         'port'  => 5672,
         'vhost' => '/',
         'parameters' => [
@@ -81,7 +81,7 @@ $connection = ConnectionManager::make()
         'schema' => 'amqps',
         'host'  => 'localhost',
         'user'  => 'guest',
-        'password'  => 'guest,
+        'password'  => 'guest',
         'port'  => 5672,
         'vhost' => '/',
     ]);
