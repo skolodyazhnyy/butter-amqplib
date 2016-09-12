@@ -22,6 +22,10 @@ of the Composer documentation.
 
 ## Usage
 
+> If you are new to AMQP, I suggest you have a look into [RabbitMQ tutorial](docs/rabbit-tutorial/tutorial-one.md) which
+  explains all features of AMQP protocol in only 6 chapters tutorial! I have adopted it with code samples for Butter
+  AMQP.
+
 Every code snippet below extends previous one.
 
 ### Connecting to the server
@@ -32,7 +36,7 @@ Establish connection to the server and open a channel. [Read more](/docs/connect
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect("//guest:guest@localhost/%2f");
+    ->create("//guest:guest@localhost/%2f");
 
 $channel = $connection->channel(1);
 ```

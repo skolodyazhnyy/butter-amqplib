@@ -10,7 +10,7 @@ Using a string
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect("//guest:guest@localhost/%2f");
+    ->create("//guest:guest@localhost/%2f");
 ```
 
 Using an array
@@ -19,7 +19,7 @@ Using an array
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect([
+    ->create([
         'host'  => 'localhost',
         'user'  => 'guest',
         'password'  => 'guest',
@@ -36,7 +36,7 @@ Using a string
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect("amqps://guest:guest@localhost/%2f?certfile=cert.pem&verify=0&allow_self_signed=1");
+    ->create("amqps://guest:guest@localhost/%2f?certfile=cert.pem&verify=0&allow_self_signed=1");
 ```
 
 Using an array
@@ -45,7 +45,7 @@ Using an array
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect([
+    ->create([
         'schema' => 'amqps',
         'host'  => 'localhost',
         'user'  => 'guest',
@@ -68,7 +68,7 @@ Using a string
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect("amqps://guest:guest@localhost/%2f");
+    ->create("amqps://guest:guest@localhost/%2f");
 ```
 
 Using an array
@@ -77,7 +77,7 @@ Using an array
 use ButterAMQP\ConnectionManager;
 
 $connection = ConnectionManager::make()
-    ->connect([
+    ->create([
         'schema' => 'amqps',
         'host'  => 'localhost',
         'user'  => 'guest',

@@ -68,7 +68,7 @@ Once URL is built, use `ButterAMQP\ConnectionBuilder` to create a connection.
 use ButterAMQP\ConnectionBuilder;
 
 $connection = ConnectionBuilder::make()
-    ->connect($url);
+    ->create($url);
 ```
 
 ## 3. Open a channel
