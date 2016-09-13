@@ -87,30 +87,23 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     private function createStreamContext(array $parameters)
     {
+        static $options = [
+            'certfile' => 'local_cert',
+            'keyfile' => 'local_pk',
+            'cacertfile' => 'cafile',
+            'passphrase' => 'passphrase',
+            'verify' => 'verify_peer',
+            'allow_self_signed' => 'allow_self_signed',
+        ];
+
         $context = stream_context_create();
 
-        if (isset($parameters['certfile'])) {
-            stream_context_set_option($context, 'ssl', 'local_cert', $parameters['certfile']);
-        }
+        foreach ($parameters as $name => $value) {
+            if (!isset($options[$name])) {
+                continue;
+            }
 
-        if (isset($parameters['keyfile'])) {
-            stream_context_set_option($context, 'ssl', 'local_pk', $parameters['keyfile']);
-        }
-
-        if (isset($parameters['cacertfile'])) {
-            stream_context_set_option($context, 'ssl', 'cafile', $parameters['cacertfile']);
-        }
-
-        if (isset($parameters['passphrase'])) {
-            stream_context_set_option($context, 'ssl', 'passphrase', $parameters['passphrase']);
-        }
-
-        if (isset($parameters['verify'])) {
-            stream_context_set_option($context, 'ssl', 'verify_peer', (bool) $parameters['verify']);
-        }
-
-        if (isset($parameters['allow_self_signed'])) {
-            stream_context_set_option($context, 'ssl', 'allow_self_signed', (bool) $parameters['allow_self_signed']);
+            stream_context_set_option($context, 'ssl', $options[$name], $value);
         }
 
         return $context;

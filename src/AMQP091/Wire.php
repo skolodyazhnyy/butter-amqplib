@@ -166,28 +166,21 @@ class Wire implements WireInterface, LoggerAwareInterface
 
         do {
             $frame = $this->next(true);
-
-            if (!$frame || $frame->getChannel() != $channel) {
-                continue;
-            }
-
-            if ($this->isFrameOneOf($frame, $types)) {
-                break;
-            }
-        } while (true);
+        } while (!$this->isFrameMatch($frame, $channel, $types));
 
         return $frame;
     }
 
     /**
      * @param Frame $frame
+     * @param int   $channel
      * @param array $types
      *
      * @return bool
      */
-    private function isFrameOneOf(Frame $frame, array $types)
+    private function isFrameMatch(Frame $frame = null, $channel = 0, array $types = [])
     {
-        return in_array(get_class($frame), $types);
+        return $frame && $frame->getChannel() == $channel && in_array(get_class($frame), $types);
     }
 
     /**

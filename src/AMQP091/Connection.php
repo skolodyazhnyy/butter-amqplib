@@ -107,19 +107,49 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
     public function channel($id = null)
     {
         if ($id === null) {
-            $id = count($this->channels) == 0 ? 1 : max(array_keys($this->channels)) + 1;
+            $id = $this->allocateChannelNumber();
         }
 
-        if (!is_integer($id) || $id <= 0) {
+        if (!$this->isChannelNumberValid($id)) {
             throw new InvalidChannelNumberException('Channel ID should be positive integer');
         }
 
         if (!isset($this->channels[$id])) {
-            $channel = $this->channels[$id] = new Channel($this->wire, $id);
-            $channel->open();
+            $this->channels[$id] = $this->openChannel($id);
         }
 
         return $this->channels[$id];
+    }
+
+    /**
+     * @return int
+     */
+    private function allocateChannelNumber()
+    {
+        return count($this->channels) == 0 ? 1 : max(array_keys($this->channels)) + 1;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     */
+    private function isChannelNumberValid($id)
+    {
+        return is_integer($id) && $id > 0;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return Channel
+     */
+    private function openChannel($id)
+    {
+        $channel = new Channel($this->wire, $id);
+        $channel->open();
+
+        return $channel;
     }
 
     /**
@@ -220,23 +250,31 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
 
         $this->send(new ConnectionStartOk(
             0,
-            [
-                'platform' => 'PHP '.PHP_VERSION,
-                'product' => 'ButterAMQP',
-                'version' => '0.1.0',
-                'capabilities' => [
-                    'publisher_confirms' => true,
-                    'exchange_exchange_bindings' => true,
-                    'basic.nack' => true,
-                    'connection.blocked' => true,
-                    'consumer_cancel_notify' => true,
-                    'authentication_failure_close' => true,
-                ],
-            ],
+            $this->getClientProperties(),
             $mechanism->getName(),
             $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
             $locale
         ));
+    }
+
+    /**
+     * @return array
+     */
+    private function getClientProperties()
+    {
+        return [
+            'platform' => sprintf('PHP %d.%d', PHP_MAJOR_VERSION, PHP_MINOR_VERSION),
+            'product' => 'ButterAMQP',
+            'version' => '0.1.0',
+            'capabilities' => [
+                'publisher_confirms' => true,
+                'exchange_exchange_bindings' => true,
+                'basic.nack' => true,
+                'connection.blocked' => true,
+                'consumer_cancel_notify' => true,
+                'authentication_failure_close' => true,
+            ],
+        ];
     }
 
     /**

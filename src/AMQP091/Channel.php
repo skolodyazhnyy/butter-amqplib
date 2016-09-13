@@ -230,13 +230,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             return null;
         }
 
-        /** @var Header $header */
-        $header = $this->wait(Header::class);
-        $content = '';
-
-        while ($header->getSize() > strlen($content)) {
-            $content .= $this->wait(Content::class)->getData();
-        }
+        $header = $this->readHeader();
+        $content = $this->readContent($header->getSize());
 
         return new Delivery(
             $this,
@@ -470,13 +465,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function onBasicDeliver(BasicDeliver $frame)
     {
-        /** @var Header $header */
-        $header = $this->wait(Header::class);
-        $content = '';
-
-        while ($header->getSize() > strlen($content)) {
-            $content .= $this->wait(Content::class)->getData();
-        }
+        $header = $this->readHeader();
+        $content = $this->readContent($header->getSize());
 
         if (!isset($this->consumers[$frame->getConsumerTag()])) {
             throw new UnknownConsumerTagException(sprintf(
@@ -485,7 +475,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             ));
         }
 
-        $delivery = new Delivery(
+        call_user_func($this->consumers[$frame->getConsumerTag()], new Delivery(
             $this,
             $frame->getConsumerTag(),
             $frame->getDeliveryTag(),
@@ -494,44 +484,35 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             $frame->getRoutingKey(),
             $content,
             $header->getProperties()
-        );
-
-        call_user_func($this->consumers[$frame->getConsumerTag()], $delivery);
+        ));
     }
 
     /**
      * @param BasicReturn $frame
      *
-     * @throws \Exception
+     * @throws NoReturnException
      */
     private function onBasicReturn(BasicReturn $frame)
     {
-        /** @var Header $header */
-        $header = $this->wait(Header::class);
-        $content = '';
-
-        while ($header->getSize() > strlen($content)) {
-            $content .= $this->wait(Content::class)->getData();
-        }
+        $header = $this->readHeader();
+        $content = $this->readContent($header->getSize());
 
         if (!$this->returnCallable) {
             throw new NoReturnException(
-                'A message was returned but there is no return handler. '.
-                'Make sure you setup a handler for returned messages using Channel::onReturn method, '.
-                ', or remove MANDATORY and IMMEDIATE flags when publishing messages.'
+                'A message was returned but there is no return handler. Make sure you setup a handler for returned '.
+                'messages using Channel::onReturn method, or remove MANDATORY and IMMEDIATE flags when publishing '.
+                'messages.'
             );
         }
 
-        $returned = new Returned(
+        call_user_func($this->returnCallable, new Returned(
             $frame->getReplyCode(),
             $frame->getReplyText(),
             $frame->getExchange(),
             $frame->getRoutingKey(),
             $content,
             $header->getProperties()
-        );
-
-        call_user_func($this->returnCallable, $returned);
+        ));
     }
 
     /**
@@ -539,13 +520,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function onBasicAck(BasicAck $frame)
     {
-        if (!$this->confirmCallable) {
-            throw new \RuntimeException(
-                'Something is wrong: channel is in confirm mode, but confirm callable is not set'
-            );
-        }
-
-        call_user_func($this->confirmCallable, new Confirm(true, $frame->getDeliveryTag(), $frame->isMultiple()));
+        $this->confirmPublishing(true, $frame->getDeliveryTag(), $frame->isMultiple());
     }
 
     /**
@@ -553,13 +528,23 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function onBasicNack(BasicNack $frame)
     {
+        $this->confirmPublishing(false, $frame->getDeliveryTag(), $frame->isMultiple());
+    }
+
+    /**
+     * @param bool   $ok
+     * @param string $tag
+     * @param bool   $multiple
+     */
+    private function confirmPublishing($ok, $tag, $multiple)
+    {
         if (!$this->confirmCallable) {
             throw new \RuntimeException(
                 'Something is wrong: channel is in confirm mode, but confirm callable is not set'
             );
         }
 
-        call_user_func($this->confirmCallable, new Confirm(false, $frame->getDeliveryTag(), $frame->isMultiple()));
+        call_user_func($this->confirmCallable, new Confirm($ok, $tag, $multiple));
     }
 
     /**
@@ -596,5 +581,30 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         $this->status = self::STATUS_CLOSED;
 
         throw AMQPException::make($frame->getReplyText(), $frame->getReplyCode());
+    }
+
+    /**
+     * @return Header
+     */
+    private function readHeader()
+    {
+        return $this->wait(Header::class);
+    }
+
+    /**
+     * @param int $size
+     *
+     * @return string
+     */
+    private function readContent($size)
+    {
+        $content = '';
+
+        while ($size > strlen($content)) {
+            $content .= $this->wait(Content::class)
+                ->getData();
+        }
+
+        return $content;
     }
 }
