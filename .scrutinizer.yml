@@ -3,6 +3,8 @@ filter:
     - 'src/*'
   excluded_paths:
     - 'src/AMQP091/Framing/*'
+    - 'src/AMQP091/Framing/Frame.php'
+    - 'src/AMQP091/Framing/Properties.php'
 
 checks:
   php: true

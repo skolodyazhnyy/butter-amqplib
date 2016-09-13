@@ -47,14 +47,9 @@ use ButterAMQP\Message;
 use ButterAMQP\Returned;
 use ButterAMQP\WireInterface;
 use ButterAMQP\WireSubscriberInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
 
-class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareInterface
+class Channel implements ChannelInterface, WireSubscriberInterface
 {
-    use LoggerAwareTrait;
-
     const STATUS_CLOSED = 0;
     const STATUS_READY = 1;
     const STATUS_INACTIVE = 2;
@@ -106,7 +101,6 @@ class Channel implements ChannelInterface, WireSubscriberInterface, LoggerAwareI
     {
         $this->id = $id;
         $this->wire = $wire;
-        $this->logger = new NullLogger();
     }
 
     /**

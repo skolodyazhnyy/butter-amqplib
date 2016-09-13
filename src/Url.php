@@ -23,7 +23,7 @@ class Url
     private $host;
 
     /**
-     * @var string
+     * @var int
      */
     private $port;
 
@@ -50,7 +50,7 @@ class Url
     /**
      * @param string $scheme
      * @param string $host
-     * @param string $port
+     * @param int    $port
      * @param string $user
      * @param string $pass
      * @param string $vhost
@@ -71,7 +71,7 @@ class Url
 
         $this->scheme = $scheme === null ? self::DEFAULT_SCHEMA : $scheme;
         $this->host = $host === null ? self::DEFAULT_HOST : $host;
-        $this->port = $port;
+        $this->port = (int) $port;
         $this->user = $user === null ? self::DEFAULT_USER : $user;
         $this->pass = $pass === null ? self::DEFAULT_PASS : $pass;
         $this->vhost = empty($vhost) ? self::DEFAULT_VHOST : $vhost;
@@ -95,7 +95,7 @@ class Url
     }
 
     /**
-     * @return string
+     * @return int
      */
     public function getPort()
     {
@@ -169,7 +169,7 @@ class Url
             isset($parts['user']) ? urldecode($parts['user']) : null,
             isset($parts['pass']) ? urldecode($parts['pass']) : null,
             isset($parts['path']) ? urldecode(substr($parts['path'], 1)) : null,
-            $query
+            $query ?: []
         );
     }
 

@@ -23,17 +23,12 @@ use ButterAMQP\Security\AuthenticatorInterface;
 use ButterAMQP\Url;
 use ButterAMQP\WireInterface;
 use ButterAMQP\WireSubscriberInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
 
-class Connection implements ConnectionInterface, WireSubscriberInterface, LoggerAwareInterface
+class Connection implements ConnectionInterface, WireSubscriberInterface
 {
-    use LoggerAwareTrait;
-
-    const STATUS_CLOSED = 0;
-    const STATUS_READY = 1;
-    const STATUS_BLOCKED = 2;
+    const STATUS_CLOSED = 'closed';
+    const STATUS_READY = 'ready';
+    const STATUS_BLOCKED = 'blocked';
 
     /**
      * @var Url
@@ -75,7 +70,6 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         $this->url = $url;
         $this->wire = $wire;
         $this->authenticator = $authenticator ?: Authenticator::build();
-        $this->logger = new NullLogger();
     }
 
     /**
@@ -123,14 +117,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface, Logger
         }
 
         if (!isset($this->channels[$id])) {
-            $channel = new Channel($this->wire, $id);
-
-            if ($channel instanceof LoggerAwareInterface) {
-                $channel->setLogger($this->logger);
-            }
-
-            $this->channels[$id] = $channel;
-
+            $channel = $this->channels[$id] = new Channel($this->wire, $id);
             $channel->open();
         }
 

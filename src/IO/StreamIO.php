@@ -194,7 +194,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     public function read($length, $blocking = true)
     {
-        if (!$this->peek($length, $blocking)) {
+        if ($this->peek($length, $blocking) === null) {
             return null;
         }
 

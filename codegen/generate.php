@@ -673,7 +673,8 @@ function generate_exceptions_factory_class_body($constants)
         }
 
         $className = ucfirst(camel_case($constant['name'])).'Exception';
-        $lines[] = '        case '.$constant['value'].': return new AMQP\\'.$className.'($message, $code);';
+        $lines[] = '        case '.$constant['value'].':';
+        $lines[] = '            return new AMQP\\'.$className.'($message, $code);';
     }
 
     $lines[] = '    }';
