@@ -13,7 +13,7 @@ use ButterAMQP\AMQP091\Framing\Method\QueueDelete;
 use ButterAMQP\AMQP091\Framing\Method\QueueDeleteOk;
 use ButterAMQP\AMQP091\Framing\Method\QueueUnbind;
 use ButterAMQP\AMQP091\Framing\Method\QueueUnbindOk;
-use ButterAMQP\WireInterface;
+use ButterAMQP\AMQP091\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 

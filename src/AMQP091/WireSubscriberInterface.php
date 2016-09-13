@@ -1,6 +1,6 @@
 <?php
 
-namespace ButterAMQP;
+namespace ButterAMQP\AMQP091;
 
 use ButterAMQP\AMQP091\Framing\Frame;
 

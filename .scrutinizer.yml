@@ -5,6 +5,8 @@ filter:
     - 'src/AMQP091/Framing/*'
     - 'src/AMQP091/Framing/Frame.php'
     - 'src/AMQP091/Framing/Properties.php'
+    - 'src/Exception/AMQP'
+    - 'src/Exception/AMQPException.php'
 
 checks:
   php: true

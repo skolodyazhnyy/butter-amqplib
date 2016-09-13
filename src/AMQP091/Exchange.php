@@ -12,22 +12,9 @@ use ButterAMQP\AMQP091\Framing\Method\ExchangeDelete;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeDeleteOk;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeUnbind;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeUnbindOk;
-use ButterAMQP\WireInterface;
 
 class Exchange implements ExchangeInterface
 {
-    const FLAG_NO_WAIT = 0b00000001;
-    const FLAG_DURABLE = 0b00000010;
-    const FLAG_PASSIVE = 0b00000100;
-    const FLAG_AUTO_DELETE = 0b00001000;
-    const FLAG_INTERNAL = 0b00010000;
-    const FLAG_IF_UNUSED = 0b00100000;
-
-    const TYPE_TOPIC = 'topic';
-    const TYPE_DIRECT = 'direct';
-    const TYPE_FANOUT = 'fanout';
-    const TYPE_HEADERS = 'headers';
-
     /**
      * @var WireInterface
      */

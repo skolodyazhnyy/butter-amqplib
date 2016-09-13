@@ -1,6 +1,6 @@
 <?php
 
-namespace ButterAMQPTest\Binary;
+namespace ButterAMQPTest\Debug;
 
 use ButterAMQP\Debug\ReadableBinaryData;
 use PHPUnit\Framework\TestCase;

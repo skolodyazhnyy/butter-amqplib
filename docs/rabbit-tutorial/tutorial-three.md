@@ -156,7 +156,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Message;
-use ButterAMQP\AMQP091\Exchange;
+use ButterAMQP\ExchangeInterface as Exchange;
 
 $connection = ConnectionBuilder::make()
     ->create('//guest:guest@localhost');
@@ -197,8 +197,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Delivery;
-use ButterAMQP\AMQP091\Queue;
-use ButterAMQP\AMQP091\Consumer;
+use ButterAMQP\QueueInterface as Queue;
+use ButterAMQP\ConsumerInterface as Consumer;
 
 $connection = ConnectionBuilder::make()
     ->create('//guest:guest@localhost');

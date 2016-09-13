@@ -24,6 +24,15 @@ interface ChannelInterface
     public function flow($active);
 
     /**
+     * Process enqueued notifications for a given channel.
+     *
+     * @param bool $blocking
+     *
+     * @return ChannelInterface
+     */
+    public function serve($blocking = true);
+
+    /**
      * Close channel.
      *
      * @return ChannelInterface

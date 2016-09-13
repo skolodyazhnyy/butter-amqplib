@@ -21,8 +21,6 @@ use ButterAMQP\Heartbeat\TimeHeartbeat;
 use ButterAMQP\Security\Authenticator;
 use ButterAMQP\Security\AuthenticatorInterface;
 use ButterAMQP\Url;
-use ButterAMQP\WireInterface;
-use ButterAMQP\WireSubscriberInterface;
 
 class Connection implements ConnectionInterface, WireSubscriberInterface
 {

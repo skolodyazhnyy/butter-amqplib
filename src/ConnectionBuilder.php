@@ -3,10 +3,10 @@
 namespace ButterAMQP;
 
 use ButterAMQP\AMQP091\Connection;
+use ButterAMQP\AMQP091\Wire;
 use ButterAMQP\Debug\LoggerDecoratedWire;
 use ButterAMQP\Debug\LoggerDecoratedIO;
 use ButterAMQP\IO\StreamIO;
-use ButterAMQP\AMQP091\Wire;
 use Psr\Log\LoggerInterface;
 
 class ConnectionBuilder

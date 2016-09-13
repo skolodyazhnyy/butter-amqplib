@@ -1,8 +1,10 @@
 <?php
 
-namespace ButterAMQP;
+namespace ButterAMQP\AMQP091;
 
 use ButterAMQP\AMQP091\Framing\Frame;
+use ButterAMQP\HeartbeatInterface;
+use ButterAMQP\Url;
 
 /**
  * Wire represents a framing level connection to the server.

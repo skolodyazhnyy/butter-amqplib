@@ -140,7 +140,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Delivery;
-use ButterAMQP\AMQP091\Consumer;
 
 $connection = ConnectionBuilder::make()->create('//guest:guest@localhost');
 $channel = $connection->channel();

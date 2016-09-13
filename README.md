@@ -22,9 +22,8 @@ of the Composer documentation.
 
 ## Usage
 
-> If you are new to AMQP, I suggest you have a look into [RabbitMQ tutorial](docs/rabbit-tutorial/tutorial-one.md) which
-  explains all features of AMQP protocol in only 6 chapters tutorial! I have adopted it with code samples for Butter
-  AMQP.
+If you are new to AMQP, I suggest you have a look into [RabbitMQ tutorial](docs/rabbit-tutorial/tutorial-one.md) which
+explains all features of AMQP protocol in only 6 chapters tutorial! I have adopted it with code samples for Butter AMQP.
 
 Every code snippet below extends previous one.
 
@@ -46,8 +45,8 @@ $channel = $connection->channel(1);
 Declare exchanges and queues.
 
 ```php
-use ButterAMQP\AMQP091\Exchange;
-use ButterAMQP\AMQP091\Queue;
+use ButterAMQP\ExchangeInterface as Exchange;
+use ButterAMQP\QueueInterface as Queue;
 
 $channel->exchange('butter')
     ->define(Exchange::TYPE_FANOUT, Exchange::FLAG_DURABLE);

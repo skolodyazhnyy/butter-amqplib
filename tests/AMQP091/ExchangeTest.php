@@ -11,7 +11,7 @@ use ButterAMQP\AMQP091\Framing\Method\ExchangeDelete;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeDeleteOk;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeUnbind;
 use ButterAMQP\AMQP091\Framing\Method\ExchangeUnbindOk;
-use ButterAMQP\WireInterface;
+use ButterAMQP\AMQP091\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 

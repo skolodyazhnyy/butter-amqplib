@@ -45,8 +45,6 @@ use ButterAMQP\AMQP091\Framing\Method\TxSelect;
 use ButterAMQP\AMQP091\Framing\Method\TxSelectOk;
 use ButterAMQP\Message;
 use ButterAMQP\Returned;
-use ButterAMQP\WireInterface;
-use ButterAMQP\WireSubscriberInterface;
 
 class Channel implements ChannelInterface, WireSubscriberInterface
 {
@@ -134,6 +132,16 @@ class Channel implements ChannelInterface, WireSubscriberInterface
 
         $this->status = $frame->isActive() ? self::STATUS_READY :
             self::STATUS_INACTIVE;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serve($blocking = true)
+    {
+        $this->wire->next($blocking);
 
         return $this;
     }
@@ -407,14 +415,6 @@ class Channel implements ChannelInterface, WireSubscriberInterface
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMode()
-    {
-        return $this->mode;
     }
 
     /**

@@ -6,7 +6,7 @@ use ButterAMQP\AMQP091\Connection;
 use ButterAMQP\IO\StreamIO;
 use ButterAMQP\Url;
 use ButterAMQP\AMQP091\Wire;
-use ButterAMQP\WireInterface;
+use ButterAMQP\AMQP091\WireInterface;
 use PHPUnit_Framework_TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase

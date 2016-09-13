@@ -12,8 +12,6 @@ use ButterAMQP\Heartbeat\NullHeartbeat;
 use ButterAMQP\HeartbeatInterface;
 use ButterAMQP\IOInterface;
 use ButterAMQP\Url;
-use ButterAMQP\WireInterface;
-use ButterAMQP\WireSubscriberInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -103,13 +101,21 @@ class Wire implements WireInterface, LoggerAwareInterface
 
         $frame = Frame::decode(new Buffer($data));
 
-        if ($subscriber = $this->getSubscriber($frame->getChannel())) {
-            $subscriber->dispatch($frame);
-        }
+        $this->dispatch($frame);
 
         $this->heartbeat->serverBeat();
 
         return $frame;
+    }
+
+    /**
+     * @param Frame $frame
+     */
+    private function dispatch(Frame $frame)
+    {
+        if ($subscriber = $this->getSubscriber($frame->getChannel())) {
+            $subscriber->dispatch($frame);
+        }
     }
 
     /**
@@ -165,14 +171,23 @@ class Wire implements WireInterface, LoggerAwareInterface
                 continue;
             }
 
-            foreach ($types as $type) {
-                if (is_a($frame, $type)) {
-                    return $frame;
-                }
+            if ($this->isFrameOneOf($frame, $types)) {
+                break;
             }
         } while (true);
 
         return $frame;
+    }
+
+    /**
+     * @param Frame $frame
+     * @param array $types
+     *
+     * @return bool
+     */
+    private function isFrameOneOf(Frame $frame, array $types)
+    {
+        return in_array(get_class($frame), $types);
     }
 
     /**

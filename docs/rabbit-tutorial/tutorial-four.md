@@ -112,7 +112,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Message;
-use ButterAMQP\AMQP091\Exchange;
+use ButterAMQP\ExchangeInterface as Exchange;
 
 $severity = isset($argv[1]) && !empty($argv[1]) ? $argv[1] : 'info';
 $data = implode(' ', array_slice($argv, 2));
@@ -149,9 +149,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Delivery;
-use ButterAMQP\AMQP091\Queue;
-use ButterAMQP\AMQP091\Exchange;
-use ButterAMQP\AMQP091\Consumer;
+use ButterAMQP\QueueInterface as Queue;
+use ButterAMQP\ExchangeInterface as Exchange;
+use ButterAMQP\ConsumerInterface as Consumer;
 
 $severities = array_slice($argv, 1);
 if(empty($severities )) {

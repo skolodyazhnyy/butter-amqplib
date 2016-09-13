@@ -178,7 +178,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use ButterAMQP\ConnectionBuilder;
 use ButterAMQP\Message;
 use ButterAMQP\Delivery;
-use ButterAMQP\AMQP091\Queue;
+use ButterAMQP\QueueInterface as Queue;
 use ButterAMQP\ChannelInterface;
 use ButterAMQP\ConnectionInterface;
 

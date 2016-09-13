@@ -6,9 +6,7 @@ use ButterAMQP\AMQP091\Channel;
 use ButterAMQP\Confirm;
 use ButterAMQP\AMQP091\Consumer;
 use ButterAMQP\Delivery;
-use ButterAMQP\Exception\ChannelException;
-use ButterAMQP\Exception\NoReturnException;
-use ButterAMQP\Exception\UnknownConsumerTagException;
+use ButterAMQP\Exception\TransactionNotSelectedException;
 use ButterAMQP\AMQP091\Exchange;
 use ButterAMQP\AMQP091\Framing\Content;
 use ButterAMQP\AMQP091\Framing\Header;
@@ -17,7 +15,6 @@ use ButterAMQP\AMQP091\Framing\Method\BasicCancel;
 use ButterAMQP\AMQP091\Framing\Method\BasicCancelOk;
 use ButterAMQP\AMQP091\Framing\Method\BasicConsumeOk;
 use ButterAMQP\AMQP091\Framing\Method\BasicConsume;
-use ButterAMQP\AMQP091\Framing\Method\BasicDeliver;
 use ButterAMQP\AMQP091\Framing\Method\BasicGet;
 use ButterAMQP\AMQP091\Framing\Method\BasicGetEmpty;
 use ButterAMQP\AMQP091\Framing\Method\BasicGetOk;
@@ -28,7 +25,6 @@ use ButterAMQP\AMQP091\Framing\Method\BasicQosOk;
 use ButterAMQP\AMQP091\Framing\Method\BasicRecover;
 use ButterAMQP\AMQP091\Framing\Method\BasicRecoverOk;
 use ButterAMQP\AMQP091\Framing\Method\BasicReject;
-use ButterAMQP\AMQP091\Framing\Method\BasicReturn;
 use ButterAMQP\AMQP091\Framing\Method\ChannelClose;
 use ButterAMQP\AMQP091\Framing\Method\ChannelCloseOk;
 use ButterAMQP\AMQP091\Framing\Method\ChannelFlow;
@@ -46,7 +42,7 @@ use ButterAMQP\AMQP091\Framing\Method\TxSelectOk;
 use ButterAMQP\Message;
 use ButterAMQP\AMQP091\Queue;
 use ButterAMQP\Returned;
-use ButterAMQP\WireInterface;
+use ButterAMQP\AMQP091\WireInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 
@@ -111,6 +107,18 @@ class ChannelTest extends TestCase
             $this->channel->getStatus(),
             'Channel status should be the same as returned by server'
         );
+    }
+
+    /**
+     * Channel should fetch next frame from the wire while serving.
+     */
+    public function testServe()
+    {
+        $this->wire->expects(self::once())
+            ->method('next')
+            ->with(true);
+
+        $this->channel->serve();
     }
 
     /**
@@ -409,6 +417,9 @@ class ChannelTest extends TestCase
         $this->channel->recover(true);
     }
 
+    /**
+     * Channel should send confirm.select and wait for reply when choosing confirm mode.
+     */
     public function testSelectConfirm()
     {
         $this->wire->expects(self::once())
@@ -423,6 +434,9 @@ class ChannelTest extends TestCase
         });
     }
 
+    /**
+     * Channel should send confirm.select and not wait for reply when choosing confirm mode in no-wait mode.
+     */
     public function testSelectConfirmNoWait()
     {
         $this->wire->expects(self::once())
@@ -439,6 +453,9 @@ class ChannelTest extends TestCase
         );
     }
 
+    /**
+     * Channel should send tx.select and wait for reply when choosing transactional mode.
+     */
     public function testSelectTx()
     {
         $this->wire->expects(self::once())
@@ -452,6 +469,9 @@ class ChannelTest extends TestCase
         $this->channel->selectTx();
     }
 
+    /**
+     * Channel should send tx.commit and wait for reply when committing transaction.
+     */
     public function testTxCommit()
     {
         $this->wire->expects(self::exactly(2))
@@ -472,6 +492,19 @@ class ChannelTest extends TestCase
             ->txCommit();
     }
 
+    /**
+     * Channel should throw an exception when committing transaction in non transactional mode.
+     */
+    public function testTxCommitThrowsException()
+    {
+        $this->expectException(TransactionNotSelectedException::class);
+
+        $this->channel->txCommit();
+    }
+
+    /**
+     * Channel should send tx.rollback and wait for reply when rolling back transaction.
+     */
     public function testTxRollback()
     {
         $this->wire->expects(self::exactly(2))
@@ -492,184 +525,13 @@ class ChannelTest extends TestCase
             ->txRollback();
     }
 
-    public function testDispatchChannelClose()
-    {
-        $this->expectException(ChannelException::class);
-
-        $this->wire->expects(self::once())
-            ->method('send')
-            ->with(new ChannelCloseOk(51));
-
-        $this->channel->dispatch(new ChannelClose(51, 404, 'Not found', 0, 0));
-
-        self::assertEquals(Channel::STATUS_CLOSED, $this->channel->getStatus());
-    }
-
-    public function testDispatchChannelFlow()
-    {
-        $this->wire->expects(self::once())
-            ->method('send')
-            ->with(new ChannelFlowOk(51, true));
-
-        $this->channel->dispatch(new ChannelFlow(51, true));
-
-        self::assertEquals(Channel::STATUS_READY, $this->channel->getStatus());
-    }
-
-    public function testDispatchBasicDeliver()
-    {
-        $consumer = $this->getMockBuilder(\stdClass::class)->setMethods(['__invoke'])->getMock();
-        $consumer->expects(self::once())
-            ->method('__invoke')
-            ->willReturnCallback(function (Delivery $delivery) {
-                self::assertEquals('abcdef', $delivery->getBody());
-                self::assertEquals(['delivery-mode' => 2], $delivery->getProperties());
-                self::assertEquals('bar', $delivery->getExchange());
-                self::assertEquals('baz', $delivery->getRoutingKey());
-            });
-
-        $this->wire->expects(self::exactly(4))
-            ->method('wait')
-            ->willReturnOnConsecutiveCalls(
-                new BasicConsumeOk(51, 'foo'),
-                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
-                new Content(51, 'abc'),
-                new Content(51, 'def')
-            );
-
-        $this->channel->consume('', $consumer, 0, 'foo');
-
-        $this->channel->dispatch(new BasicDeliver(51, 'foo', 77, false, 'bar', 'baz'));
-    }
-
-    public function testDispatchBasicDeliverForUnknownConsumer()
-    {
-        $this->expectException(UnknownConsumerTagException::class);
-
-        $this->wire->expects(self::atLeastOnce())
-            ->method('wait')
-            ->willReturnOnConsecutiveCalls(
-                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
-                new Content(51, 'abc'),
-                new Content(51, 'def')
-            );
-
-        $this->channel->dispatch(new BasicDeliver(51, 'foo', 77, false, 'bar', 'baz'));
-    }
-
-    public function testDispatchBasicReturn()
-    {
-        $callable = $this->getCallableMock();
-        $callable->expects(self::once())
-            ->method('__invoke')
-            ->with(self::isInstanceOf(Returned::class));
-
-        $this->channel->onReturn($callable);
-
-        $this->wire->expects(self::atLeastOnce())
-            ->method('wait')
-            ->willReturnOnConsecutiveCalls(
-                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
-                new Content(51, 'abc'),
-                new Content(51, 'def')
-            );
-
-        $this->channel->dispatch(new BasicReturn(51, 0, '', '', ''));
-    }
-
-    public function testDispatchBasicReturnWithoutReturnCallable()
-    {
-        $this->expectException(NoReturnException::class);
-
-        $this->wire->expects(self::atLeastOnce())
-            ->method('wait')
-            ->willReturnOnConsecutiveCalls(
-                new Header(51, 60, 0, 6, ['delivery-mode' => 2]),
-                new Content(51, 'abc'),
-                new Content(51, 'def')
-            );
-
-        $this->channel->dispatch(new BasicReturn(51, 0, '', '', ''));
-    }
-
-    public function testDispatchBasicAck()
-    {
-        $callable = $this->getCallableMock();
-        $callable->expects(self::once())
-            ->method('__invoke')
-            ->with(new Confirm(true, 2, true));
-
-        $this->channel->selectConfirm($callable);
-
-        $this->channel->dispatch(new BasicAck(51, 2, true));
-    }
-
-    public function testDispatchBasicAckWithoutConfirmCallable()
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $this->channel->dispatch(new BasicAck(2, true, true));
-    }
-
-    public function testDispatchBasicNack()
-    {
-        $callable = $this->getCallableMock();
-        $callable->expects(self::once())
-            ->method('__invoke')
-            ->with(new Confirm(false, 2, true));
-
-        $this->channel->selectConfirm($callable);
-
-        $this->channel->dispatch(new BasicNack(51, 2, true, true));
-    }
-
-    public function testDispatchBasicNackWithoutConfirmCallable()
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $this->channel->dispatch(new BasicNack(51, 2, true, true));
-    }
-
-    public function testDispatchBasicCancel()
-    {
-        $this->wire->expects(self::exactly(2))
-            ->method('send')
-            ->withConsecutive(
-                [self::isInstanceOf(BasicConsume::class)],
-                [new BasicCancelOk(51, 'baz')]
-            );
-
-        $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
-
-        self::assertTrue($this->channel->hasConsumer('baz'));
-
-        $this->channel->dispatch(new BasicCancel(51, 'baz', false));
-
-        self::assertFalse($this->channel->hasConsumer('baz'));
-    }
-
-    public function testDispatchBasicCancelNoWait()
-    {
-        $this->wire->expects(self::exactly(1))
-            ->method('send')
-            ->with(self::isInstanceOf(BasicConsume::class));
-
-        $this->channel->consume('foo', $this->getCallableMock(), Consumer::FLAG_NO_WAIT, 'baz');
-
-        self::assertTrue($this->channel->hasConsumer('baz'));
-
-        $this->channel->dispatch(new BasicCancel(51, 'baz', true));
-
-        self::assertFalse($this->channel->hasConsumer('baz'));
-    }
-
     /**
-     * @return Mock|callable
+     * Channel should throw an exception when rolling back transaction in non transactional mode.
      */
-    private function getCallableMock()
+    public function testTxRollbackThrowsException()
     {
-        return $this->getMockBuilder(\stdClass::class)
-            ->setMethods(['__invoke'])
-            ->getMock();
+        $this->expectException(TransactionNotSelectedException::class);
+
+        $this->channel->txRollback();
     }
 }

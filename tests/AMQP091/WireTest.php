@@ -11,7 +11,7 @@ use ButterAMQP\IO\BufferIO;
 use ButterAMQP\IOInterface;
 use ButterAMQP\Url;
 use ButterAMQP\AMQP091\Wire;
-use ButterAMQP\WireSubscriberInterface;
+use ButterAMQP\AMQP091\WireSubscriberInterface;
 use PHPUnit\Framework\TestCase;
 
 class WireTest extends TestCase

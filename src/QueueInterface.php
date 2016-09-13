@@ -7,6 +7,15 @@ namespace ButterAMQP;
  */
 interface QueueInterface
 {
+    const FLAG_NO_WAIT = 0b00000001;
+    const FLAG_DURABLE = 0b00000010;
+    const FLAG_PASSIVE = 0b00000100;
+    const FLAG_EXCLUSIVE = 0b00001000;
+    const FLAG_AUTO_DELETE = 0b00010000;
+    const FLAG_INTERNAL = 0b00100000;
+    const FLAG_IF_UNUSED = 0b01000000;
+    const FLAG_IF_EMPTY = 0b10000000;
+
     /**
      * Declare a queue.
      *

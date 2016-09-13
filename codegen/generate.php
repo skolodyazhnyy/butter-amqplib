@@ -655,6 +655,9 @@ function generate_exceptions_factory_class_header()
     return <<<HEADER
 namespace ButterAMQP\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class AMQPException extends \Exception
 {
 HEADER;
@@ -665,7 +668,6 @@ function generate_exceptions_factory_class_body($constants)
     $lines = [];
     $lines[] = 'public static function make($message, $code)';
     $lines[] = '{';
-    $lines[] = '    switch($code) {';
 
     foreach ($constants as $constant) {
         if (!in_array($constant['class'], ['hard-error', 'soft-error'])) {
@@ -673,13 +675,14 @@ function generate_exceptions_factory_class_body($constants)
         }
 
         $className = ucfirst(camel_case($constant['name'])).'Exception';
-        $lines[] = '        case '.$constant['value'].':';
-        $lines[] = '            return new AMQP\\'.$className.'($message, $code);';
+        $lines[] = '    if ($code === '.$constant['value'].') {';
+        $lines[] = '        return new AMQP\\'.$className.'($message, $code);';
+        $lines[] = '    } else';
     }
 
+    $lines[] = '    {';
+    $lines[] = '        return new self($message, $code);';
     $lines[] = '    }';
-    $lines[] = '';
-    $lines[] = '    return new self($message, $code);';
     $lines[] = '}';
 
     return "\n    ".implode("\n    ", $lines);
