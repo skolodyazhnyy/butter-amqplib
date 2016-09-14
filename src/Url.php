@@ -74,6 +74,88 @@ class Url
     }
 
     /**
+     * @param string $url
+     *
+     * @return Url
+     *
+     * @throws \Exception
+     */
+    public static function parse($url)
+    {
+        if (($parts = parse_url($url)) === false) {
+            throw new \InvalidArgumentException(sprintf('Invalid URL "%s"', $url));
+        }
+
+        $parts = array_merge(self::getParseDefaults(), $parts);
+
+        parse_str($parts['query'], $query);
+
+        return new self(
+            urldecode($parts['scheme']),
+            urldecode($parts['host']),
+            $parts['port'],
+            urldecode($parts['user']),
+            urldecode($parts['pass']),
+            urldecode(substr($parts['path'], 1)),
+            $query ?: []
+        );
+    }
+
+    /**
+     * @return array
+     */
+    private static function getParseDefaults()
+    {
+        return [
+            'scheme' => null,
+            'host' => null,
+            'port' => null,
+            'user' => null,
+            'pass' => null,
+            'path' => null,
+            'query' => '',
+        ];
+    }
+
+    /**
+     * Import URL from an array.
+     *
+     * @param array $data
+     *
+     * @return Url
+     */
+    public static function import(array $data)
+    {
+        $data = array_merge(self::getImportDefaults(), $data);
+
+        return new self(
+            $data['scheme'],
+            $data['host'],
+            (int) $data['port'],
+            $data['user'],
+            $data['password'],
+            $data['vhost'],
+            (array) $data['parameters']
+        );
+    }
+
+    /**
+     * @return array
+     */
+    private static function getImportDefaults()
+    {
+        return [
+            'scheme' => null,
+            'host' => null,
+            'port' => null,
+            'user' => null,
+            'password' => null,
+            'vhost' => null,
+            'parameters' => [],
+        ];
+    }
+
+    /**
      * @return string
      */
     public function getScheme()
@@ -145,45 +227,6 @@ class Url
     }
 
     /**
-     * @param string $url
-     *
-     * @return Url
-     *
-     * @throws \Exception
-     */
-    public static function parse($url)
-    {
-        if (($parts = parse_url($url)) === false) {
-            throw new \InvalidArgumentException(sprintf('Invalid URL "%s"', $url));
-        }
-
-        $parts = array_merge(
-            [
-                'scheme' => null,
-                'host' => null,
-                'port' => null,
-                'user' => null,
-                'pass' => null,
-                'path' => null,
-                'query' => '',
-            ],
-            $parts
-        );
-
-        parse_str($parts['query'], $query);
-
-        return new self(
-            urldecode($parts['scheme']),
-            urldecode($parts['host']),
-            $parts['port'],
-            urldecode($parts['user']),
-            urldecode($parts['pass']),
-            urldecode(substr($parts['path'], 1)),
-            $query ?: []
-        );
-    }
-
-    /**
      * @param bool $maskPassword
      *
      * @return string
@@ -199,39 +242,6 @@ class Url
             $this->port,
             urlencode($this->vhost),
             $this->query ? '?'.http_build_query($this->query) : ''
-        );
-    }
-
-    /**
-     * Import URL from an array.
-     *
-     * @param array $data
-     *
-     * @return Url
-     */
-    public static function import(array $data)
-    {
-        $data = array_merge(
-            [
-                'scheme' => null,
-                'host' => null,
-                'port' => null,
-                'user' => null,
-                'password' => null,
-                'vhost' => null,
-                'parameters' => [],
-            ],
-            $data
-        );
-
-        return new self(
-            $data['scheme'],
-            $data['host'],
-            (int) $data['port'],
-            $data['user'],
-            $data['password'],
-            $data['vhost'],
-            (array) $data['parameters']
         );
     }
 

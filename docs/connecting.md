@@ -93,7 +93,22 @@ And after all this boring theory, here is one, very practical line.
 $channel = $connection->channel(1);
 ```
 
-Here you go, now you can start publishing and consuming messages!
+## Putting it all together
+
+Lets put it all togther: define URL, create connection and open a channel.
+
+```php
+use ButterAMQP\ConnectionBuilder;
+
+$url = "amqp://guset:guest@localhost";
+
+$connection = ConnectionBuilder::make()
+  ->create($url);
+
+$channel = $connection->channel(1);
+```
+
+It is this easy! Continue reading:
 
   - [How to publish a message](publishing.md)
   - [How to consume a message](consuming.md)
