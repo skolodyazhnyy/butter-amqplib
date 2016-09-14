@@ -93,9 +93,9 @@ And after all this boring theory, here is one, very practical line.
 $channel = $connection->channel(1);
 ```
 
-## Putting all together
+## Putting it all together
 
-Lets put togther all from above: define URL, create connection and open a channel.
+Lets put it all togther: define URL, create connection and open a channel.
 
 ```php
 use ButterAMQP\ConnectionBuilder;
