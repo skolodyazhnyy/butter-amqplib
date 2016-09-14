@@ -5,15 +5,9 @@ namespace ButterAMQP\IO;
 use ButterAMQP\Exception\IOClosedException;
 use ButterAMQP\Exception\IOException;
 use ButterAMQP\IOInterface;
-use ButterAMQP\Debug\ReadableBinaryData;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\NullLogger;
 
-class StreamIO implements IOInterface, LoggerAwareInterface
+class StreamIO implements IOInterface
 {
-    use LoggerAwareTrait;
-
     /**
      * @var resource|null
      */
@@ -30,54 +24,52 @@ class StreamIO implements IOInterface, LoggerAwareInterface
     private $readAheadSize;
 
     /**
-     * Initialize default logger.
-     */
-    public function __construct()
-    {
-        $this->logger = new NullLogger();
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function open($protocol, $host, $port, array $parameters = [])
     {
-        if ($this->stream && $this->isOpen()) {
+        if ($this->isOpen()) {
             return $this;
         }
 
-        $context = $this->createStreamContext($parameters);
+        $this->buffer = '';
+
+        $parameters = array_merge(['connection_timeout' => 30, 'read_ahead' => 13000, 'timeout' => 1], $parameters);
 
         $this->stream = @stream_socket_client(
             sprintf('%s://%s:%d', $protocol, $host, $port),
             $errno,
             $errstr,
-            isset($parameters['connection_timeout']) ? $parameters['connection_timeout'] : 30,
+            $parameters['connection_timeout'],
             STREAM_CLIENT_CONNECT,
-            $context
+            $this->createStreamContext($parameters)
         );
 
         if (!$this->stream) {
-            throw new IOException(sprintf(
-                'Unable to connect to "%s:%d" using stream socket: %s',
-                $host,
-                $port,
-                $errstr
-            ));
+            throw new IOException(sprintf('An error occur while connecting to "%s:%d": %s', $host, $port, $errstr));
         }
 
-        $this->buffer = '';
-
-        if (isset($parameters['timeout'])) {
-            list($sec, $usec) = explode('|', number_format($parameters['timeout'], 6, '|', ''));
-            stream_set_timeout($this->stream, $sec, $usec);
-        }
-
-        if (isset($parameters['read_ahead'])) {
-            $this->readAheadSize = $parameters['read_ahead'];
-        }
+        $this->setReadingTimeout($parameters['timeout']);
+        $this->setReadAheadSize($parameters['read_ahead']);
 
         return $this;
+    }
+
+    /**
+     * @param float $timeout
+     */
+    private function setReadingTimeout($timeout)
+    {
+        list($sec, $usec) = explode('|', number_format($timeout, 6, '|', ''));
+        stream_set_timeout($this->stream, $sec, $usec);
+    }
+
+    /**
+     * @param int $size
+     */
+    private function setReadAheadSize($size)
+    {
+        $this->readAheadSize = $size;
     }
 
     /**
@@ -135,18 +127,12 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     public function write($data, $length = null)
     {
-        if ($this->stream === null) {
-            throw new IOClosedException('Connection is not open');
-        }
-
         if ($length === null) {
             $length = strlen($data);
         }
 
-        $this->logger->debug(new ReadableBinaryData('Sending', $data));
-
         while ($length > 0) {
-            if ($this->isOpen()) {
+            if (!$this->isOpen()) {
                 throw new IOClosedException('Connection is closed');
             }
 
@@ -208,11 +194,7 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     private function recv($length, $blocking)
     {
-        if ($this->stream === null) {
-            throw new IOClosedException('Connection is not open');
-        }
-
-        if ($this->isOpen()) {
+        if (!$this->isOpen()) {
             throw new IOClosedException('Connection is closed');
         }
 
@@ -238,6 +220,6 @@ class StreamIO implements IOInterface, LoggerAwareInterface
      */
     public function isOpen()
     {
-        return is_resource($this->stream) && feof($this->stream);
+        return is_resource($this->stream) && !feof($this->stream);
     }
 }
