@@ -97,7 +97,7 @@ $channel = $connection->channel(1);
 
 Lets put togther all from above: define URL, create connection and open a channel.
 
-```
+```php
 use ButterAMQP\ConnectionBuilder;
 
 $url = "amqp://guset:guest@localhost";
