@@ -252,7 +252,7 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
             0,
             $this->getClientProperties(),
             $mechanism->getName(),
-            $mechanism->getResponse($this->url->getUser(), $this->url->getPass()),
+            $mechanism->getResponse($this->url->getUser(), $this->url->getPassword()),
             $locale
         ));
     }

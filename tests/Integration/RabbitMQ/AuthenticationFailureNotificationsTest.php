@@ -23,7 +23,7 @@ class AuthenticationFailureNotificationsTest extends TestCase
             $url->getHost(),
             $url->getPort(),
             $url->getUser(),
-            $url->getPass().'INVALID',
+            $url->getPassword().'INVALID',
             $url->getVhost(),
             $url->getQuery()
         );

@@ -18,7 +18,7 @@ class UrlTest extends TestCase
         self::assertEquals('amqp.example.org', $url->getHost());
         self::assertEquals(6001, $url->getPort());
         self::assertEquals('foo', $url->getUser());
-        self::assertEquals('bar', $url->getPass());
+        self::assertEquals('bar', $url->getPassword());
         self::assertEquals('baz', $url->getVhost());
         self::assertEquals(['far' => 'boom'], $url->getQuery());
     }
@@ -36,7 +36,7 @@ class UrlTest extends TestCase
         self::assertEquals('amqp.example.org', $url->getHost());
         self::assertEquals(6001, $url->getPort());
         self::assertEquals('foo', $url->getUser());
-        self::assertEquals('bar', $url->getPass());
+        self::assertEquals('bar', $url->getPassword());
         self::assertEquals('baz', $url->getVhost());
     }
 
@@ -61,7 +61,7 @@ class UrlTest extends TestCase
         self::assertEquals('amqp.example.org', $url->getHost());
         self::assertEquals(6001, $url->getPort());
         self::assertEquals('foo', $url->getUser());
-        self::assertEquals('bar', $url->getPass());
+        self::assertEquals('bar', $url->getPassword());
         self::assertEquals('baz', $url->getVhost());
         self::assertEquals(['far' => 'boom'], $url->getQuery());
     }
@@ -96,7 +96,8 @@ class UrlTest extends TestCase
         $url = new Url('amqps', 'amqp.example.org', 6001, 'foo', 'bar', 'baz', ['far' => 'boom']);
 
         self::assertEquals('amqps://foo:******@amqp.example.org:6001/baz?far=boom', $url->compose(true));
-        self::assertEquals('amqps://foo:bar@amqp.example.org:6001/baz?far=boom', $url->compose());
+        self::assertEquals('amqps://foo:bar@amqp.example.org:6001/baz?far=boom', $url->compose(false));
+        self::assertEquals('amqps://foo:******@amqp.example.org:6001/baz?far=boom', $url->compose());
         self::assertEquals('amqps://foo:******@amqp.example.org:6001/baz?far=boom', (string) $url);
     }
 }

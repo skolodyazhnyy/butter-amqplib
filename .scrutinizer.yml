@@ -30,7 +30,7 @@ build:
   tests:
     override:
       -
-        command: 'RABBITMQ_URL=//localhost phpunit --coverage-clover=coverage.colver'
+        command: 'RABBITMQ_URL=//guest:guest@127.0.0.1 phpunit --coverage-clover=coverage.colver'
         coverage:
           file: 'coverage.colver'
           format: 'clover'

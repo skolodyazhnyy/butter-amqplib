@@ -9,7 +9,6 @@ class Url
     const DEFAULT_PORT = 5672;
     const DEFAULT_SECURE_PORT = 5671;
     const DEFAULT_USER = 'guest';
-    const DEFAULT_PASS = 'guest';
     const DEFAULT_VHOST = '/';
 
     /**
@@ -35,7 +34,7 @@ class Url
     /**
      * @var string
      */
-    private $pass;
+    private $password;
 
     /**
      * @var string
@@ -52,7 +51,7 @@ class Url
      * @param string $host
      * @param int    $port
      * @param string $user
-     * @param string $pass
+     * @param string $password
      * @param string $vhost
      * @param array  $query
      */
@@ -61,20 +60,16 @@ class Url
         $host = null,
         $port = null,
         $user = null,
-        $pass = null,
+        $password = null,
         $vhost = null,
         array $query = []
     ) {
-        if (empty($port)) {
-            $port = strcasecmp($scheme, 'amqps') == 0 ? self::DEFAULT_SECURE_PORT : self::DEFAULT_PORT;
-        }
-
-        $this->scheme = $scheme === null ? self::DEFAULT_SCHEMA : $scheme;
-        $this->host = $host === null ? self::DEFAULT_HOST : $host;
-        $this->port = (int) $port;
-        $this->user = $user === null ? self::DEFAULT_USER : $user;
-        $this->pass = $pass === null ? self::DEFAULT_PASS : $pass;
-        $this->vhost = empty($vhost) ? self::DEFAULT_VHOST : $vhost;
+        $this->scheme = $scheme;
+        $this->host = $host;
+        $this->port = $port;
+        $this->user = $user;
+        $this->password = $password;
+        $this->vhost = $vhost;
         $this->query = $query;
     }
 
@@ -83,7 +78,7 @@ class Url
      */
     public function getScheme()
     {
-        return $this->scheme;
+        return $this->scheme ?: self::DEFAULT_SCHEMA;
     }
 
     /**
@@ -91,7 +86,7 @@ class Url
      */
     public function getHost()
     {
-        return $this->host;
+        return $this->host ?: self::DEFAULT_HOST;
     }
 
     /**
@@ -99,6 +94,10 @@ class Url
      */
     public function getPort()
     {
+        if (empty($this->port)) {
+            return strcasecmp($this->getScheme(), 'amqps') == 0 ? self::DEFAULT_SECURE_PORT : self::DEFAULT_PORT;
+        }
+
         return $this->port;
     }
 
@@ -107,15 +106,15 @@ class Url
      */
     public function getUser()
     {
-        return $this->user;
+        return $this->user === null ? self::DEFAULT_USER : $this->user;
     }
 
     /**
      * @return string
      */
-    public function getPass()
+    public function getPassword()
     {
-        return $this->pass;
+        return $this->password;
     }
 
     /**
@@ -123,7 +122,7 @@ class Url
      */
     public function getVhost()
     {
-        return $this->vhost;
+        return $this->vhost ?: self::DEFAULT_VHOST;
     }
 
     /**
@@ -158,17 +157,28 @@ class Url
             throw new \InvalidArgumentException(sprintf('Invalid URL "%s"', $url));
         }
 
-        $query = [];
+        $parts = array_merge(
+            [
+                'scheme' => null,
+                'host' => null,
+                'port' => null,
+                'user' => null,
+                'pass' => null,
+                'path' => null,
+                'query' => '',
+            ],
+            $parts
+        );
 
-        parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
+        parse_str($parts['query'], $query);
 
         return new self(
-            isset($parts['scheme']) ? $parts['scheme'] : null,
-            isset($parts['host']) ? $parts['host'] : null,
-            isset($parts['port']) ? (int) $parts['port'] : null,
-            isset($parts['user']) ? urldecode($parts['user']) : null,
-            isset($parts['pass']) ? urldecode($parts['pass']) : null,
-            isset($parts['path']) ? urldecode(substr($parts['path'], 1)) : null,
+            urldecode($parts['scheme']),
+            urldecode($parts['host']),
+            $parts['port'],
+            urldecode($parts['user']),
+            urldecode($parts['pass']),
+            urldecode(substr($parts['path'], 1)),
             $query ?: []
         );
     }
@@ -178,13 +188,13 @@ class Url
      *
      * @return string
      */
-    public function compose($maskPassword = false)
+    public function compose($maskPassword = true)
     {
         return sprintf(
             '%s://%s:%s@%s:%d/%s%s',
             urlencode($this->scheme),
             urlencode($this->user),
-            $maskPassword ? '******' : urlencode($this->pass),
+            $maskPassword ? '******' : urlencode($this->password),
             urlencode($this->host),
             $this->port,
             urlencode($this->vhost),
@@ -201,14 +211,27 @@ class Url
      */
     public static function import(array $data)
     {
+        $data = array_merge(
+            [
+                'scheme' => null,
+                'host' => null,
+                'port' => null,
+                'user' => null,
+                'password' => null,
+                'vhost' => null,
+                'parameters' => [],
+            ],
+            $data
+        );
+
         return new self(
-            isset($data['scheme']) ? $data['scheme'] : null,
-            isset($data['host']) ? $data['host'] : null,
-            isset($data['port']) ? (int) $data['port'] : null,
-            isset($data['user']) ? $data['user'] : null,
-            isset($data['password']) ? $data['password'] : null,
-            isset($data['vhost']) ? $data['vhost'] : null,
-            isset($data['parameters']) ? (array) $data['parameters'] : []
+            $data['scheme'],
+            $data['host'],
+            (int) $data['port'],
+            $data['user'],
+            $data['password'],
+            $data['vhost'],
+            (array) $data['parameters']
         );
     }
 
@@ -224,7 +247,7 @@ class Url
             'host' => $this->host,
             'port' => $this->port,
             'user' => $this->user,
-            'password' => $this->pass,
+            'password' => $this->password,
             'vhost' => $this->vhost,
             'parameters' => $this->query,
         ];
@@ -235,6 +258,6 @@ class Url
      */
     public function __toString()
     {
-        return $this->compose(true);
+        return $this->compose();
     }
 }

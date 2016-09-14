@@ -5,7 +5,7 @@ php:
   - 7.0
 
 env:
-  - RABBITMQ_URL=amqp://127.0.0.1
+  - RABBITMQ_URL=//guest:guest@127.0.0.1
 
 before_script:
   - composer install --no-interaction --prefer-dist
