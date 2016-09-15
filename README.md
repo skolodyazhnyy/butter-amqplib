@@ -4,11 +4,19 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/?branch=master)
 
-_This is really work in progress AMQP library written purely in PHP, supporting only AMQP 0.9.1 (at least for the moment)._
- 
-This library provides functional level interfaces for interacting with AMQP server.
+Butter AMQP is a client library for AMQP protocol purely implemented in PHP. It has no dependencies on any PHP extension
+nor other PHP packages. It's very light-weight and lightning fast.
 
-More documentation coming soon, but feel free to leave any suggestion or give feedback.
+Butter AMQP supports all base AMQP features and RabbitMQ extensions, including: [exchange to exchange bindings](https://www.rabbitmq.com/e2e.html),
+[publisher acknowledgments](https://www.rabbitmq.com/confirms.html), [negative acknowledgements](https://www.rabbitmq.com/nack.html) and others.  
+
+## Key features
+
+- Pure PHP implementation of AMQP protocol: no special requirements for PHP and easy upgrade using just composer
+- Easy to use functional API, it hides implementation details and reduce risk of making mistake
+- Code generator for frame encoding and decoding helps achieve high performance and low memory usage
+- Clean design makes it pleasure to work with AMQP, easy to tests and understand
+- Full support for AMQP protocol version 0.9.1 and RabbitMQ extensions
 
 ## Installation
 
@@ -62,6 +70,8 @@ $channel->queue('butter')
     ->bind('butter');
 ```
 
+[Read more](/docs/topology.md)
+
 ### Publishing messages
 
 Publish a message to newly declared exchange and it will be delivered to the queue.
@@ -75,6 +85,8 @@ $message = new Message('hi there', ['content-type' => 'text/plain']);
 // Publish message to default exchange, with routing key "text-messages".
 $channel->publish($message, '', 'text-messages');
 ```
+
+[Read more](/docs/publishing.md)
 
 ### Consuming messages
 
@@ -96,6 +108,8 @@ while($consumer->isActive()) {
     $connection->serve();
 }
 ```
+
+[Read more](/docs/consuming.md)
 
 ### Close connection
 
