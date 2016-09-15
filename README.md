@@ -33,7 +33,7 @@ Every code snippet below extends previous one.
 
 ### Connecting to the server
 
-Establish connection to the server and open a channel. [Read more](/docs/connecting.md)
+Establish connection to the server and open a channel.
 
 ```php
 use ButterAMQP\ConnectionManager;
@@ -43,6 +43,8 @@ $connection = ConnectionManager::make()
 
 $channel = $connection->channel(1);
 ```
+
+[Read more](/docs/connecting.md)
 
 ### Define topology
 
