@@ -1,5 +1,9 @@
 # Butter AMQP
 
+[![Build Status](https://travis-ci.org/skolodyazhnyy/butter-amqplib.svg?branch=master)](https://travis-ci.org/skolodyazhnyy/butter-amqplib)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/skolodyazhnyy/butter-amqplib/?branch=master)
+
 _This is really work in progress AMQP library written purely in PHP, supporting only AMQP 0.9.1 (at least for the moment)._
  
 This library provides functional level interfaces for interacting with AMQP server.
