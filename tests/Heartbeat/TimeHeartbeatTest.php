@@ -28,6 +28,9 @@ class TimeHeartbeatTest extends TestCase
         $this->heartbeat = new TimeHeartbeat(10, $this->time);
     }
 
+    /**
+     * Client heartbeat should be send after $delay seconds with client beat factor 1.
+     */
     public function testShouldRequireHeartbeat()
     {
         $this->time->expects(self::atLeastOnce())
@@ -35,10 +38,29 @@ class TimeHeartbeatTest extends TestCase
             ->willReturnOnConsecutiveCalls(100, 110);
 
         $this->heartbeat->clientBeat();
+        $this->heartbeat->setClientBeatFactor(1);
 
         self::assertTrue($this->heartbeat->shouldSendHeartbeat());
     }
 
+    /**
+     * Client heartbeat should be send even before $delay seconds with client beat factor less than 1.
+     */
+    public function testShouldRequireEarlyHeartbeatForLessThanOneFactor()
+    {
+        $this->time->expects(self::atLeastOnce())
+            ->method('__invoke')
+            ->willReturnOnConsecutiveCalls(100, 105);
+
+        $this->heartbeat->clientBeat();
+        $this->heartbeat->setClientBeatFactor(0.5);
+
+        self::assertTrue($this->heartbeat->shouldSendHeartbeat());
+    }
+
+    /**
+     * Client heartbeat should not be send before delay.
+     */
     public function testShouldNotRequireHeartbeatTooOften()
     {
         $this->time->expects(self::atLeastOnce())
@@ -51,13 +73,16 @@ class TimeHeartbeatTest extends TestCase
         self::assertFalse($this->heartbeat->shouldSendHeartbeat());
     }
 
+    /**
+     * Client heartbeat should not be send when disabled.
+     */
     public function testShouldNotSendHeartbeatWhenDisabled()
     {
         $heartbeat = new TimeHeartbeat(0, $this->time);
 
         $this->time->expects(self::atLeastOnce())
             ->method('__invoke')
-            ->willReturnOnConsecutiveCalls(100, 999);
+            ->willReturnOnConsecutiveCalls(100, 110);
 
         $heartbeat->clientBeat();
         $this->heartbeat->setClientBeatFactor(1);
@@ -65,17 +90,39 @@ class TimeHeartbeatTest extends TestCase
         self::assertFalse($heartbeat->shouldSendHeartbeat());
     }
 
+    /**
+     * Server heartbeat should be considered missing if not received within $delay seconds.
+     */
     public function testServerHeartbeatMissing()
+    {
+        $this->time->expects(self::atLeastOnce())
+            ->method('__invoke')
+            ->willReturnOnConsecutiveCalls(100, 111);
+
+        $this->heartbeat->serverBeat();
+        $this->heartbeat->setServerBeatFactor(1);
+
+        self::assertTrue($this->heartbeat->isServerHeartbeatMissing());
+    }
+
+    /**
+     * Server heartbeat should be considered missing if not received in 2 * $delay seconds for server beat factor 2.
+     */
+    public function testServerHeartbeatNotMissingWithFactorTwo()
     {
         $this->time->expects(self::atLeastOnce())
             ->method('__invoke')
             ->willReturnOnConsecutiveCalls(100, 120);
 
         $this->heartbeat->serverBeat();
+        $this->heartbeat->setServerBeatFactor(2);
 
-        self::assertTrue($this->heartbeat->isServerHeartbeatMissing());
+        self::assertFalse($this->heartbeat->isServerHeartbeatMissing());
     }
 
+    /**
+     * Server heartbeat should not be considered missing if received in less than $delay seconds.
+     */
     public function testServerHeartbeatNotMissing()
     {
         $this->time->expects(self::atLeastOnce())
@@ -83,10 +130,14 @@ class TimeHeartbeatTest extends TestCase
             ->willReturnOnConsecutiveCalls(100, 110);
 
         $this->heartbeat->serverBeat();
+        $this->heartbeat->setServerBeatFactor(1);
 
         self::assertFalse($this->heartbeat->isServerHeartbeatMissing());
     }
 
+    /**
+     * Server heartbeat should not be considered missing if disabled.
+     */
     public function testServerHeartbeatNotMissingWhenDisabled()
     {
         $heartbeat = new TimeHeartbeat(0, $this->time);

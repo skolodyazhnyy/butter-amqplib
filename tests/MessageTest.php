@@ -96,4 +96,17 @@ class MessageTest extends TestCase
         self::assertEquals($message->getProperty('type'), $new->getProperty('type'));
         self::assertEquals(['baz' => 'qux'], $new->getHeaders());
     }
+
+    public function testDebugging()
+    {
+        $message = new Message('foo', ['bar' => 'baz']);
+
+        self::assertEquals(
+            [
+                'body' => 'foo',
+                'properties' => ['bar' => 'baz'],
+            ],
+            $message->__debugInfo()
+        );
+    }
 }

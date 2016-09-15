@@ -125,7 +125,7 @@ class TimeHeartbeat implements HeartbeatInterface
             return false;
         }
 
-        return $this->currentTime() - $this->lastServerBeat >= $this->heartbeatDelay * $this->serverBeatFactor;
+        return $this->currentTime() - $this->lastServerBeat > $this->heartbeatDelay * $this->serverBeatFactor;
     }
 
     /**

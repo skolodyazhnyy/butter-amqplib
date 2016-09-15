@@ -64,7 +64,7 @@ class DeliveryTest extends TestCase
     }
 
     /**
-     * Consumer should call channel to cancel consuming.
+     * Delivery should call channel to cancel consuming.
      */
     public function testCancel()
     {
@@ -76,7 +76,18 @@ class DeliveryTest extends TestCase
     }
 
     /**
-     * Consumer should provide information about delivery.
+     * Delivery should throw an exception when cancelling without consumer tag.
+     */
+    public function testCancelWithoutTag()
+    {
+        $this->expectException(\LogicException::class);
+
+        $delivery = new Delivery($this->channel, '', 0, false, '', '', '', []);
+        $delivery->cancel();
+    }
+
+    /**
+     * Delivery should provide information about delivery.
      */
     public function testGettingProps()
     {
@@ -85,5 +96,22 @@ class DeliveryTest extends TestCase
         self::assertEquals(false, $this->delivery->isRedeliver());
         self::assertEquals('bar.exchange', $this->delivery->getExchange());
         self::assertEquals('baz.routing', $this->delivery->getRoutingKey());
+    }
+
+    public function testDebugging()
+    {
+        self::assertEquals(
+            [
+                'body' => 'qux.load',
+                'properties' => [],
+                'consumer_tag' => 'foo.consumer',
+                'delivery_tag' => 11,
+                'redeliver' => false,
+                'exchange' => 'bar.exchange',
+                'routing_key' => 'baz.routing',
+                'channel_object_hash' => spl_object_hash($this->channel),
+            ],
+            $this->delivery->__debugInfo()
+        );
     }
 }

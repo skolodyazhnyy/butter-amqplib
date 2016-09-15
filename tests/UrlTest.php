@@ -24,6 +24,19 @@ class UrlTest extends TestCase
     }
 
     /**
+     * Unsecure default port should be 5672.
+     * Secure default port should be 5671.
+     */
+    public function testDefaultPort()
+    {
+        $unsecureUrl = new Url();
+        $secureUrl = new Url('amqps');
+
+        self::assertEquals(5672, $unsecureUrl->getPort());
+        self::assertEquals(5671, $secureUrl->getPort());
+    }
+
+    /**
      * An exception should be thrown if URL string is invalid.
      */
     public function testParseInvalidUrl()
