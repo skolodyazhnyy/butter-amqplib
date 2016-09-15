@@ -211,7 +211,7 @@ class StreamIO implements IOInterface
      */
     private function recv($length, $blocking)
     {
-        @stream_set_blocking($this->stream, $blocking);
+        stream_set_blocking($this->stream, $blocking);
 
         $pending = $length;
 
