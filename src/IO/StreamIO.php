@@ -8,6 +8,9 @@ use ButterAMQP\IOInterface;
 
 class StreamIO implements IOInterface
 {
+    const DEFAULT_CONNECTION_TIMEOUT = 30;
+    const DEFAULT_READING_TIMEOUT = 1;
+
     /**
      * @var resource|null
      */
@@ -17,11 +20,6 @@ class StreamIO implements IOInterface
      * @var string
      */
     private $buffer;
-
-    /**
-     * @var int
-     */
-    private $readAheadSize;
 
     /**
      * {@inheritdoc}
@@ -34,42 +32,47 @@ class StreamIO implements IOInterface
 
         $this->buffer = '';
 
-        $parameters = array_merge(['connection_timeout' => 30, 'read_ahead' => 13000, 'timeout' => 1], $parameters);
-
-        $this->stream = @stream_socket_client(
-            sprintf('%s://%s:%d', $protocol, $host, $port),
-            $errno,
-            $errstr,
-            $parameters['connection_timeout'],
-            STREAM_CLIENT_CONNECT,
-            $this->createStreamContext($parameters)
+        $this->stream = $this->openConnection(
+            $protocol,
+            $host,
+            $port,
+            $parameters
         );
 
-        if (!$this->stream) {
-            throw new IOException(sprintf('An error occur while connecting to "%s:%d": %s', $host, $port, $errstr));
-        }
-
-        $this->setReadingTimeout($parameters['timeout']);
-        $this->setReadAheadSize($parameters['read_ahead']);
+        $this->tuneConnection($parameters);
 
         return $this;
     }
 
     /**
-     * @param float $timeout
+     * @param string $protocol
+     * @param string $host
+     * @param int    $port
+     * @param array  $parameters
+     *
+     * @return resource
+     *
+     * @throws IOException
      */
-    private function setReadingTimeout($timeout)
+    private function openConnection($protocol, $host, $port, array $parameters = [])
     {
-        list($sec, $usec) = explode('|', number_format($timeout, 6, '|', ''));
-        stream_set_timeout($this->stream, $sec, $usec);
-    }
+        $timeout = isset($parameters['connection_timeout']) ?
+            $parameters['connection_timeout'] : self::DEFAULT_CONNECTION_TIMEOUT;
 
-    /**
-     * @param int $size
-     */
-    private function setReadAheadSize($size)
-    {
-        $this->readAheadSize = $size;
+        $stream = @stream_socket_client(
+            sprintf('%s://%s:%d', $protocol, $host, $port),
+            $errno,
+            $errstr,
+            $timeout,
+            STREAM_CLIENT_CONNECT,
+            $this->createStreamContext($parameters)
+        );
+
+        if (!$stream) {
+            throw new IOException(sprintf('An error occur while connecting to "%s:%d": %s', $host, $port, $errstr));
+        }
+
+        return $stream;
     }
 
     /**
@@ -99,6 +102,20 @@ class StreamIO implements IOInterface
         }
 
         return $context;
+    }
+
+    /**
+     * @param array $parameters
+     */
+    private function tuneConnection(array $parameters)
+    {
+        $timeout = isset($parameters['timeout']) ? $parameters['timeout'] : self::DEFAULT_READING_TIMEOUT;
+
+        list($sec, $usec) = explode('|', number_format($timeout, 6, '|', ''));
+
+        stream_set_timeout($this->stream, $sec, $usec);
+        stream_set_read_buffer($this->stream, 0);
+        stream_set_write_buffer($this->stream, 0);
     }
 
     /**
@@ -159,7 +176,7 @@ class StreamIO implements IOInterface
             return $this->buffer;
         }
 
-        $this->buffer .= $this->recv($length - $received, $blocking);
+        $this->recv($length - $received, $blocking);
 
         if (strlen($this->buffer) >= $length) {
             return $this->buffer;
@@ -194,25 +211,28 @@ class StreamIO implements IOInterface
      */
     private function recv($length, $blocking)
     {
-        if (!$this->isOpen()) {
-            throw new IOClosedException('Connection is closed');
-        }
+        @stream_set_blocking($this->stream, $blocking);
 
-        if ($this->readAheadSize) {
+        $pending = $length;
+
+        do {
+            if (!$this->isOpen()) {
+                throw new IOClosedException('Connection is closed');
+            }
+
+            if (($received = fread($this->stream, $pending)) === false) {
+                throw new IOException('An error occur while reading from the socket');
+            }
+
+            $pending -= strlen($received);
+            $this->buffer .= $received;
+
             $meta = stream_get_meta_data($this->stream);
 
-            if ($length < $meta['unread_bytes']) {
-                $length = min($this->readAheadSize, $meta['unread_bytes']);
+            if ($meta['timed_out']) {
+                break;
             }
-        }
-
-        stream_set_blocking($this->stream, $blocking);
-
-        if (($received = fread($this->stream, $length)) === false) {
-            throw new IOException('An error occur while reading from the socket');
-        }
-
-        return $received;
+        } while ($pending > 0);
     }
 
     /**

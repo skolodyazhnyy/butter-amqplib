@@ -44,21 +44,22 @@ All available top level keys are listed above.
 
 ### URL Parameters (for all URL formats)
  
+When it comes to parameter names **Butter AMQP** tries to stick to AMQP URI specification, rather than PHP specific names. 
+But you can still find [PHP names](http://php.net/manual/en/context.ssl.php#refsect1-context.ssl-options) in "PHP SSL context" column for reference.
  
 | Parameter          | PHP SSL Context   | description                                                                                               |
 |--------------------|-------------------|-----------------------------------------------------------------------------------------------------------|
 | connection_timeout | -                 | Connection timeout in seconds                                                                             |
 | timeout            | -                 | Reading timeout, all blocking calls will return control once this timeout reached                         |
-| read_ahead         | -                 | Size of "read ahead" buffer. Use 0 to disable reading ahead                                               |
 | certfile           | local_cert        | Path to locally stored SSL certificate (private key + certificate)                                        |
 | keyfile            | local_pk          | Path to locally stored Private Key                                                                        |
 | cacertfile         | cafile            | Path to locally stored CA certificate                                                                     |
 | passphrase         | passphrase        | Passpharase for private key                                                                               |
 | verify             | verify_peer       | Boolean flag, should SSL connection verify certificate, normally `true` but `false` can be used for tests |
 | allow_self_signed  | allow_self_signed | Boolean flag, should SSL connection allow self signed certificates, useful for development environments   |
-
-> When it comes to parameter names **Butter AMQP** tries to stick to AMQP URI specification, rather than PHP specific names. 
-  But you can still find [PHP names](http://php.net/manual/en/context.ssl.php#refsect1-context.ssl-options) in "PHP SSL context" column for reference.
+| heartbeat          | -                 | Heartbeat delay in seconds, use 0 to disable heartbeat                                                    |
+| frame_max          | -                 | Maximum size of content frame in bytes, 0 means client will accept value provided by server               |
+| channel_max        | -                 | Maximum number of channels, 0 means number of channels is not limited                                     |
 
 ## 2. Create connection
 
