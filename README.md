@@ -17,7 +17,6 @@ Butter AMQP supports all base AMQP features and RabbitMQ extensions, including: 
 - Code generator for frame encoding and decoding helps achieve high performance and low memory usage
 - Clean design makes it pleasure to work with AMQP, easy to tests and understand
 - Full support for AMQP protocol version 0.9.1 and RabbitMQ extensions
-- Designed to work as long-running daemon
 
 ## Installation
 
