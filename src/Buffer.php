@@ -23,13 +23,14 @@ class Buffer
     private $data;
 
     /**
-     * @param string   $data
-     * @param int|null $length
+     * @param string $data
+     * @param int    $offset
      */
-    public function __construct($data = '', $length = null)
+    public function __construct($data = '', $offset = 0)
     {
         $this->data = $data;
-        $this->length = $length === null ? strlen($data) : $length;
+        $this->offset = $offset;
+        $this->length = strlen($data);
     }
 
     /**

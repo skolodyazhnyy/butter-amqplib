@@ -41,14 +41,13 @@ abstract class Frame
     abstract public function encode();
 
     /**
+     * @param array  $header
      * @param Buffer $data
      *
      * @return $this
      */
-    public static function decode(Buffer $data)
+    public static function decode(array $header, Buffer $data)
     {
-        $header = unpack('Ctype/nchannel/Nsize', $data->read(7));
-
         if ($header['type'] === 1) {
             $class = $data->read(2);
             $method = $data->read(2);

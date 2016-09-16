@@ -146,7 +146,7 @@ class Wire implements WireInterface, LoggerAwareInterface
             throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
         }
 
-        return Frame::decode(new Buffer($buffer));
+        return Frame::decode($header, new Buffer($buffer, 7));
     }
 
     /**

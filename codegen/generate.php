@@ -382,14 +382,13 @@ function generate_frame_class_decoder($schema)
     return <<<DECODER
     
     /**
+     * @param array  \$header
      * @param Buffer \$data
      * 
      * @return \$this
      */
-    public static function decode(Buffer \$data)
+    public static function decode(array \$header, Buffer \$data)
     {
-        \$header = unpack('Ctype/nchannel/Nsize', \$data->read(7));
-    
         if (\$header['type'] === 1) {
             {$methods}
         } else
