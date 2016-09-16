@@ -13,7 +13,7 @@ class LongStringValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return LongValue::encode(strlen($value)).$value;
+        return pack('N', strlen($value)).$value;
     }
 
     /**
@@ -23,8 +23,6 @@ class LongStringValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        $length = LongValue::decode($data);
-
-        return $data->read($length);
+        return $data->read(unpack('N', $data->read(4))[1]);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class UnsignedLongLongValue extends AbstractValue
@@ -14,7 +13,7 @@ class UnsignedLongLongValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return Binary::pack('J', $value);
+        return pack('J', $value);
     }
 
     /**
@@ -24,6 +23,6 @@ class UnsignedLongLongValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        return Binary::unpack('J', $data->read(8));
+        return unpack('J', $data->read(8))[1];
     }
 }

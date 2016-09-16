@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Security\Mechanism;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Security\MechanismInterface;
 
 class AMQPlainMechanism implements MechanismInterface
@@ -25,15 +24,15 @@ class AMQPlainMechanism implements MechanismInterface
     public function getResponse($username, $password)
     {
         return implode('', [
-            Binary::pack('C', strlen(self::LOGIN_KEY)),
+            pack('C', strlen(self::LOGIN_KEY)),
             self::LOGIN_KEY,
             self::STRING_TYPE_HINT,
-            Binary::pack('N', strlen($username)),
+            pack('N', strlen($username)),
             $username,
-            Binary::pack('C', strlen(self::PASSWORD_KEY)),
+            pack('C', strlen(self::PASSWORD_KEY)),
             self::PASSWORD_KEY,
             self::STRING_TYPE_HINT,
-            Binary::pack('N', strlen($password)),
+            pack('N', strlen($password)),
             $password,
         ]);
     }

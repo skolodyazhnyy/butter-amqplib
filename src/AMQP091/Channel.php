@@ -111,9 +111,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         }
 
         $this->wire->subscribe($this->id, $this);
-
-        $this->send(new ChannelOpen($this->id, ''))
-            ->wait(ChannelOpenOk::class);
+        $this->wire->send(new ChannelOpen($this->id, ''));
+        $this->wire->wait($this->id, ChannelOpenOk::class);
 
         $this->status = self::STATUS_READY;
         $this->mode = self::MODE_NORMAL;
@@ -126,9 +125,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function flow($active)
     {
+        $this->wire->send(new ChannelFlow($this->id, $active));
+
         /** @var ChannelFlowOk $frame */
-        $frame = $this->send(new ChannelFlow($this->id, $active))
-            ->wait(ChannelFlowOk::class);
+        $frame = $this->wire->wait($this->id, ChannelFlowOk::class);
 
         $this->status = $frame->isActive() ? self::STATUS_READY :
             self::STATUS_INACTIVE;
@@ -151,8 +151,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function close()
     {
-        $this->send(new ChannelClose($this->id, 0, '', 0, 0))
-            ->wait(ChannelCloseOk::class);
+        $this->wire->send(new ChannelClose($this->id, 0, '', 0, 0));
+        $this->wire->wait($this->id, ChannelCloseOk::class);
 
         $this->status = self::STATUS_CLOSED;
 
@@ -164,8 +164,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function qos($prefetchSize, $prefetchCount, $globally = false)
     {
-        $this->send(new BasicQos($this->id, $prefetchSize, $prefetchCount, $globally))
-            ->wait(BasicQosOk::class);
+        $this->wire->send(new BasicQos($this->id, $prefetchSize, $prefetchCount, $globally));
+        $this->wire->wait($this->id, BasicQosOk::class);
 
         return $this;
     }
@@ -195,7 +195,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             $tag = uniqid('php-consumer-');
         }
 
-        $this->send(new BasicConsume(
+        $this->wire->send(new BasicConsume(
             $this->id,
             0,
             $queue,
@@ -208,7 +208,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         ));
 
         if (!($flags & Consumer::FLAG_NO_WAIT)) {
-            $tag = $this->wait(BasicConsumeOk::class)
+            $tag = $this->wire->wait($this->id, BasicConsumeOk::class)
                 ->getConsumerTag();
         }
 
@@ -222,9 +222,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function get($queue, $withAck = true)
     {
-        /** @var BasicGetOk|BasicGetEmpty $frame */
-        $frame = $this->send(new BasicGet($this->id, 0, $queue, !$withAck))
-            ->wait([BasicGetOk::class, BasicGetEmpty::class]);
+        /* @var BasicGetOk|BasicGetEmpty $frame */
+        $this->wire->send(new BasicGet($this->id, 0, $queue, !$withAck));
+
+        $frame = $this->wire->wait($this->id, [BasicGetOk::class, BasicGetEmpty::class]);
 
         if ($frame instanceof BasicGetEmpty) {
             return null;
@@ -250,8 +251,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function recover($requeue = true)
     {
-        $this->send(new BasicRecover($this->id, $requeue))
-            ->wait(BasicRecoverOk::class);
+        $this->wire->send(new BasicRecover($this->id, $requeue));
+        $this->wire->wait($this->id, BasicRecoverOk::class);
 
         return $this;
     }
@@ -261,7 +262,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function cancel($tag, $flags = 0)
     {
-        $this->send(new BasicCancel($this->id, $tag, $flags & Consumer::FLAG_NO_WAIT));
+        $this->wire->send(new BasicCancel($this->id, $tag, $flags & Consumer::FLAG_NO_WAIT));
 
         unset($this->consumers[$tag]);
 
@@ -269,7 +270,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             return $this;
         }
 
-        $this->wait(BasicCancelOk::class);
+        $this->wire->wait($this->id, BasicCancelOk::class);
 
         return $this;
     }
@@ -279,7 +280,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function publish(Message $message, $exchange = '', $routingKey = '', $flags = 0)
     {
-        $this->send(new BasicPublish(
+        $this->wire->send(new BasicPublish(
             $this->id,
             0,
             $exchange,
@@ -290,8 +291,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
 
         $body = $message->getBody();
 
-        $this->send(new Header($this->id, 60, 0, strlen($body), $message->getProperties()));
-        $this->send(new Content($this->id, $body));
+        $this->wire->send(new Header($this->id, 60, 0, strlen($body), $message->getProperties()));
+        $this->wire->send(new Content($this->id, $body));
 
         return $this;
     }
@@ -301,7 +302,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function ack($deliveryTag, $multiple = false)
     {
-        $this->send(new BasicAck($this->id, $deliveryTag, $multiple));
+        $this->wire->send(new BasicAck($this->id, $deliveryTag, $multiple));
 
         return $this;
     }
@@ -311,8 +312,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function reject($deliveryTag, $requeue = true, $multiple = false)
     {
-        $multiple ? $this->send(new BasicNack($this->id, $deliveryTag, $multiple, $requeue)) :
-            $this->send(new BasicReject($this->id, $deliveryTag, $requeue));
+        $multiple ? $this->wire->send(new BasicNack($this->id, $deliveryTag, $multiple, $requeue)) :
+            $this->wire->send(new BasicReject($this->id, $deliveryTag, $requeue));
 
         return $this;
     }
@@ -334,10 +335,10 @@ class Channel implements ChannelInterface, WireSubscriberInterface
     {
         $this->confirmCallable = $callable;
 
-        $this->send(new ConfirmSelect($this->id, $noWait));
+        $this->wire->send(new ConfirmSelect($this->id, $noWait));
 
         if (!$noWait) {
-            $this->wait(ConfirmSelectOk::class);
+            $this->wire->wait($this->id, ConfirmSelectOk::class);
         }
 
         $this->mode = self::MODE_CONFIRM;
@@ -350,8 +351,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     public function selectTx()
     {
-        $this->send(new TxSelect($this->id))
-            ->wait(TxSelectOk::class);
+        $this->wire->send(new TxSelect($this->id));
+        $this->wire->wait($this->id, TxSelectOk::class);
 
         $this->mode = self::MODE_TX;
 
@@ -367,8 +368,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
         }
 
-        $this->send(new TxCommit($this->id))
-            ->wait(TxCommitOk::class);
+        $this->wire->send(new TxCommit($this->id));
+        $this->wire->wait($this->id, TxCommitOk::class);
 
         return;
     }
@@ -382,8 +383,8 @@ class Channel implements ChannelInterface, WireSubscriberInterface
             throw new TransactionNotSelectedException('Channel is not in transaction mode. Use Channel::selectTx() to select transaction mode on this channel.');
         }
 
-        $this->send(new TxRollback($this->id))
-            ->wait(TxRollbackOk::class);
+        $this->wire->send(new TxRollback($this->id));
+        $this->wire->wait($this->id, TxRollbackOk::class);
 
         return;
     }
@@ -424,16 +425,6 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         $this->wire->send($frame);
 
         return $this;
-    }
-
-    /**
-     * @param string|array $type
-     *
-     * @return Frame
-     */
-    private function wait($type)
-    {
-        return $this->wire->wait($this->id, $type);
     }
 
     /**
@@ -555,7 +546,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         unset($this->consumers[$frame->getConsumerTag()]);
 
         if (!$frame->isNoWait()) {
-            $this->send(new BasicCancelOk($this->id, $frame->getConsumerTag()));
+            $this->wire->send(new BasicCancelOk($this->id, $frame->getConsumerTag()));
         }
     }
 
@@ -564,7 +555,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function onChannelFlow(ChannelFlow $frame)
     {
-        $this->send(new ChannelFlowOk($this->id, $frame->isActive()));
+        $this->wire->send(new ChannelFlowOk($this->id, $frame->isActive()));
 
         $this->status = $frame->isActive() ? self::STATUS_READY : self::STATUS_INACTIVE;
     }
@@ -576,7 +567,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function onChannelClose(ChannelClose $frame)
     {
-        $this->send(new ChannelCloseOk($this->id));
+        $this->wire->send(new ChannelCloseOk($this->id));
 
         $this->status = self::STATUS_CLOSED;
 
@@ -588,7 +579,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
      */
     private function readHeader()
     {
-        return $this->wait(Header::class);
+        return $this->wire->wait($this->id, Header::class);
     }
 
     /**
@@ -601,7 +592,7 @@ class Channel implements ChannelInterface, WireSubscriberInterface
         $content = '';
 
         while ($size > strlen($content)) {
-            $content .= $this->wait(Content::class)
+            $content .= $this->wire->wait($this->id, Content::class)
                 ->getData();
         }
 

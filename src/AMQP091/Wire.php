@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\AMQP091;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 use ButterAMQP\Exception\InvalidFrameEndingException;
 use ButterAMQP\AMQP091\Framing\Content;
@@ -143,7 +142,7 @@ class Wire implements WireInterface, LoggerAwareInterface
         $end = $buffer[$size - 1];
 
         if ($end != self::FRAME_ENDING) {
-            throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
+            throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', unpack('c', $end)[1]));
         }
 
         return Frame::decode($header, new Buffer($buffer, 7));

@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class FloatValue extends AbstractValue
@@ -14,7 +13,7 @@ class FloatValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return Binary::pack('f', $value);
+        return pack('f', $value);
     }
 
     /**
@@ -24,6 +23,6 @@ class FloatValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        return Binary::unpack('f', $data->read(4));
+        return unpack('f', $data->read(4))[1];
     }
 }

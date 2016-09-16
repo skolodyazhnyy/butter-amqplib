@@ -528,14 +528,72 @@ abstract class Frame
                 Binary::unpackbe('s', $method)
             ));
         } elseif ($header['type'] === 2) {
-            $parameters = unpack('nclass/nweight/Jsize', $data->read(12));
+            $parameters = unpack('nclass/nweight/Jsize/nflags', $data->read(14));
+            $flags = $parameters['flags'];
+            $properties = [];
+
+            if ($flags & 32768) {
+                $properties['content-type'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 16384) {
+                $properties['content-encoding'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 8192) {
+                $properties['headers'] = Value\TableValue::decode($data);
+            }
+
+            if ($flags & 4096) {
+                $properties['delivery-mode'] = Value\OctetValue::decode($data);
+            }
+
+            if ($flags & 2048) {
+                $properties['priority'] = Value\OctetValue::decode($data);
+            }
+
+            if ($flags & 1024) {
+                $properties['correlation-id'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 512) {
+                $properties['reply-to'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 256) {
+                $properties['expiration'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 128) {
+                $properties['message-id'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 64) {
+                $properties['timestamp'] = Value\LongLongValue::decode($data);
+            }
+
+            if ($flags & 32) {
+                $properties['type'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 16) {
+                $properties['user-id'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 8) {
+                $properties['app-id'] = Value\ShortStringValue::decode($data);
+            }
+
+            if ($flags & 4) {
+                $properties['reserved'] = Value\ShortStringValue::decode($data);
+            }
 
             return new Header(
                 $header['channel'],
                 $parameters['class'],
                 $parameters['weight'],
                 $parameters['size'],
-                Properties::decode($data)
+                $properties
             );
         } elseif ($header['type'] === 3) {
             return new Content($header['channel'], $data->read($header['size']));

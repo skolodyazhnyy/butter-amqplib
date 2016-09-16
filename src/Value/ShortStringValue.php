@@ -13,7 +13,7 @@ class ShortStringValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return UnsignedOctetValue::encode(strlen($value)).$value;
+        return pack('C', strlen($value)).$value;
     }
 
     /**
@@ -23,8 +23,6 @@ class ShortStringValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        $length = UnsignedOctetValue::decode($data);
-
-        return $data->read($length);
+        return $data->read(unpack('C', $data->read(1))[1]);
     }
 }

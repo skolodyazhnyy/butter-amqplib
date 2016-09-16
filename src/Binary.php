@@ -25,19 +25,6 @@ class Binary
     }
 
     /**
-     * Pack a value.
-     *
-     * @param string $format
-     * @param string $value
-     *
-     * @return string
-     */
-    public static function pack($format, $value)
-    {
-        return pack($format, $value);
-    }
-
-    /**
      * Pack a value and enforce big endian format.
      *
      * @param string $format

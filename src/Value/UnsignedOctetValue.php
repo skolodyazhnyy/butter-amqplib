@@ -2,7 +2,6 @@
 
 namespace ButterAMQP\Value;
 
-use ButterAMQP\Binary;
 use ButterAMQP\Buffer;
 
 class UnsignedOctetValue extends AbstractValue
@@ -14,7 +13,7 @@ class UnsignedOctetValue extends AbstractValue
      */
     public static function encode($value)
     {
-        return Binary::pack('C', $value);
+        return pack('C', $value);
     }
 
     /**
@@ -24,6 +23,6 @@ class UnsignedOctetValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        return Binary::unpack('C', $data->read(1));
+        return unpack('C', $data->read(1))[1];
     }
 }
