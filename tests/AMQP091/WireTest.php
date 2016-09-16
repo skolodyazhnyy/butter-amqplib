@@ -73,10 +73,13 @@ class WireTest extends TestCase
     {
         $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xCE\xAA");
 
+        // fetch data from IO
+        $this->wire->next();
+
+        // read frame from previously fetched data
         $frame = $this->wire->next();
 
         self::assertInstanceOf(Heartbeat::class, $frame);
-        self::assertEquals("\xAA", $this->io->read(1));
     }
 
     /**
@@ -122,6 +125,7 @@ class WireTest extends TestCase
 
         $this->io->push("\x08\x00\x00\x00\x00\x00\x00\xAA");
 
+        $this->wire->next();
         $this->wire->next(true);
     }
 
@@ -143,7 +147,10 @@ class WireTest extends TestCase
 
         $this->wire->subscribe(0, $chZeroSubscriber);
         $this->wire->subscribe(1, $chOneSubscriber);
-        $this->wire->next(true);
+
+        $this->wire->next();
+        $this->wire->next();
+        $this->wire->next();
     }
 
     /**
@@ -159,7 +166,8 @@ class WireTest extends TestCase
 
         $this->io->push("\x03\x00\x01\x00\x00\x00\x00\xCE");
 
-        $this->wire->next(true);
+        $this->wire->next();
+        $this->wire->next();
     }
 
     /**

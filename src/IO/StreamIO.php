@@ -17,9 +17,14 @@ class StreamIO implements IOInterface
     private $stream;
 
     /**
-     * @var string
+     * @var int
      */
-    private $buffer;
+    private $timeoutSec;
+
+    /**
+     * @var int
+     */
+    private $timeoutUsec;
 
     /**
      * {@inheritdoc}
@@ -29,8 +34,6 @@ class StreamIO implements IOInterface
         if ($this->isOpen()) {
             return $this;
         }
-
-        $this->buffer = '';
 
         $this->stream = $this->openConnection(
             $protocol,
@@ -113,7 +116,10 @@ class StreamIO implements IOInterface
 
         list($sec, $usec) = explode('|', number_format($timeout, 6, '|', ''));
 
-        stream_set_timeout($this->stream, $sec, $usec);
+        $this->timeoutSec = $sec;
+        $this->timeoutUsec = $usec;
+
+        stream_set_timeout($this->stream, $this->timeoutSec, $this->timeoutUsec);
         stream_set_read_buffer($this->stream, 0);
         stream_set_write_buffer($this->stream, 0);
     }
@@ -168,71 +174,27 @@ class StreamIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function peek($length, $blocking = true)
-    {
-        $received = strlen($this->buffer);
-
-        if ($received >= $length) {
-            return $this->buffer;
-        }
-
-        $this->recv($length - $received, $blocking);
-
-        if (strlen($this->buffer) >= $length) {
-            return $this->buffer;
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function read($length, $blocking = true)
-    {
-        if ($this->peek($length, $blocking) === null) {
-            return null;
-        }
-
-        $data = substr($this->buffer, 0, $length);
-
-        $this->buffer = substr($this->buffer, $length, strlen($this->buffer) - $length);
-
-        return $data;
-    }
-
-    /**
-     * @param int  $length
-     * @param bool $blocking
-     *
-     * @return string
-     *
-     * @throws IOException
-     */
-    private function recv($length, $blocking)
     {
         stream_set_blocking($this->stream, $blocking);
 
-        $pending = $length;
+        if (!$this->isOpen()) {
+            throw new IOClosedException('Socket is closed or was not open');
+        }
 
-        do {
-            if (!$this->isOpen()) {
-                throw new IOClosedException('Connection is closed');
-            }
+        $r = [$this->stream];
+        $w = null;
+        $e = null;
 
-            if (($received = fread($this->stream, $pending)) === false) {
-                throw new IOException('An error occur while reading from the socket');
-            }
+        if ($blocking && @stream_select($r, $w, $e, $this->timeoutSec, $this->timeoutUsec) === false) {
+            throw new IOException('An error occur while selecting stream');
+        }
 
-            $pending -= strlen($received);
-            $this->buffer .= $received;
+        if (($received = fread($this->stream, $length)) === false) {
+            throw new IOException('An error occur while reading from the socket');
+        }
 
-            $meta = stream_get_meta_data($this->stream);
-
-            if ($meta['timed_out']) {
-                break;
-            }
-        } while ($pending > 0);
+        return $received;
     }
 
     /**

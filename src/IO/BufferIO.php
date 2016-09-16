@@ -45,26 +45,14 @@ class BufferIO implements IOInterface
      */
     public function read($length, $blocking = true)
     {
-        if (strlen($this->readBuffer) >= $length) {
-            $data = substr($this->readBuffer, 0, $length);
-            $this->readBuffer = substr($this->readBuffer, $length, strlen($this->readBuffer) - $length);
-
-            return $data;
+        if (strlen($this->readBuffer) < $length) {
+            $length = strlen($this->readBuffer);
         }
 
-        return null;
-    }
+        $data = substr($this->readBuffer, 0, $length);
+        $this->readBuffer = substr($this->readBuffer, $length, strlen($this->readBuffer) - $length);
 
-    /**
-     * {@inheritdoc}
-     */
-    public function peek($length, $blocking = true)
-    {
-        if (strlen($this->readBuffer) >= $length) {
-            return substr($this->readBuffer, 0, $length);
-        }
-
-        return null;
+        return $data;
     }
 
     /**

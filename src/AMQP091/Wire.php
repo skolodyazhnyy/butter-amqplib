@@ -44,6 +44,11 @@ class Wire implements WireInterface, LoggerAwareInterface
     private $frameMax;
 
     /**
+     * @var string
+     */
+    private $buffer;
+
+    /**
      * @param IOInterface $io
      */
     public function __construct(IOInterface $io)
@@ -59,6 +64,7 @@ class Wire implements WireInterface, LoggerAwareInterface
     public function open(Url $url)
     {
         $this->subscribers = [];
+        $this->buffer = '';
 
         $this->io->open(
             $this->getProtocolForScheme($url),
@@ -83,29 +89,64 @@ class Wire implements WireInterface, LoggerAwareInterface
             $this->send(new Heartbeat(0));
         }
 
-        if (($peek = $this->io->peek(7, $blocking)) === null) {
+        if ($frame = $this->tryNext()) {
+            $this->heartbeat->serverBeat();
+            $this->dispatch($frame);
+        } else {
+            $this->read($blocking);
+        }
+
+        return $frame;
+    }
+
+    /**
+     * Read next chunk of the data from the buffer.
+     *
+     * @param bool $blocking
+     */
+    private function read($blocking)
+    {
+        $this->buffer .= $this->io->read($this->frameMax ?: 8192, $blocking);
+    }
+
+    /**
+     * Tries to fetch next frame from reading buffer.
+     * Will return a Frame or null if there is not enough data in the buffer.
+     *
+     * @return Frame|null
+     *
+     * @throws InvalidFrameEndingException
+     */
+    private function tryNext()
+    {
+        $length = strlen($this->buffer);
+
+        if ($length < 7) {
             return null;
         }
 
-        $header = unpack('Ctype/nchannel/Nsize', $peek);
+        $header = unpack('Ctype/nchannel/Nsize', $this->buffer);
+        $size = $header['size'] + 8;
 
-        if (($data = $this->io->read($header['size'] + 8, $blocking)) === null) {
+        if ($length < $size) {
             return null;
         }
 
-        $end = $data[strlen($data) - 1];
+        if ($length == $size) {
+            $buffer = $this->buffer;
+            $this->buffer = '';
+        } else {
+            $buffer = substr($this->buffer, 0, $size);
+            $this->buffer = substr($this->buffer, $size, $length - $size);
+        }
+
+        $end = $buffer[$size - 1];
 
         if ($end != self::FRAME_ENDING) {
             throw new InvalidFrameEndingException(sprintf('Invalid frame ending (%d)', Binary::unpack('c', $end)));
         }
 
-        $frame = Frame::decode(new Buffer($data));
-
-        $this->dispatch($frame);
-
-        $this->heartbeat->serverBeat();
-
-        return $frame;
+        return Frame::decode(new Buffer($buffer));
     }
 
     /**

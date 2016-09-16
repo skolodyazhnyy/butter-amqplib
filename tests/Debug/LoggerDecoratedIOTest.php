@@ -57,15 +57,6 @@ class LoggerDecoratedIOTest extends TestCase
         $this->io->close();
     }
 
-    public function testPeek()
-    {
-        $this->decorated->expects(self::once())
-            ->method('peek')
-            ->with(10, true);
-
-        $this->io->peek(10, true);
-    }
-
     public function testRead()
     {
         $this->decorated->expects(self::once())

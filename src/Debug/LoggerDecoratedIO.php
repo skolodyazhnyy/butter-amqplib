@@ -55,14 +55,6 @@ class LoggerDecoratedIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function peek($length, $blocking = true)
-    {
-        return $this->io->peek($length, $blocking);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function read($length, $blocking = true)
     {
         $data = $this->io->read($length, $blocking);

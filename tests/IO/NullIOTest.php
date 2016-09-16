@@ -26,6 +26,5 @@ class NullIOTest extends TestCase
         self::assertSame($this->io, $this->io->close());
         self::assertSame($this->io, $this->io->write(''));
         self::assertNull($this->io->read(1));
-        self::assertNull($this->io->peek(1));
     }
 }

@@ -78,32 +78,6 @@ class StreamIOTest extends TestCase
     }
 
     /**
-     * Peeking.
-     */
-    public function testPeeking()
-    {
-        $this->serverStart();
-
-        $io = new StreamIO();
-        $io->open('tcp', $this->serverHost, $this->serverPort, [
-            'connection_timeout' => 0.5,
-            'timeout' => 0.1,
-        ]);
-
-        $this->serverWrite('ping');
-
-        $peekOne = $io->peek(4, true);
-        $peekTwo = $io->peek(4, true);
-        $peekThree = $io->peek(5, true);
-
-        $io->close();
-
-        self::assertEquals('ping', $peekOne);
-        self::assertEquals('ping', $peekTwo);
-        self::assertNull($peekThree);
-    }
-
-    /**
      * Reading.
      */
     public function testReading()
@@ -124,7 +98,7 @@ class StreamIOTest extends TestCase
         $io->close();
 
         self::assertEquals('ping', $readOne);
-        self::assertNull($readTwo);
+        self::assertEquals('po', $readTwo);
     }
 
     /**
@@ -145,8 +119,8 @@ class StreamIOTest extends TestCase
         $this->serverWrite('pi');
         $this->serverStop();
 
-        self::assertNull($io->read(4, true));
-        self::assertNull($io->read(4, true));
+        self::assertEquals('pi', $io->read(4, true));
+        self::assertEquals('', $io->read(4, true));
     }
 
     /**

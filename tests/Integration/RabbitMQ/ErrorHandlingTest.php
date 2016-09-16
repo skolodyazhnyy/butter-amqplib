@@ -33,6 +33,7 @@ class ErrorHandlingTest extends TestCase
             ->channel()
             ->publish(new Message(''), uniqid('errors-'));
 
-        $this->connection->serve(true, 1);
+        $this->connection->serve(true);
+        $this->connection->serve(true);
     }
 }

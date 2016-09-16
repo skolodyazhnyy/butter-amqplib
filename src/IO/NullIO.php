@@ -25,14 +25,6 @@ class NullIO implements IOInterface
     /**
      * {@inheritdoc}
      */
-    public function peek($length, $blocking = true)
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function read($length, $blocking = true)
     {
         return null;

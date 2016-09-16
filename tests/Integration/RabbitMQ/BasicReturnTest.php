@@ -32,6 +32,7 @@ class BasicReturnTest extends TestCase
         $channel->publish(new Message($token), '', $token, Message::FLAG_MANDATORY);
 
         $this->connection->serve(true);
+        $this->connection->serve(true);
     }
 
     public function testReturnWithoutCallback()
@@ -43,6 +44,7 @@ class BasicReturnTest extends TestCase
 
         $channel->publish(new Message(''), '', '', Message::FLAG_MANDATORY);
 
+        $this->connection->serve(true);
         $this->connection->serve(true);
     }
 

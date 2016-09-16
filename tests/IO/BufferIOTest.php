@@ -31,11 +31,9 @@ class BufferIOTest extends TestCase
         $this->io->push('foo');
         $this->io->push('bar');
 
-        self::assertEquals('foo', $this->io->peek(3));
         self::assertEquals('foo', $this->io->read(3));
-        self::assertEquals('bar', $this->io->peek(3));
         self::assertEquals('bar', $this->io->read(3));
-        self::assertNull($this->io->read(3, true, 1));
+        self::assertEquals('', $this->io->read(3, true));
     }
 
     public function testWriting()
