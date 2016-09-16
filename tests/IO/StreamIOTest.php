@@ -122,26 +122,4 @@ class StreamIOTest extends TestCase
         self::assertEquals('pi', $io->read(4, true));
         self::assertEquals('', $io->read(4, true));
     }
-
-    /**
-     * Disconnected while writing.
-     */
-    public function testDisconnectWhileWriting()
-    {
-        $this->expectException(IOException::class);
-
-        $this->serverStart();
-
-        $io = new StreamIO();
-        $io->open('tcp', $this->serverHost, $this->serverPort, [
-            'connection_timeout' => 0.5,
-            'timeout' => 0.1,
-        ]);
-
-        $io->write('foo');
-
-        $this->serverForceStop();
-
-        $io->write('bar');
-    }
 }

@@ -25,7 +25,7 @@ class TimeHeartbeatTest extends TestCase
             ->setMethods(['__invoke'])
             ->getMock();
 
-        $this->heartbeat = new TimeHeartbeat(10, $this->time);
+        $this->heartbeat = new TimeHeartbeatMock(10, $this->time);
     }
 
     /**
@@ -78,7 +78,7 @@ class TimeHeartbeatTest extends TestCase
      */
     public function testShouldNotSendHeartbeatWhenDisabled()
     {
-        $heartbeat = new TimeHeartbeat(0, $this->time);
+        $heartbeat = new TimeHeartbeatMock(0, $this->time);
 
         $this->time->expects(self::atLeastOnce())
             ->method('__invoke')
@@ -140,7 +140,7 @@ class TimeHeartbeatTest extends TestCase
      */
     public function testServerHeartbeatNotMissingWhenDisabled()
     {
-        $heartbeat = new TimeHeartbeat(0, $this->time);
+        $heartbeat = new TimeHeartbeatMock(0, $this->time);
 
         $this->time->expects(self::atLeastOnce())
             ->method('__invoke')

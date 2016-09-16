@@ -32,18 +32,11 @@ class TimeHeartbeat implements HeartbeatInterface
     private $clientBeatFactor = 0.75;
 
     /**
-     * @var callable|string
+     * @param int $heartbeatDelay
      */
-    private $timeFunction;
-
-    /**
-     * @param int             $heartbeatDelay
-     * @param callable|string $timeFunction
-     */
-    public function __construct($heartbeatDelay, $timeFunction = 'time')
+    public function __construct($heartbeatDelay)
     {
         $this->heartbeatDelay = $heartbeatDelay;
-        $this->timeFunction = $timeFunction;
     }
 
     /**
@@ -93,7 +86,7 @@ class TimeHeartbeat implements HeartbeatInterface
      */
     public function serverBeat()
     {
-        $this->lastServerBeat = $this->currentTime();
+        $this->lastServerBeat = $this->time();
     }
 
     /**
@@ -101,7 +94,7 @@ class TimeHeartbeat implements HeartbeatInterface
      */
     public function clientBeat()
     {
-        $this->lastClientBeat = $this->currentTime();
+        $this->lastClientBeat = $this->time();
     }
 
     /**
@@ -113,7 +106,7 @@ class TimeHeartbeat implements HeartbeatInterface
             return false;
         }
 
-        return $this->currentTime() - $this->lastClientBeat >= $this->heartbeatDelay * $this->clientBeatFactor;
+        return $this->time() - $this->lastClientBeat >= $this->heartbeatDelay * $this->clientBeatFactor;
     }
 
     /**
@@ -125,14 +118,14 @@ class TimeHeartbeat implements HeartbeatInterface
             return false;
         }
 
-        return $this->currentTime() - $this->lastServerBeat > $this->heartbeatDelay * $this->serverBeatFactor;
+        return $this->time() - $this->lastServerBeat > $this->heartbeatDelay * $this->serverBeatFactor;
     }
 
     /**
      * @return int
      */
-    private function currentTime()
+    protected function time()
     {
-        return call_user_func($this->timeFunction);
+        return time();
     }
 }

@@ -155,12 +155,8 @@ class StreamIO implements IOInterface
         }
 
         while ($length > 0) {
-            if (!$this->isOpen()) {
-                throw new IOClosedException('Connection is closed');
-            }
-
             $written = @fwrite($this->stream, $data, $length);
-            if ($written === false) {
+            if (!$written) {
                 throw new IOException('An error occur while writing to socket');
             }
 
