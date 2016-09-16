@@ -91,11 +91,16 @@ class ConnectionDispatchTest extends TestCase
      */
     public function testDispatchConnectionStartServerCapabilities()
     {
+        $this->wire->expects(self::any())
+            ->method('open')
+            ->willReturnSelf();
+
         $this->authenticator->expects(self::once())
             ->method('get')
             ->with(['AMQPLAIN', 'PLAIN'])
             ->willReturn($this->createMock(MechanismInterface::class));
 
+        $this->connection->open();
         $this->connection->dispatch(new ConnectionStart(
             0,
             0,

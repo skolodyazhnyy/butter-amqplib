@@ -89,14 +89,34 @@ class ConnectionTest extends TestCase
     public function testChannel()
     {
         $this->wire->expects(self::at(0))
+            ->method('open')
+            ->willReturnSelf();
+
+        $this->wire->expects(self::at(1))
+            ->method('subscribe')
+            ->with(0, self::isInstanceOf(Connection::class));
+
+        $this->wire->expects(self::at(2))
+            ->method('wait')
+            ->willReturnSelf();
+
+        $this->wire->expects(self::at(3))
+            ->method('send')
+            ->willReturnSelf();
+
+        $this->wire->expects(self::at(4))
+            ->method('wait')
+            ->willReturnSelf();
+
+        $this->wire->expects(self::at(5))
             ->method('subscribe')
             ->with(1, self::isInstanceOf(Channel::class));
 
-        $this->wire->expects(self::at(1))
+        $this->wire->expects(self::at(6))
             ->method('send')
             ->with(new ChannelOpen(1, ''));
 
-        $this->wire->expects(self::at(2))
+        $this->wire->expects(self::at(7))
             ->method('wait')
             ->with(1, ChannelOpenOk::class);
 

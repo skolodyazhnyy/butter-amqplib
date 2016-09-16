@@ -146,6 +146,8 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
      */
     private function openChannel($id)
     {
+        $this->openIfClosed();
+
         $channel = new Channel($this->wire, $id);
         $channel->open();
 
@@ -172,6 +174,8 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
      */
     public function isSupported($capability)
     {
+        $this->openIfClosed();
+
         return isset($this->capabilities[$capability]) ?
             (bool) $this->capabilities[$capability] : false;
     }
@@ -341,5 +345,15 @@ class Connection implements ConnectionInterface, WireSubscriberInterface
     private function onConnectionUnblocked(ConnectionUnblocked $frame)
     {
         $this->status = self::STATUS_READY;
+    }
+
+    /**
+     * Opens connection if closed.
+     */
+    private function openIfClosed()
+    {
+        if ($this->status !== self::STATUS_READY) {
+            $this->open();
+        }
     }
 }
