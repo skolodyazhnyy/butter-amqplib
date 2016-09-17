@@ -531,7 +531,6 @@ abstract class Frame
             $parameters = unpack('nclass/nweight/Jsize/nflags', $data->read(14));
             $flags = $parameters['flags'];
             $properties = [];
-
             if ($flags & 32768) {
                 $properties['content-type'] = Value\ShortStringValue::decode($data);
             }

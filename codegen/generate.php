@@ -11,9 +11,9 @@ $properties = iterator_to_array(parse_basic_properties($root, $domains));
 $constants = iterator_to_array(parse_constants($root));
 $path = dirname(__DIR__).'/src';
 
-export_files(generate_frame_class($schema), $path.'/AMQP091/Framing');
+export_files(generate_frame_class($schema, $properties), $path.'/AMQP091/Framing');
 export_files(generate_method_classes($schema), $path.'/AMQP091/Framing');
-export_files(generate_properties_class($properties), $path.'/AMQP091/Framing');
+export_files(generate_header_class($properties), $path.'/AMQP091/Framing');
 export_files(generate_exceptions($constants), $path.'/Exception');
 export_files(generate_exceptions_factory_class($constants), $path.'/Exception');
 
@@ -323,11 +323,11 @@ function generate_method_classes_footer()
 FOOTER;
 }
 
-function generate_frame_class($schema)
+function generate_frame_class($schema, $properties)
 {
     return ['Frame.php' => implode('', [
         generate_frame_class_header(),
-        generate_frame_class_decoder($schema),
+        generate_frame_class_decoder($schema, $properties),
         generate_frame_class_footer(),
     ])];
 }
@@ -375,9 +375,10 @@ abstract class Frame
 HEADER;
 }
 
-function generate_frame_class_decoder($schema)
+function generate_frame_class_decoder($schema, $properties)
 {
     $methods = trim(indent(generate_frame_class_method_decoder($schema), 3));
+    $props = trim(indent(generate_frame_class_properties_decoder($properties), 3));
 
     return <<<DECODER
     
@@ -393,14 +394,17 @@ function generate_frame_class_decoder($schema)
             {$methods}
         } else
         if (\$header['type'] === 2) {
-            \$parameters = unpack('nclass/nweight/Jsize', \$data->read(12));
+            \$parameters = unpack('nclass/nweight/Jsize/nflags', \$data->read(14));
+            \$flags = \$parameters['flags'];
+            \$properties = [];
+            {$props}
             
             return new Header(
                 \$header['channel'],
                 \$parameters['class'],
                 \$parameters['weight'],
                 \$parameters['size'],
-                Properties::decode(\$data)
+                \$properties
             );
         } else
         if (\$header['type'] === 3) {
@@ -414,6 +418,22 @@ function generate_frame_class_decoder($schema)
     }
 
 DECODER;
+}
+
+function generate_frame_class_properties_decoder($properties)
+{
+    $propertiesReading = [];
+    $shift = 15;
+
+    foreach ($properties as $property) {
+        $value = 1 << $shift;
+        $propertiesReading[] = "if (\$flags & $value) {";
+        $propertiesReading[] = "    \$properties['{$property['name']}'] = Value\\".$property['amqp-type'].'::decode($data);';
+        $propertiesReading[] = "}\n";
+        --$shift;
+    }
+
+    return implode("\n", $propertiesReading);
 }
 
 function generate_frame_class_method_decoder($schema)
@@ -500,52 +520,109 @@ function generate_frame_class_footer()
 FOOTER;
 }
 
-function generate_properties_class($properties)
+function generate_header_class($properties)
 {
-    return ['Properties.php' => implode('', [
-        generate_properties_class_header(),
-        generate_properties_class_encoder($properties),
-        generate_properties_class_decoder($properties),
-        generate_properties_class_footer(),
+    return ['Header.php' => implode('', [
+        generate_header_class_header(),
+        generate_header_class_encoder($properties),
+        generate_header_class_footer(),
     ])];
 }
 
-function generate_properties_class_header()
+function generate_header_class_header()
 {
     return <<<HEADER
 namespace ButterAMQP\AMQP091\Framing;
 
-use ButterAMQP\Buffer;
-use ButterAMQP\Binary;
 use ButterAMQP\Value;
 
 /**
- * Helper to encode and decode basic properties.
- *
  * @codeCoverageIgnore
  */
-class Properties
+class Header extends Frame
 {
     /**
-     * This class can not be instantiated.
+     * @var int
      */
-    private function __construct()
+    private \$classId;
+
+    /**
+     * @var int
+     */
+    private \$weight;
+
+    /**
+     * @var int
+     */
+    private \$size;
+
+    /**
+     * @var array
+     */
+    private \$properties = [];
+
+    /**
+     * @param int   \$channel
+     * @param int   \$classId
+     * @param int   \$weight
+     * @param int   \$size
+     * @param array \$properties
+     */
+    public function __construct(\$channel, \$classId, \$weight, \$size, array \$properties = [])
     {
+        \$this->classId = \$classId;
+        \$this->weight = \$weight;
+        \$this->size = \$size;
+        \$this->properties = \$properties;
+
+        parent::__construct(\$channel);
+    }
+
+    /**
+     * @return int
+     */
+    public function getClassId()
+    {
+        return \$this->classId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWeight()
+    {
+        return \$this->weight;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSize()
+    {
+        return \$this->size;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProperties()
+    {
+        return \$this->properties;
     }
 
 HEADER;
 }
 
-function generate_properties_class_encoder($properties)
+function generate_header_class_encoder($properties)
 {
     $propertyWriting = [];
     $shift = 15;
 
     foreach ($properties as $property) {
         $value = 1 << $shift;
-        $propertyWriting[] = "if (array_key_exists('{$property['name']}', \$properties)) {";
+        $propertyWriting[] = "if (array_key_exists('{$property['name']}', \$this->properties)) {";
         $propertyWriting[] = "    \$flags |= {$value};";
-        $propertyWriting[] = '    $payload .= Value\\'.$property['amqp-type']."::encode(\$properties['{$property['name']}']);";
+        $propertyWriting[] = '    $payload .= Value\\'.$property['amqp-type']."::encode(\$this->properties['{$property['name']}']);";
         $propertyWriting[] = "}\n";
         --$shift;
     }
@@ -555,57 +632,25 @@ function generate_properties_class_encoder($properties)
     return <<<ENCODER
 
     /**
-     * @param array \$properties
-     *
      * @return string
      */
-    public static function encode(array \$properties)
+    public function encode()
     {
         \$flags = 0;
         \$payload = '';
         
         {$propertyWriting}
-        return Value\ShortValue::encode(\$flags).\$payload;
+
+        \$data = pack('nnJn', \$this->classId, \$this->weight, \$this->size, \$flags).
+            \$payload;
+
+        return "\\x02".pack('nN', \$this->channel, strlen(\$data)).\$data."\\xCE";
     }
 
 ENCODER;
 }
 
-function generate_properties_class_decoder($properties)
-{
-    $propertiesReading = [];
-    $shift = 15;
-
-    foreach ($properties as $property) {
-        $value = 1 << $shift;
-        $propertiesReading[] = "if (\$flags & $value) {";
-        $propertiesReading[] = "    \$properties['{$property['name']}'] = Value\\".$property['amqp-type'].'::decode($data);';
-        $propertiesReading[] = "}\n";
-        --$shift;
-    }
-
-    $propertiesReading = implode("\n        ", $propertiesReading);
-
-    return <<<DECODER
-
-    /**
-     * @param Buffer \$data
-     *
-     * @return array
-     */
-    public static function decode(Buffer \$data)
-    {
-        \$flags  = Value\ShortValue::decode(\$data);
-        \$properties = [];
-
-        {$propertiesReading}
-        return \$properties;
-    }
-
-DECODER;
-}
-
-function generate_properties_class_footer()
+function generate_header_class_footer()
 {
     return <<<'HEADER'
 }
