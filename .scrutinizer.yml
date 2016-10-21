@@ -2,7 +2,7 @@ filter:
   paths:
     - 'src/*'
   excluded_paths:
-    - 'src/AMQP091/Framing/*'
+    - 'src/AMQP091/Framing/Method'
     - 'src/AMQP091/Framing/Properties.php'
     - 'src/Exception/AMQP'
     - 'src/Exception/AMQPException.php'
