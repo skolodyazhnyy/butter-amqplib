@@ -19,7 +19,7 @@ class ArrayValue extends AbstractValue
             $data .= TypifiedValue::encode($element);
         }
 
-        return LongValue::encode(strlen($data)).$data;
+        return UnsignedLongValue::encode(strlen($data)).$data;
     }
 
     /**
@@ -29,7 +29,7 @@ class ArrayValue extends AbstractValue
      */
     public static function decode(Buffer $data)
     {
-        $length = LongValue::decode($data);
+        $length = UnsignedLongValue::decode($data);
         $buffer = new Buffer($data->read($length));
         $elements = [];
 

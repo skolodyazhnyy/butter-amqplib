@@ -8,9 +8,9 @@ use ButterAMQP\Buffer;
 class ShortValue extends AbstractValue
 {
     /**
-     * @param int $value
+     * @param string $value
      *
-     * @return string
+     * @return int
      */
     public static function encode($value)
     {

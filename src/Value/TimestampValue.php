@@ -8,22 +8,22 @@ use ButterAMQP\Buffer;
 class TimestampValue extends AbstractValue
 {
     /**
-     * @param int $value
+     * @param string $value
      *
-     * @return string
+     * @return int
      */
     public static function encode($value)
     {
-        return Binary::packbe('q', $value);
+        return pack('J', $value);
     }
 
     /**
      * @param Buffer $data
      *
-     * @return string
+     * @return int
      */
     public static function decode(Buffer $data)
     {
-        return Binary::unpackbe('q', $data->read(8));
+        return unpack('J', $data->read(8))[1];
     }
 }
