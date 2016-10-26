@@ -44,9 +44,9 @@ Every code snippet below extends previous one.
 Establish connection to the server and open a channel.
 
 ```php
-use ButterAMQP\ConnectionManager;
+use ButterAMQP\ConnectionBuilder;
 
-$connection = ConnectionManager::make()
+$connection = ConnectionBuilder::make()
     ->create("//guest:guest@localhost/%2f");
 
 $channel = $connection->channel(1);
