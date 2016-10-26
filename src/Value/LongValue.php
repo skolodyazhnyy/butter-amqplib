@@ -8,7 +8,7 @@ use ButterAMQP\Buffer;
 class LongValue extends AbstractValue
 {
     /**
-     * @param int $value
+     * @param string $value
      *
      * @return string
      */

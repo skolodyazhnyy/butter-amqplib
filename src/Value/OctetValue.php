@@ -8,7 +8,7 @@ use ButterAMQP\Buffer;
 class OctetValue extends AbstractValue
 {
     /**
-     * @param int $value
+     * @param string $value
      *
      * @return string
      */
